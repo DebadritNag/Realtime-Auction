@@ -24,12 +24,14 @@ export default function HomePage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [careerStats, achievementList, recentHistory] = await Promise.all([
+        const [careerStats, achievementList, recentHistory, profile] = await Promise.all([
           profileService.getCareerStats(),
           profileService.getAchievements(),
           profileService.getAuctionHistory(),
+          profileService.getProfile(),
         ]);
         setStats(careerStats);
+        useAuthStore.getState().setUser(profile);
         setHistory(recentHistory);
         setAchievements(achievementList);
       } catch (e) {

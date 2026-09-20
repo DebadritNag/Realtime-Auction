@@ -13,7 +13,7 @@ export const SignInForm: React.FC = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(true);
+
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,7 +30,7 @@ export const SignInForm: React.FC = () => {
       return;
     }
 
-    const success = await signIn({ email, password, rememberMe });
+    const success = await signIn({ email, password });
     if (success) {
       router.push("/home");
     }
@@ -89,15 +89,7 @@ export const SignInForm: React.FC = () => {
         />
 
         <div className="flex items-center justify-between text-xs pt-1">
-          <label className="flex items-center gap-2 text-[#94a3b8] cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="rounded bg-[#151a24] border-[#242c3d] text-[#00ff87] focus:ring-[#00ff87]"
-            />
-            <span>Session restored automatically</span>
-          </label>
+          <span className="text-[#94a3b8]">Your session is restored automatically.</span>
 
         </div>
 

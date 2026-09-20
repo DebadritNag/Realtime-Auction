@@ -152,13 +152,13 @@ export default function LandingPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-xl">🐅</span>
                   <div>
-                    <span className="text-[10px] text-[#64748b] block font-bold">LATEST BID</span>
-                    <span className="text-xs font-bold text-[#f8fafc]">Baghbazar Tigers</span>
+                    <span className="text-[10px] text-[#64748b] block font-bold">LIVE AUCTIONS</span>
+                    <span className="text-xs font-bold text-[#f8fafc]">Your team. Your decisions.</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-[#00ff87] font-bold block">CURRENT HAMMER</span>
-                  <span className="text-base font-black font-mono text-[#00ff87]">₹38.0 Cr</span>
+                  <span className="text-[10px] text-[#00ff87] font-bold block">SERVER VERIFIED</span>
+                  <span className="text-base font-black font-mono text-[#00ff87]">Every bid</span>
                 </div>
               </div>
             </div>

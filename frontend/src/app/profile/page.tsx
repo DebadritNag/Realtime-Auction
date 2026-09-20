@@ -18,6 +18,7 @@ import { authService } from "@/services/auth.service";
 
 export default function ProfilePage() {
   const { user, setUser } = useAuthStore();
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [stats, setStats] = useState<UserCareerStats | null>(null);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [history, setHistory] = useState<AuctionHistoryRecord[]>([]);
@@ -26,16 +27,18 @@ export default function ProfilePage() {
   useEffect(() => {
     async function loadProfileData() {
       try {
-        const [careerStats, achievementList, historyList] = await Promise.all([
+        const [careerStats, achievementList, historyList, profile] = await Promise.all([
           profileService.getCareerStats(),
           profileService.getAchievements(),
           profileService.getAuctionHistory(),
+          profileService.getProfile(),
         ]);
         setStats(careerStats);
+        setUser(profile);
         setAchievements(achievementList);
         setHistory(historyList);
       } catch (err) {
-        console.error("Failed to load profile details:", err);
+        setLoadError(err instanceof Error ? err.message : "Unable to load your profile.");
       } finally {
         setIsLoading(false);
       }
@@ -62,6 +65,7 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
+      {loadError && <p role="alert" className="text-amber-300">{loadError}</p>}
       <ProfileHeader user={activeUser} onUpdate={handleProfileUpdate} />
 
       {stats && <ProfileStats stats={stats} />}
