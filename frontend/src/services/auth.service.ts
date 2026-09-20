@@ -22,9 +22,9 @@ export const authService={
   return {user:data.session&&data.user?mapUser(data.user):null,needsConfirmation:!data.session};
  },
  async getSession():Promise<User|null> {const {data,error}=await getSupabase().auth.getSession();if(error)throw error;return data.session?mapUser(data.session.user):null;},
- async getAccessToken():Promise<string> {
-  const {data,error}=await getSupabase().auth.getSession();if(error)throw error;
-  if(!data.session)throw new Error('Please sign in to continue.');
+ async getAccessToken():Promise<string|null> {
+  const {data,error}=await getSupabase().auth.getSession();
+  if(error||!data.session)return null;
   return data.session.access_token;
  },
  async signOut(){const {error}=await getSupabase().auth.signOut();if(error)throw error;},

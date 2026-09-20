@@ -20,6 +20,7 @@ export class WebSocketService {
   useConnectionStore.getState().setStatus(this.attempts?'RECONNECTING':'CONNECTING');
   try{
    const token=await authService.getAccessToken();
+   if(!token)throw new ApiError('Please sign in to continue.','UNAUTHENTICATED',401);
    if(this.manual||generation!==this.generation)return;
    const base=process.env.NEXT_PUBLIC_WS_URL;if(!base)throw new ApiError('WebSocket URL is not configured.','CONFIGURATION_ERROR');
    const url=new URL(base);url.searchParams.set('token',token);
