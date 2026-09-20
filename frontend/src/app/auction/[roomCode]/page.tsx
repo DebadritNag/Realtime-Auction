@@ -109,7 +109,32 @@ export default function LiveAuctionPage({
 
   return (
     <div className="auction-workspace">
-      {!snapshot && <div className="p-4 text-center text-sm text-amber-300">{bidErrorNotice || "Synchronizing room state…"}</div>}
+      {/* Connection / loading banner — shown until first ROOM_STATE arrives */}
+      {!snapshot && (
+        <div className="flex items-center justify-center gap-3 py-3 px-4 text-sm border-b border-[#263342] bg-[#0d1620]">
+          {bidErrorNotice ? (
+            <span className="text-rose-400">{bidErrorNotice}</span>
+          ) : connectionStatus === "CONNECTING" || connectionStatus === "RECONNECTING" ? (
+            <>
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+              <span className="text-amber-300">
+                {connectionStatus === "RECONNECTING" ? "Reconnecting to auction server…" : "Connecting to auction server…"}
+              </span>
+              <span className="text-[#64748b] text-xs hidden sm:inline">Render may take up to 30 s after inactivity</span>
+            </>
+          ) : connectionStatus === "DISCONNECTED" ? (
+            <>
+              <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
+              <span className="text-rose-400">Disconnected — retrying…</span>
+            </>
+          ) : (
+            <>
+              <span className="w-2 h-2 rounded-full bg-[#00ff87] animate-pulse shrink-0" />
+              <span className="text-[#94a3b8]">Synchronising room state…</span>
+            </>
+          )}
+        </div>
+      )}
       {/* 1. TOP STICKY BUDGET TICKER */}
       <BudgetTicker teams={teams} currentTeamId={userTeam?.id} />
 

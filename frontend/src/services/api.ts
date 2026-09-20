@@ -3,9 +3,6 @@
  *
  * NEXT_PUBLIC_API_URL accepts an origin or a URL ending with /api, e.g.:
  *   https://realtime-auction-z5s2.onrender.com/api
- *
- * apiFetch("/rooms") → https://…/api/rooms   ✓
- * The /api prefix is normalized exactly once.
  */
 import { authService } from "./auth.service";
 
@@ -36,13 +33,14 @@ export async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  // Accept both documented origin URLs and existing deployments ending in /api.
   const configured = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
   const base = configured ? configured.replace(/\/api$/, "") + "/api" : "";
   if (!base) throw new ApiError("Backend URL is not configured.", "CONFIGURATION_ERROR");
 
   const token = await authService.getAccessToken();
-  if (!token) throw new ApiError("Please sign in to continue.", "UNAUTHENTICATED", 401);
+  // Don't throw here for missing token — let the backend return 401 so the
+  // caller sees a consistent error code rather than a client-thrown exception
+  // that surfaces as "server didn't respond."
 
   const headers = new Headers(options.headers);
   headers.set("Content-Type", "application/json");
@@ -55,12 +53,11 @@ export async function apiFetch<T>(
     response = await fetch(url, { ...options, headers, cache: "no-store" });
   } catch {
     throw new ApiError(
-      "Cannot reach the auction server. Check your connection.",
+      "Cannot reach the server — check your internet connection or try again shortly.",
       "NETWORK_ERROR"
     );
   }
 
-  // 204 No Content
   if (response.status === 204) return undefined as T;
 
   const text = await response.text();
@@ -70,7 +67,7 @@ export async function apiFetch<T>(
       body = JSON.parse(text);
     } catch {
       throw new ApiError(
-        "The server returned an invalid response.",
+        "The server returned an unexpected response.",
         "INVALID_RESPONSE",
         response.status
       );

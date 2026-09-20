@@ -25,7 +25,9 @@ export class WebSocketService {
    const base=process.env.NEXT_PUBLIC_WS_URL;if(!base)throw new ApiError('WebSocket URL is not configured.','CONFIGURATION_ERROR');
    const url=new URL(base);url.searchParams.set('token',token);
    const socket=new WebSocket(url);this.socket=socket;
-   this.syncTimeout=setTimeout(()=>socket.close(),12000);
+   // 45 s gives Render's cold-start enough time to send ROOM_STATE.
+   // On a warm instance the first ROOM_STATE usually arrives in < 2 s.
+   this.syncTimeout=setTimeout(()=>socket.close(),45000);
    socket.onopen=()=>{
     if(generation!==this.generation)return socket.close();
     useConnectionStore.getState().setStatus('CONNECTED');
@@ -74,12 +76,17 @@ export class WebSocketService {
  refreshAuth(){const room=this.room;if(room){this.disconnect();this.connect(room);}}
  send(command:ClientCommand):Promise<void>{
   const socket=this.socket;
-  if(!socket||socket.readyState!==WebSocket.OPEN||useConnectionStore.getState().status!=='SYNCED')
-   return Promise.reject(new ApiError('Wait until the room is synchronized.','NOT_CONNECTED'));
+  const status=useConnectionStore.getState().status;
+  if(!socket||socket.readyState!==WebSocket.OPEN||status!=='SYNCED'){
+   const msg=status==='CONNECTING'||status==='RECONNECTING'
+    ?'Still connecting to the auction server — please wait a moment.'
+    :'Not connected to the auction. Refresh the page if this persists.';
+   return Promise.reject(new ApiError(msg,'NOT_CONNECTED'));
+  }
   const requestId=command.requestId??crypto.randomUUID();
   if(['REQUEST_STATE','PING','JOIN_ROOM','REJOIN_ROOM'].includes(command.type)){socket.send(JSON.stringify({...command,requestId}));return Promise.resolve();}
   return new Promise((resolve,reject)=>{
-   const timer=setTimeout(()=>{this.pending.delete(requestId);reject(new ApiError('Confirmation timed out. Refresh state before retrying.','COMMAND_TIMEOUT'));void this.send({type:'REQUEST_STATE',payload:{roomCode:this.room!}}).catch(()=>{});},10000);
+   const timer=setTimeout(()=>{this.pending.delete(requestId);reject(new ApiError('Server did not confirm your action — please check the current state before retrying.','COMMAND_TIMEOUT'));void this.send({type:'REQUEST_STATE',payload:{roomCode:this.room!}}).catch(()=>{});},20000);
    this.pending.set(requestId,{resolve,reject,timer});socket.send(JSON.stringify({...command,requestId}));
   });
  }
