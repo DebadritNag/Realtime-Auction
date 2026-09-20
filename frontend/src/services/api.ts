@@ -1,11 +1,11 @@
 /**
  * api.ts — Central REST client.
  *
- * NEXT_PUBLIC_API_URL must end with /api, e.g.:
+ * NEXT_PUBLIC_API_URL accepts an origin or a URL ending with /api, e.g.:
  *   https://realtime-auction-z5s2.onrender.com/api
  *
  * apiFetch("/rooms") → https://…/api/rooms   ✓
- * apiFetch("/rooms") → https://…/api/api/rooms  ✗  (never — base is used as-is)
+ * The /api prefix is normalized exactly once.
  */
 import { authService } from "./auth.service";
 
@@ -36,11 +36,13 @@ export async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  // Base URL already contains /api — just strip any accidental trailing slash
-  const base = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
+  // Accept both documented origin URLs and existing deployments ending in /api.
+  const configured = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
+  const base = configured ? configured.replace(/\/api$/, "") + "/api" : "";
   if (!base) throw new ApiError("Backend URL is not configured.", "CONFIGURATION_ERROR");
 
   const token = await authService.getAccessToken();
+  if (!token) throw new ApiError("Please sign in to continue.", "UNAUTHENTICATED", 401);
 
   const headers = new Headers(options.headers);
   headers.set("Content-Type", "application/json");

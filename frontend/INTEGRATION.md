@@ -1,3 +1,5 @@
+> Latest auth/catalog correction: see [INTEGRATION_FIX.md](../INTEGRATION_FIX.md). The backend now verifies Supabase ES256/RS256 using project JWKS; browser services share the SSR cookie client. Authenticated GET /api/players serves the bundled CSV catalog and Create Room displays a searchable preview. API URLs accept either the origin or an /api suffix. Redeploy both applications to apply these fixes.
+
 # Integration Report — Realtime Football Auction
 
 Frontend (Next.js 16) ↔ Backend (Fastify + WebSocket)

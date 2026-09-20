@@ -162,7 +162,8 @@ export class CatalogPlayerRepository implements PlayerRepository {
 
     try {
       return await CatalogPlayerRepository.fromCsvFile(combinedPath);
-    } catch {
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
       // Alternative fallback: load individual category CSVs
       const files = ['gk.csv', 'def.csv', 'mid.csv', 'att.csv'];
       const players: Player[] = [];

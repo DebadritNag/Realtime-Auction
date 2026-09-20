@@ -4,7 +4,7 @@ import { readEnvironment } from './config/env.js';
 import { JwtAuthService, StaticTokenAuthService } from './modules/auth-context/auth.service.js';
 import { FileRoomRepository } from './repositories/file.js';
 import { MemoryRoomRepository } from './repositories/memory.js';
-import { CatalogPlayerRepository, demoPlayers } from './modules/players/player.service.js';
+import { CatalogPlayerRepository } from './modules/players/player.service.js';
 
 const env = readEnvironment();
 
@@ -24,9 +24,9 @@ const authService =
       )
     : new JwtAuthService({
         secret:   env.JWT_SECRET,
-        jwksUrl:  env.JWT_JWKS_URL,
-        issuer:   z.string().min(1).parse(env.JWT_ISSUER),
-        audience: z.string().min(1).parse(env.JWT_AUDIENCE),
+        jwksUrl:  env.JWT_JWKS_URL || (env.SUPABASE_URL ? env.SUPABASE_URL.replace(/\/$/, '') + '/auth/v1/.well-known/jwks.json' : undefined),
+        issuer:   z.string().min(1).parse(env.JWT_ISSUER || (env.SUPABASE_URL ? env.SUPABASE_URL.replace(/\/$/, '') + '/auth/v1' : undefined)),
+        audience: z.string().min(1).parse(env.JWT_AUDIENCE || 'authenticated'),
       });
 
 const { app } = await buildApp({
@@ -40,7 +40,7 @@ const { app } = await buildApp({
   playerRepository:
     env.PLAYER_CATALOG_PATH
       ? await CatalogPlayerRepository.fromFile(env.PLAYER_CATALOG_PATH)
-      : await CatalogPlayerRepository.fromDefaultPool().catch(() => new CatalogPlayerRepository(demoPlayers)),
+      : await CatalogPlayerRepository.fromDefaultPool(),
 });
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const)

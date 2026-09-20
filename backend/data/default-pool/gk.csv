@@ -1,0 +1,25 @@
+player_id,name,overall,position,secondary_positions,age,nationality,club,league,preferred_foot,pace,shooting,passing,dribbling,defending,physical,image_url,auction_group,rating_tier,base_price_cr
+192119,T. Courtois,90,GK,,31,Belgium,Real Madrid,La Liga,Left,,,,,,,,GK,ELITE,5
+212831,Alisson,89,GK,,30,Brazil,Liverpool,Premier League,Right,,,,,,,,GK,PREMIUM,4
+192448,M. ter Stegen,89,GK,,31,Germany,FC Barcelona,La Liga,Right,,,,,,,,GK,PREMIUM,4
+210257,Ederson,88,GK,,29,Brazil,Manchester City,Premier League,Left,,,,,,,,GK,PREMIUM,4
+200389,J. Oblak,88,GK,,30,Slovenia,Atlético Madrid,La Liga,Right,,,,,,,,GK,PREMIUM,4
+230621,G. Donnarumma,87,GK,,24,Italy,Paris Saint Germain,Ligue 1,Right,,,,,,,,GK,PREMIUM,4
+235073,G. Kobel,87,GK,,25,Switzerland,Borussia Dortmund,Bundesliga,Right,,,,,,,,GK,PREMIUM,4
+215698,M. Maignan,87,GK,,27,France,Milan,Serie A,Right,,,,,,,,GK,PREMIUM,4
+167495,M. Neuer,87,GK,,37,Germany,FC Bayern München,Bundesliga,Right,,,,,,,,GK,PREMIUM,4
+186153,W. Szczęsny,86,GK,,33,Poland,Juventus,Serie A,Right,,,,,,,,GK,STRONG,3
+226753,A. Onana,85,GK,,27,Cameroon,Manchester United,Premier League,Right,,,,,,,,GK,STRONG,3
+202811,E. Martínez,85,GK,,30,Argentina,Aston Villa,Premier League,Right,,,,,,,,GK,STRONG,3
+193041,K. Navas,85,GK,,36,Costa Rica,Paris Saint Germain,Ligue 1,Right,,,,,,,,GK,STRONG,3
+188943,K. Trapp,85,GK,,32,Germany,Eintracht Frankfurt,Bundesliga,Right,,,,,,,,GK,STRONG,3
+209981,Y. Bounou,85,GK,,32,Morocco,Al Hilal,Pro League,Left,,,,,,,,GK,STRONG,3
+233934,A. Ramsdale,84,GK,,25,England,Arsenal,Premier League,Right,,,,,,,,GK,STRONG,3
+192984,K. Casteels,84,GK,,31,Belgium,VfL Wolfsburg,Bundesliga,Left,,,,,,,,GK,STRONG,3
+203841,N. Pope,84,GK,,31,England,Newcastle United,Premier League,Right,,,,,,,,GK,STRONG,3
+185122,P. Gulácsi,84,GK,,33,Hungary,RB Leipzig,Bundesliga,Right,,,,,,,,GK,STRONG,3
+177683,Y. Sommer,84,GK,,34,Switzerland,Inter,Serie A,Right,,,,,,,,GK,STRONG,3
+227127,Álex Remiro,84,GK,,28,Spain,Real Sociedad,La Liga,Right,,,,,,,,GK,STRONG,3
+225116,A. Meret,83,GK,,26,Italy,Napoli,Serie A,Left,,,,,,,,GK,GOOD,2
+167948,H. Lloris,83,GK,,36,France,Tottenham Hotspur,Premier League,Left,,,,,,,,GK,GOOD,2
+230869,Unai Simón,83,GK,,26,Spain,Athletic Club,La Liga,Right,,,,,,,,GK,GOOD,2

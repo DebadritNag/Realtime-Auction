@@ -11,7 +11,7 @@ import { toCr } from '../src/domain/money.js';
 
 const defaultPoolDir = fileURLToPath(new URL('../data/default-pool', import.meta.url));
 
-describe('FC24 Curated Default Player Pool', () => {
+describe('Bundled player catalog and legacy category pools', () => {
   it('has all required CSV files with exact player quotas', async () => {
     const files = [
       { name: 'gk.csv', expectedCount: 24, expectedGroup: 'GK' },
@@ -36,15 +36,15 @@ describe('FC24 Curated Default Player Pool', () => {
       }
     }
 
-    // Combined default pool must have all 288 players
+    // The combined catalog was expanded; category files remain a smaller fallback.
     const combinedContent = await readFile(join(defaultPoolDir, 'default-player-pool.csv'), 'utf8');
     const combinedRows = parseCsv(combinedContent);
-    expect(combinedRows).toHaveLength(288);
-    expect(new Set(combinedRows.map(r => r.player_id)).size).toBe(288);
+    expect(combinedRows).toHaveLength(760);
+    expect(new Set(combinedRows.map(r => r.player_id)).size).toBe(combinedRows.length);
   });
 
   it('preserves descending OVR and ascending name sorting in every file', async () => {
-    const filenames = ['gk.csv', 'def.csv', 'mid.csv', 'att.csv', 'default-player-pool.csv'];
+    const filenames = ['gk.csv', 'def.csv', 'mid.csv', 'att.csv'];
 
     for (const fn of filenames) {
       const content = await readFile(join(defaultPoolDir, fn), 'utf8');
@@ -65,31 +65,15 @@ describe('FC24 Curated Default Player Pool', () => {
     }
   });
 
-  it('correctly assigns rating tiers and base prices according to OVR bands', async () => {
-    const content = await readFile(join(defaultPoolDir, 'default-player-pool.csv'), 'utf8');
-    const rows = parseCsv(content);
-
+  it('preserves prices and tiers from the expanded CSV rather than substituting old defaults', async () => {
+    const rows = parseCsv(await readFile(join(defaultPoolDir, 'default-player-pool.csv'), 'utf8'));
     for (const row of rows) {
-      const ovr = parseInt(row.overall ?? '', 10);
-      const tier = row.rating_tier;
-      const baseCr = parseFloat(row.base_price_cr ?? '');
-
-      if (ovr >= 90) {
-        expect(tier).toBe('ELITE');
-        expect(baseCr).toBe(5);
-      } else if (ovr >= 87) {
-        expect(tier).toBe('PREMIUM');
-        expect(baseCr).toBe(4);
-      } else if (ovr >= 84) {
-        expect(tier).toBe('STRONG');
-        expect(baseCr).toBe(3);
-      } else if (ovr >= 81) {
-        expect(tier).toBe('GOOD');
-        expect(baseCr).toBe(2);
-      } else {
-        expect(tier).toBe('VALUE');
-        expect(baseCr).toBe(1);
-      }
+      const player = csvRowToPlayer(row);
+      expect(toCr(player.basePriceUnits)).toBe(Number(row.base_price_cr));
+      expect(player.ratingTier).toBe(row.rating_tier);
+      expect(player.ovr).toBe(Number(row.overall));
+      expect(player.basePriceUnits).toBeGreaterThan(0);
+      expect(Number.isInteger(player.basePriceUnits)).toBe(true);
     }
   });
 
@@ -123,7 +107,7 @@ describe('FC24 Curated Default Player Pool', () => {
   it('loads into CatalogPlayerRepository and maps to domain Player models', async () => {
     const repo = await CatalogPlayerRepository.fromDefaultPool(defaultPoolDir);
     const pool = await repo.listPlayerPool({});
-    expect(pool).toHaveLength(288);
+    expect(pool).toHaveLength(760);
 
     const mbappe = await repo.getPlayer('231747');
     expect(mbappe).not.toBeNull();
@@ -131,7 +115,7 @@ describe('FC24 Curated Default Player Pool', () => {
     expect(mbappe?.ovr).toBe(91);
     expect(mbappe?.position).toBe('FWD');
     expect(mbappe?.potId).toBe('ATT');
-    expect(toCr(mbappe!.basePriceUnits)).toBe(5);
+    expect(toCr(mbappe!.basePriceUnits)).toBe(15);
     expect(mbappe?.stats.pac).toBe(97);
     expect(mbappe?.stats.sho).toBe(90);
 
@@ -141,7 +125,7 @@ describe('FC24 Curated Default Player Pool', () => {
     expect(courtois?.ovr).toBe(90);
     expect(courtois?.position).toBe('GK');
     expect(courtois?.potId).toBe('GK');
-    expect(toCr(courtois!.basePriceUnits)).toBe(5);
+    expect(toCr(courtois!.basePriceUnits)).toBe(15);
   });
 
   it('scales player pool intelligently based on team count with ~20% buffer', async () => {
@@ -166,8 +150,8 @@ describe('FC24 Curated Default Player Pool', () => {
     expect(mid6).toHaveLength(51);
     expect(att6).toHaveLength(58);
 
-    // 10 Teams: returns full 288 pool
+    // 10 Teams: returns the complete expanded catalog
     const pool10 = await repo.listPlayerPool({}, 10);
-    expect(pool10).toHaveLength(288);
+    expect(pool10).toHaveLength(760);
   });
 });

@@ -1,0 +1,85 @@
+player_id,name,overall,position,secondary_positions,age,nationality,club,league,preferred_foot,pace,shooting,passing,dribbling,defending,physical,image_url,auction_group,rating_tier,base_price_cr
+239818,Rúben Dias,89,CB,,26,Portugal,Manchester City,Premier League,Right,62,39,66,69,89,87,,DEF,PREMIUM,4
+203376,V. van Dijk,89,CB,,31,Netherlands,Liverpool,Premier League,Right,78,60,71,72,89,86,,DEF,PREMIUM,4
+207865,Marquinhos,87,CB,,29,Brazil,Paris Saint Germain,Ligue 1,Right,78,56,75,74,89,80,,DEF,PREMIUM,4
+216267,A. Robertson,86,LB,,29,Scotland,Liverpool,Premier League,Left,80,61,82,81,81,77,,DEF,STRONG,3
+210514,João Cancelo,86,LB,RB,29,Portugal,FC Barcelona,La Liga,Right,81,73,85,84,80,72,,DEF,STRONG,3
+235243,M. de Ligt,86,CB,,23,Netherlands,FC Bayern München,Bundesliga,Right,66,61,64,68,85,86,,DEF,STRONG,3
+253163,R. Araujo,86,CB,RB,24,Uruguay,FC Barcelona,La Liga,Right,79,51,65,62,86,84,,DEF,STRONG,3
+231281,T. Alexander-Arnold,86,RB,,24,England,Liverpool,Premier League,Right,76,69,90,79,80,73,,DEF,STRONG,3
+240130,Éder Militão,86,CB,,25,Brazil,Real Madrid,La Liga,Right,85,50,69,71,86,82,,DEF,STRONG,3
+237383,A. Bastoni,85,CB,,24,Italy,Inter,Serie A,Left,73,35,72,73,86,83,,DEF,STRONG,3
+212218,A. Laporte,85,CB,,29,Spain,Al Nassr,Pro League,Left,61,50,73,69,86,78,,DEF,STRONG,3
+205452,A. Rüdiger,85,CB,,30,Germany,Real Madrid,La Liga,Right,82,54,71,66,84,86,,DEF,STRONG,3
+197445,D. Alaba,85,CB,LB,31,Austria,Real Madrid,La Liga,Left,79,71,83,80,85,77,,DEF,STRONG,3
+217870,G. Di Lorenzo,85,RB,,29,Italy,Napoli,Serie A,Right,85,67,75,79,82,82,,DEF,STRONG,3
+241486,J. Koundé,85,CB,RB,24,France,FC Barcelona,La Liga,Right,84,45,68,75,86,80,,DEF,STRONG,3
+203574,J. Stones,85,CB,RB,29,England,Manchester City,Premier League,Right,72,52,75,77,85,77,,DEF,STRONG,3
+186345,K. Trippier,85,RB,,32,England,Newcastle United,Premier League,Right,68,65,86,79,82,72,,DEF,STRONG,3
+224334,M. Acuña,85,LB,LM,31,Argentina,Sevilla,La Liga,Left,75,74,83,83,81,84,,DEF,STRONG,3
+201535,R. Varane,85,CB,,30,France,Manchester United,Premier League,Right,79,49,64,67,86,78,,DEF,STRONG,3
+232656,T. Hernández,85,LB,LM,25,France,Milan,Serie A,Left,93,71,76,81,78,84,,DEF,STRONG,3
+235212,A. Hakimi,84,RB,RWB,24,Morocco,Paris Saint Germain,Ligue 1,Right,92,75,80,80,75,78,,DEF,STRONG,3
+239580,Bremer,84,CB,,26,Brazil,Juventus,Serie A,Right,80,50,56,65,85,83,,DEF,STRONG,3
+189881,C. Smalling,84,CB,,33,England,Roma,Serie A,Right,62,47,58,62,87,82,,DEF,STRONG,3
+232756,F. Tomori,84,CB,,25,England,Milan,Serie A,Right,86,40,59,66,86,82,,DEF,STRONG,3
+232580,Gabriel,84,CB,,25,Brazil,Arsenal,Premier League,Left,70,41,62,60,85,82,,DEF,STRONG,3
+210035,Grimaldo,84,LWB,LM,27,Spain,Bayer 04 Leverkusen,Bundesliga,Left,87,69,83,84,76,72,,DEF,STRONG,3
+201024,K. Koulibaly,84,CB,,32,Senegal,Al Hilal,Pro League,Right,76,48,63,68,84,83,,DEF,STRONG,3
+188377,K. Walker,84,RB,,33,England,Manchester City,Premier League,Right,90,63,77,78,79,81,,DEF,STRONG,3
+237086,Kim Min Jae,84,CB,,26,Korea Republic,FC Bayern München,Bundesliga,Right,80,33,58,64,85,84,,DEF,STRONG,3
+220814,L. Hernández,84,CB,LB,27,France,Paris Saint Germain,Ligue 1,Left,76,54,70,70,84,78,,DEF,STRONG,3
+239301,L. Martínez,84,CB,,25,Argentina,Manchester United,Premier League,Left,73,59,78,79,85,83,,DEF,STRONG,3
+207862,M. Ginter,84,CB,,29,Germany,SC Freiburg,Bundesliga,Right,60,59,71,66,85,80,,DEF,STRONG,3
+232363,M. Škriniar,84,CB,,28,Slovakia,Paris Saint Germain,Ligue 1,Right,78,41,57,67,86,83,,DEF,STRONG,3
+212190,N. Süle,84,CB,RB,27,Germany,Borussia Dortmund,Bundesliga,Right,73,51,68,62,85,85,,DEF,STRONG,3
+238074,R. James,84,RB,RWB,23,England,Chelsea,Premier League,Right,80,72,83,82,82,81,,DEF,STRONG,3
+164240,Thiago Silva,84,CB,,38,Brazil,Chelsea,Premier League,Right,51,54,74,72,87,74,,DEF,STRONG,3
+213661,A. Christensen,83,CB,,27,Denmark,FC Barcelona,La Liga,Right,67,32,68,71,85,76,,DEF,GOOD,2
+234396,A. Davies,83,LB,LM,22,Canada,FC Bayern München,Bundesliga,Left,95,66,78,84,74,77,,DEF,GOOD,2
+210413,A. Romagnoli,83,CB,,28,Italy,Lazio,Serie A,Left,69,40,56,69,85,80,,DEF,GOOD,2
+226851,B. Pavard,83,CB,RB,27,France,Inter,Serie A,Right,70,62,73,72,85,78,,DEF,GOOD,2
+199845,F. Acerbi,83,CB,,35,Italy,Inter,Serie A,Left,60,50,64,64,86,80,,DEF,GOOD,2
+229582,G. Mancini,83,CB,,27,Italy,Roma,Serie A,Right,67,45,54,62,83,86,,DEF,GOOD,2
+253149,J. Frimpong,83,RWB,RM,22,Netherlands,Bayer 04 Leverkusen,Bundesliga,Right,94,56,75,84,74,70,,DEF,GOOD,2
+216460,J. Giménez,83,CB,,28,Uruguay,Atlético Madrid,La Liga,Right,71,46,58,61,85,82,,DEF,GOOD,2
+189332,Jordi Alba,83,LB,,34,Spain,Inter Miami,Major League Soccer,Left,84,70,82,81,76,70,,DEF,GOOD,2
+205988,L. Shaw,83,LB,CB,27,England,Manchester United,Premier League,Left,76,57,82,79,81,78,,DEF,GOOD,2
+178603,M. Hummels,83,CB,,34,Germany,Borussia Dortmund,Bundesliga,Right,53,58,76,70,86,78,,DEF,GOOD,2
+247819,N. Schlotterbeck,83,CB,,23,Germany,Borussia Dortmund,Bundesliga,Left,78,58,67,73,85,82,,DEF,GOOD,2
+200724,Nacho Fernández,83,CB,"LB, RB",33,Spain,Real Madrid,La Liga,Right,75,37,69,71,82,80,,DEF,GOOD,2
+241464,Pau Torres,83,CB,,26,Spain,Aston Villa,Premier League,Left,72,38,68,70,84,81,,DEF,GOOD,2
+251809,S. Botman,83,CB,,23,Netherlands,Newcastle United,Premier League,Left,65,37,63,66,84,84,,DEF,GOOD,2
+155862,Sergio Ramos,83,CB,,37,Spain,Sevilla,La Liga,Right,57,69,73,70,83,76,,DEF,GOOD,2
+204638,W. Orban,83,CB,,30,Hungary,RB Leipzig,Bundesliga,Right,58,36,56,56,85,81,,DEF,GOOD,2
+243715,W. Saliba,83,CB,,22,France,Arsenal,Premier League,Right,82,39,69,73,84,82,,DEF,GOOD,2
+232488,C. Romero,82,CB,,25,Argentina,Tottenham Hotspur,Premier League,Right,70,46,59,66,84,80,,DEF,GOOD,2
+204963,Carvajal,82,RB,,31,Spain,Real Madrid,La Liga,Right,82,54,76,79,77,79,,DEF,GOOD,2
+229558,D. Upamecano,82,CB,,24,France,FC Bayern München,Bundesliga,Right,83,45,63,72,81,83,,DEF,GOOD,2
+225341,David García,82,CB,,29,Spain,Osasuna,La Liga,Right,59,37,66,65,83,77,,DEF,GOOD,2
+226268,F. Dimarco,82,LWB,"LM, CB",25,Italy,Inter,Serie A,Left,79,71,80,79,74,71,,DEF,GOOD,2
+228618,F. Mendy,82,LB,,28,France,Real Madrid,La Liga,Left,92,64,76,77,77,86,,DEF,GOOD,2
+210047,F. Schär,82,CB,,31,Switzerland,Newcastle United,Premier League,Right,54,68,75,73,84,77,,DEF,GOOD,2
+211688,Gayà,82,LB,LWB,28,Spain,Valencia,La Liga,Left,81,61,77,79,78,74,,DEF,GOOD,2
+204525,Iñigo Martínez,82,CB,,32,Spain,FC Barcelona,La Liga,Left,71,56,67,61,82,80,,DEF,GOOD,2
+251517,J. Gvardiol,82,CB,LB,21,Croatia,Manchester City,Premier League,Left,78,54,69,74,82,83,,DEF,GOOD,2
+231591,Javi Galán,82,LB,LWB,28,Spain,Atlético Madrid,La Liga,Left,81,56,77,83,79,72,,DEF,GOOD,2
+230375,Josué Chiamulera,82,CB,,31,Brazil,Athletico Paranaense,Serie A,Right,78,43,56,64,84,79,,DEF,GOOD,2
+229237,M. Akanji,82,CB,,27,Switzerland,Manchester City,Premier League,Right,77,48,70,72,83,78,,DEF,GOOD,2
+229668,Mario Hermoso,82,CB,,28,Spain,Atlético Madrid,La Liga,Left,75,49,74,71,82,79,,DEF,GOOD,2
+236401,N. Mazraoui,82,RB,,25,Morocco,FC Bayern München,Bundesliga,Right,79,66,77,83,77,74,,DEF,GOOD,2
+233084,N. Molina,82,RB,"RWB, RM",25,Argentina,Atlético Madrid,La Liga,Right,85,67,76,79,78,71,,DEF,GOOD,2
+192366,N. Otamendi,82,CB,,35,Argentina,Benfica,Liga Portugal,Right,64,57,64,59,83,85,,DEF,GOOD,2
+252145,Nuno Mendes,82,LB,LWB,21,Portugal,Paris Saint Germain,Ligue 1,Left,89,58,75,80,77,76,,DEF,GOOD,2
+225850,P. Kimpembe,82,CB,,27,France,Paris Saint Germain,Ligue 1,Left,79,43,68,69,81,86,,DEF,GOOD,2
+209889,R. Guerreiro,82,LB,"LM, CM",29,Portugal,FC Bayern München,Bundesliga,Left,65,78,85,88,76,55,,DEF,GOOD,2
+230256,Adryan Zonta,81,LWB,LB,31,Brazil,Bragantino,Serie A,Left,93,66,75,76,72,77,,DEF,GOOD,2
+229984,B. Chilwell,81,LB,LWB,26,England,Chelsea,Premier League,Left,74,60,78,78,77,73,,DEF,GOOD,2
+263578,Balde,81,LB,RB,19,Spain,FC Barcelona,La Liga,Left,91,48,73,78,75,64,,DEF,GOOD,2
+228881,D. Calabria,81,RB,RWB,26,Italy,Milan,Serie A,Right,79,57,71,77,79,73,,DEF,GOOD,2
+233096,D. Dumfries,81,RWB,RM,27,Netherlands,Inter,Serie A,Right,83,63,70,73,78,89,,DEF,GOOD,2
+239093,J. Clauss,81,RWB,"RM, RB",30,France,Olympique de Marseille,Ligue 1,Right,83,69,76,78,70,70,,DEF,GOOD,2
+208618,Lucas Vázquez,81,RB,RW,32,Spain,Real Madrid,La Liga,Right,81,73,80,80,73,69,,DEF,GOOD,2
+243576,Pedro Porro,81,RB,RWB,23,Spain,Tottenham Hotspur,Premier League,Right,82,73,77,81,74,77,,DEF,GOOD,2
+229880,A. Wan-Bissaka,80,RB,,25,England,Manchester United,Premier League,Right,83,50,68,77,77,71,,DEF,VALUE,1
+260815,Arnau Martínez,80,RB,RWB,20,Spain,Girona,La Liga,Right,79,50,72,76,76,70,,DEF,VALUE,1

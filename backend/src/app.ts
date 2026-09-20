@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import { registerPlayerRoutes } from './modules/players/player.routes.js';
 import type { Sql } from 'postgres';
 import { registerProfileRoutes } from './modules/profile/profile.routes.js';
 import cors from '@fastify/cors';
@@ -77,6 +78,7 @@ export async function buildApp(options: AppOptions) {
   });
   app.get('/api/health', async () => ({ status: 'ok', serverTime: clock.now() }));
   registerProfileRoutes(app, manager, options.database);
+  registerPlayerRoutes(app, manager.players);
   registerRoomRoutes(app, manager, options.recommendationService ?? new DeterministicRecommendationService(), hub);
   app.get('/ws', { websocket: true }, (socket, request) => hub.attach(socket, request.auth));
   app.addHook('onClose', async () => { hub.close(); timers.close(); unsubscribe(); });

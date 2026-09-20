@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useRoomStore } from "@/stores/room.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { RoomSettings } from "@/types";
+import { PlayerCatalogPreview } from "@/components/room/PlayerCatalogPreview";
 
 export default function CreateRoomPage() {
   const router = useRouter();
@@ -643,6 +644,7 @@ export default function CreateRoomPage() {
               </div>
             </div>
 
+            <PlayerCatalogPreview />
             {/* 3 Selectable Option Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Option 1: Default Database */}

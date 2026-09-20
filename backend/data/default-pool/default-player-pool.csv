@@ -1,0 +1,761 @@
+player_id,name,overall,position,secondary_positions,age,nationality,club,league,preferred_foot,pace,shooting,passing,dribbling,defending,physical,image_url,auction_group,rating_tier,base_price_cr
+192119,T. Courtois,90,GK,,31,Belgium,Real Madrid,La Liga,Left,46,76,93,89,90,85,,GK,ELITE,15
+212831,Alisson,89,GK,,30,Brazil,Liverpool,Premier League,Right,56,85,89,85,90,86,,GK,GOLD,10
+192448,M. ter Stegen,89,GK,,31,Germany,FC Barcelona,La Liga,Right,47,89,91,85,86,86,,GK,GOLD,10
+210257,Ederson,88,GK,,29,Brazil,Manchester City,Premier League,Left,64,91,86,82,86,86,,GK,GOLD,10
+200389,J. Oblak,88,GK,,30,Slovenia,Atlético Madrid,La Liga,Right,46,78,87,90,86,85,,GK,GOLD,10
+230621,G. Donnarumma,87,GK,,24,Italy,Paris Saint Germain,Ligue 1,Right,52,79,89,82,83,90,,GK,GOLD,7
+235073,G. Kobel,87,GK,,25,Switzerland,Borussia Dortmund,Bundesliga,Right,44,74,89,84,85,86,,GK,GOLD,7
+215698,M. Maignan,87,GK,,27,France,Milan,Serie A,Right,51,87,89,82,85,85,,GK,GOLD,7
+167495,M. Neuer,87,GK,,37,Germany,FC Bayern München,Bundesliga,Right,49,90,84,85,88,84,,GK,GOLD,7
+193080,De Gea,87,GK,,31,Spain,Manchester United,Premier League,Right,51,76,89,80,84,88,,GK,GOLD,7
+186153,W. Szczęsny,86,GK,,33,Poland,Juventus,Serie A,Right,49,73,87,83,86,86,,GK,GOLD,7
+226753,A. Onana,85,GK,,27,Cameroon,Manchester United,Premier League,Right,61,88,85,80,84,83,,GK,GOLD,5
+188943,K. Trapp,85,GK,,32,Germany,Eintracht Frankfurt,Bundesliga,Right,46,77,86,81,85,83,,GK,GOLD,5
+193041,K. Navas,85,GK,,36,Costa Rica,Paris Saint Germain,Ligue 1,Right,54,75,87,80,84,84,,GK,GOLD,5
+202811,E. Martínez,85,GK,,30,Argentina,Aston Villa,Premier League,Right,58,82,85,83,84,83,,GK,GOLD,5
+209981,Y. Bounou,85,GK,,32,Morocco,Al Hilal,Pro League,Left,38,79,87,83,84,82,,GK,GOLD,5
+233934,A. Ramsdale,84,GK,,25,England,Arsenal,Premier League,Right,48,87,86,79,81,84,,GK,SILVER,5
+227127,Álex Remiro,84,GK,,28,Spain,Real Sociedad,La Liga,Right,42,80,86,78,86,84,,GK,SILVER,5
+177683,Y. Sommer,84,GK,,34,Switzerland,Inter,Serie A,Right,50,83,90,79,84,78,,GK,SILVER,5
+185122,P. Gulácsi,84,GK,,33,Hungary,RB Leipzig,Bundesliga,Right,43,76,84,84,83,85,,GK,SILVER,5
+192984,K. Casteels,84,GK,,31,Belgium,VfL Wolfsburg,Bundesliga,Left,45,77,86,82,85,84,,GK,SILVER,5
+203841,N. Pope,84,GK,,31,England,Newcastle United,Premier League,Right,49,75,86,83,84,82,,GK,SILVER,5
+162835,S. Handanovič,84,GK,,37,Slovenia,Inter,Serie A,Right,43,65,85,80,90,80,,GK,SILVER,5
+230869,Unai Simón,83,GK,,26,Spain,Athletic Club,La Liga,Right,49,77,85,79,84,84,,GK,SILVER,4
+225116,A. Meret,83,GK,,26,Italy,Napoli,Serie A,Left,44,72,86,80,83,83,,GK,SILVER,4
+167948,H. Lloris,83,GK,,36,France,Tottenham Hotspur,Premier League,Left,60,70,86,80,81,85,,GK,SILVER,4
+5479,Casillas,83,GK,,38,Spain,Porto,Liga Portugal,Left,55,61,84,75,86,85,,GK,SILVER,4
+104389,R. Jarstein,83,GK,,34,Norway,Hertha BSC,2. Bundesliga,Right,43,76,84,82,86,79,,GK,SILVER,4
+165580,Diego Alves,83,GK,,31,Brazil,Valencia,La Liga,Left,54,76,87,76,77,88,,GK,SILVER,4
+234577,Diogo Costa,82,GK,,23,Portugal,Porto,Liga Portugal,Right,35,80,86,77,80,80,,GK,SILVER,4
+240091,G. Vicario,82,GK,,26,Italy,Tottenham Hotspur,Premier League,Right,34,79,85,81,83,83,,GK,SILVER,4
+204935,J. Pickford,82,GK,,29,England,Everton,Premier League,Left,51,87,87,77,80,83,,GK,SILVER,4
+241671,D. Livaković,82,GK,,28,Croatia,Fenerbahçe,Super Lig,Right,56,71,89,76,80,80,,GK,SILVER,4
+199482,A. Lopes,82,GK,,32,Portugal,Olympique Lyonnais,Ligue 1,Left,63,71,86,77,80,84,,GK,SILVER,4
+211738,M. Flekken,82,GK,,30,Netherlands,Brentford,Premier League,Right,31,83,85,74,81,81,,GK,SILVER,4
+219522,J. Ledesma,82,GK,,30,Argentina,Cádiz,La Liga,Right,46,75,84,79,79,83,,GK,SILVER,4
+224987,I. Provedel,82,GK,,29,Italy,Lazio,Serie A,Right,42,80,85,79,79,83,,GK,SILVER,4
+230182,Lucas Mantela,82,GK,,23,Brazil,Palmeiras,Serie A,Right,35,85,81,87,77,79,,GK,SILVER,4
+234642,É. Mendy,82,GK,,31,Senegal,Al Ahli Jeddah,Pro League,Right,34,81,83,79,81,80,,GK,SILVER,4
+168435,S. Sirigu,82,GK,,34,Italy,Genoa,Serie A,Right,46,76,80,77,84,82,,GK,SILVER,4
+168354,E. Viviano,82,GK,,33,Italy,Sporting CP,Liga Portugal,Left,32,76,83,84,81,83,,GK,SILVER,4
+48940,P. Čech,82,GK,,36,Czech Republic,Arsenal,Premier League,Left,37,70,79,82,83,78,,GK,SILVER,4
+106573,Victor Valdés,82,GK,,34,Spain,Middlesbrough,Championship,Right,39,77,80,80,84,80,,GK,SILVER,4
+204883,B. Samba,81,GK,,29,France,Lens,Ligue 1,Left,53,79,83,81,79,79,,GK,SILVER,3
+206585,Kepa,81,GK,,28,Spain,Real Madrid,La Liga,Right,34,85,84,78,78,80,,GK,SILVER,3
+211990,O. Vlachodimos,81,GK,,29,Greece,Nottingham Forest,Premier League,Right,43,66,84,77,78,84,,GK,SILVER,3
+140233,G. Ochoa,81,GK,,37,Mexico,Salernitana,Serie A,Right,50,70,86,73,82,83,,GK,SILVER,3
+163587,K. Schmeichel,81,GK,,36,Denmark,Anderlecht,Jupiler Pro League,Right,45,79,80,77,80,78,,GK,SILVER,3
+178005,Rui Patrício,81,GK,,35,Portugal,Roma,Serie A,Left,55,77,79,80,79,79,,GK,SILVER,3
+190941,L. Hrádecký,81,GK,,33,Finland,Bayer 04 Leverkusen,Bundesliga,Right,40,65,86,77,79,83,,GK,SILVER,3
+192563,B. Leno,81,GK,,31,Germany,Fulham,Premier League,Right,54,73,83,79,82,82,,GK,SILVER,3
+210385,Rui Silva,81,GK,,29,Portugal,Real Betis,La Liga,Right,31,77,84,76,81,82,,GK,SILVER,3
+215316,G. Rulli,81,GK,,31,Argentina,Ajax,Eredivisie,Right,54,80,81,78,80,81,,GK,SILVER,3
+167628,S. Ruffier,81,GK,,33,France,Saint-Étienne,Ligue 2,Right,48,74,81,81,82,80,,GK,SILVER,3
+199575,Jordi Masip,81,GK,,31,Spain,Real Valladolid,La Liga 2,Right,65,72,84,82,77,82,,GK,SILVER,3
+200316,T. Horn,81,GK,,26,Germany,FC Köln,Bundesliga,Left,48,79,84,80,78,82,,GK,SILVER,3
+116494,C. Carrasso,81,GK,,35,France,Galatasaray,Super Lig,Right,40,81,81,79,79,78,,GK,SILVER,3
+139968,V. Enyeama,81,GK,,34,Nigeria,Lille,Ligue 1,Right,52,74,88,80,77,76,,GK,SILVER,3
+186953,O. Kıvrak,81,GK,,28,Turkey,Trabzonspor,Super Lig,Right,65,71,86,77,79,83,,GK,SILVER,3
+139094,Helton,81,GK,,37,Brazil,Porto,Liga Portugal,Right,63,74,85,78,77,83,,GK,SILVER,3
+239818,Rúben Dias,89,CB,,26,Portugal,Manchester City,Premier League,Right,62,39,66,69,89,87,,DEF,GOLD,10
+203376,V. van Dijk,89,CB,,31,Netherlands,Liverpool,Premier League,Right,78,60,71,72,89,86,,DEF,GOLD,10
+121939,P. Lahm,88,RB,CDM|CM,32,Germany,FC Bayern München,Bundesliga,Right,68,56,82,84,86,64,,DEF,GOLD,10
+207865,Marquinhos,87,CB,,29,Brazil,Paris Saint Germain,Ligue 1,Right,78,56,75,74,89,80,,DEF,GOLD,7
+253163,R. Araujo,86,CB,RB,24,Uruguay,FC Barcelona,La Liga,Right,79,51,65,62,86,84,,DEF,GOLD,7
+235243,M. de Ligt,86,CB,,23,Netherlands,FC Bayern München,Bundesliga,Right,66,61,64,68,85,86,,DEF,GOLD,7
+240130,Éder Militão,86,CB,,25,Brazil,Real Madrid,La Liga,Right,85,50,69,71,86,82,,DEF,GOLD,7
+231281,T. Alexander-Arnold,86,RB,,24,England,Liverpool,Premier League,Right,76,69,90,79,80,73,,DEF,GOLD,7
+210514,João Cancelo,86,LB,RB,29,Portugal,FC Barcelona,La Liga,Right,81,73,85,84,80,72,,DEF,GOLD,7
+216267,A. Robertson,86,LB,,29,Scotland,Liverpool,Premier League,Left,80,61,82,81,81,77,,DEF,GOLD,7
+232656,T. Hernández,85,LB,LM,25,France,Milan,Serie A,Left,93,71,76,81,78,84,,DEF,GOLD,5
+237383,A. Bastoni,85,CB,,24,Italy,Inter,Serie A,Left,73,35,72,73,86,83,,DEF,GOLD,5
+241486,J. Koundé,85,CB,RB,24,France,FC Barcelona,La Liga,Right,84,45,68,75,86,80,,DEF,GOLD,5
+203574,J. Stones,85,CB,RB,29,England,Manchester City,Premier League,Right,72,52,75,77,85,77,,DEF,GOLD,5
+212218,A. Laporte,85,CB,,29,Spain,Al Nassr,Pro League,Left,61,50,73,69,86,78,,DEF,GOLD,5
+186345,K. Trippier,85,RB,,32,England,Newcastle United,Premier League,Right,68,65,86,79,82,72,,DEF,GOLD,5
+197445,D. Alaba,85,CB,LB,31,Austria,Real Madrid,La Liga,Left,79,71,83,80,85,77,,DEF,GOLD,5
+201535,R. Varane,85,CB,,30,France,Manchester United,Premier League,Right,79,49,64,67,86,78,,DEF,GOLD,5
+205452,A. Rüdiger,85,CB,,30,Germany,Real Madrid,La Liga,Right,82,54,71,66,84,86,,DEF,GOLD,5
+217870,G. Di Lorenzo,85,RB,,29,Italy,Napoli,Serie A,Right,85,67,75,79,82,82,,DEF,GOLD,5
+224334,M. Acuña,85,LB,LM,31,Argentina,Sevilla,La Liga,Left,75,74,83,83,81,84,,DEF,GOLD,5
+164169,Filipe Luís,85,LB,,32,Brazil,Atlético Madrid,La Liga,Left,75,62,78,78,81,79,,DEF,GOLD,5
+232756,F. Tomori,84,CB,,25,England,Milan,Serie A,Right,86,40,59,66,86,82,,DEF,SILVER,5
+239301,L. Martínez,84,CB,,25,Argentina,Manchester United,Premier League,Left,73,59,78,79,85,83,,DEF,SILVER,5
+239580,Bremer,84,CB,,26,Brazil,Juventus,Serie A,Right,80,50,56,65,85,83,,DEF,SILVER,5
+212190,N. Süle,84,CB,RB,27,Germany,Borussia Dortmund,Bundesliga,Right,73,51,68,62,85,85,,DEF,SILVER,5
+232580,Gabriel,84,CB,,25,Brazil,Arsenal,Premier League,Left,70,41,62,60,85,82,,DEF,SILVER,5
+235212,A. Hakimi,84,RB,RWB,24,Morocco,Paris Saint Germain,Ligue 1,Right,92,75,80,80,75,78,,DEF,SILVER,5
+237086,Kim Min Jae,84,CB,,26,Korea Republic,FC Bayern München,Bundesliga,Right,80,33,58,64,85,84,,DEF,SILVER,5
+238074,R. James,84,RB,RWB,23,England,Chelsea,Premier League,Right,80,72,83,82,82,81,,DEF,SILVER,5
+220814,L. Hernández,84,CB,LB,27,France,Paris Saint Germain,Ligue 1,Left,76,54,70,70,84,78,,DEF,SILVER,5
+164240,Thiago Silva,84,CB,,38,Brazil,Chelsea,Premier League,Right,51,54,74,72,87,74,,DEF,SILVER,5
+188377,K. Walker,84,RB,,33,England,Manchester City,Premier League,Right,90,63,77,78,79,81,,DEF,SILVER,5
+189881,C. Smalling,84,CB,,33,England,Roma,Serie A,Right,62,47,58,62,87,82,,DEF,SILVER,5
+201024,K. Koulibaly,84,CB,,32,Senegal,Al Hilal,Pro League,Right,76,48,63,68,84,83,,DEF,SILVER,5
+207862,M. Ginter,84,CB,,29,Germany,SC Freiburg,Bundesliga,Right,60,59,71,66,85,80,,DEF,SILVER,5
+210035,Grimaldo,84,LWB,LM,27,Spain,Bayer 04 Leverkusen,Bundesliga,Left,87,69,83,84,76,72,,DEF,SILVER,5
+232363,M. Škriniar,84,CB,,28,Slovakia,Paris Saint Germain,Ligue 1,Right,78,41,57,67,86,83,,DEF,SILVER,5
+137186,A. Barzagli,84,CB,,37,Italy,Juventus,Serie A,Right,68,34,57,64,89,72,,DEF,SILVER,5
+243715,W. Saliba,83,CB,,22,France,Arsenal,Premier League,Right,82,39,69,73,84,82,,DEF,SILVER,4
+234396,A. Davies,83,LB,LM,22,Canada,FC Bayern München,Bundesliga,Left,95,66,78,84,74,77,,DEF,SILVER,4
+247819,N. Schlotterbeck,83,CB,,23,Germany,Borussia Dortmund,Bundesliga,Left,78,58,67,73,85,82,,DEF,SILVER,4
+253149,J. Frimpong,83,RWB,RM,22,Netherlands,Bayer 04 Leverkusen,Bundesliga,Right,94,56,75,84,74,70,,DEF,SILVER,4
+251809,S. Botman,83,CB,,23,Netherlands,Newcastle United,Premier League,Left,65,37,63,66,84,84,,DEF,SILVER,4
+241464,Pau Torres,83,CB,,26,Spain,Aston Villa,Premier League,Left,72,38,68,70,84,81,,DEF,SILVER,4
+213661,A. Christensen,83,CB,,27,Denmark,FC Barcelona,La Liga,Right,67,32,68,71,85,76,,DEF,SILVER,4
+216460,J. Giménez,83,CB,,28,Uruguay,Atlético Madrid,La Liga,Right,71,46,58,61,85,82,,DEF,SILVER,4
+229582,G. Mancini,83,CB,,27,Italy,Roma,Serie A,Right,67,45,54,62,83,86,,DEF,SILVER,4
+226851,B. Pavard,83,CB,RB,27,France,Inter,Serie A,Right,70,62,73,72,85,78,,DEF,SILVER,4
+155862,Sergio Ramos,83,CB,,37,Spain,Sevilla,La Liga,Right,57,69,73,70,83,76,,DEF,SILVER,4
+178603,M. Hummels,83,CB,,34,Germany,Borussia Dortmund,Bundesliga,Right,53,58,76,70,86,78,,DEF,SILVER,4
+189332,Jordi Alba,83,LB,,34,Spain,Inter Miami,Major League Soccer,Left,84,70,82,81,76,70,,DEF,SILVER,4
+199845,F. Acerbi,83,CB,,35,Italy,Inter,Serie A,Left,60,50,64,64,86,80,,DEF,SILVER,4
+200724,Nacho Fernández,83,CB,LB|RB,33,Spain,Real Madrid,La Liga,Right,75,37,69,71,82,80,,DEF,SILVER,4
+204638,W. Orban,83,CB,,30,Hungary,RB Leipzig,Bundesliga,Right,58,36,56,56,85,81,,DEF,SILVER,4
+205988,L. Shaw,83,LB,CB,27,England,Manchester United,Premier League,Left,76,57,82,79,81,78,,DEF,SILVER,4
+210413,A. Romagnoli,83,CB,,28,Italy,Lazio,Serie A,Left,69,40,56,69,85,80,,DEF,SILVER,4
+152729,Piqué,83,CB,,35,Spain,FC Barcelona,La Liga,Right,56,61,71,68,83,76,,DEF,SILVER,4
+192774,K. Manolas,83,CB,,30,Greece,Napoli,Serie A,Right,81,25,44,62,85,81,,DEF,SILVER,4
+139720,V. Kompany,83,CB,,33,Belgium,Anderlecht,Jupiler Pro League,Right,50,53,65,64,84,79,,DEF,SILVER,4
+170481,E. Garay,83,CB,,32,Argentina,Valencia,La Liga,Right,43,60,67,62,82,81,,DEF,SILVER,4
+140601,N. Vidić,83,CB,,33,Serbia,Inter,Serie A,Right,52,33,48,50,85,80,,DEF,SILVER,4
+251517,J. Gvardiol,82,CB,LB,21,Croatia,Manchester City,Premier League,Left,78,54,69,74,82,83,,DEF,SILVER,4
+233486,R. Le Normand,82,CB,,26,Spain,Real Sociedad,La Liga,Right,62,26,54,59,84,79,,DEF,SILVER,4
+252145,Nuno Mendes,82,LB,LWB,21,Portugal,Paris Saint Germain,Ligue 1,Left,89,58,75,80,77,76,,DEF,SILVER,4
+229558,D. Upamecano,82,CB,,24,France,FC Bayern München,Bundesliga,Right,83,45,63,72,81,83,,DEF,SILVER,4
+232488,C. Romero,82,CB,,25,Argentina,Tottenham Hotspur,Premier League,Right,70,46,59,66,84,80,,DEF,SILVER,4
+233084,N. Molina,82,RB,RWB|RM,25,Argentina,Atlético Madrid,La Liga,Right,85,67,76,79,78,71,,DEF,SILVER,4
+226268,F. Dimarco,82,LWB,LM|CB,25,Italy,Inter,Serie A,Left,79,71,80,79,74,71,,DEF,SILVER,4
+236401,N. Mazraoui,82,RB,,25,Morocco,FC Bayern München,Bundesliga,Right,79,66,77,83,77,74,,DEF,SILVER,4
+225850,P. Kimpembe,82,CB,,27,France,Paris Saint Germain,Ligue 1,Left,79,43,68,69,81,86,,DEF,SILVER,4
+225341,David García,82,CB,,29,Spain,Osasuna,La Liga,Right,59,37,66,65,83,77,,DEF,SILVER,4
+229237,M. Akanji,82,CB,,27,Switzerland,Manchester City,Premier League,Right,77,48,70,72,83,78,,DEF,SILVER,4
+229668,Mario Hermoso,82,CB,,28,Spain,Atlético Madrid,La Liga,Left,75,49,74,71,82,79,,DEF,SILVER,4
+192366,N. Otamendi,82,CB,,35,Argentina,Benfica,Liga Portugal,Right,64,57,64,59,83,85,,DEF,SILVER,4
+198176,S. de Vrij,82,CB,,31,Netherlands,Inter,Serie A,Right,64,41,64,69,84,76,,DEF,SILVER,4
+204525,Iñigo Martínez,82,CB,,32,Spain,FC Barcelona,La Liga,Left,71,56,67,61,82,80,,DEF,SILVER,4
+204639,S. Savić,82,CB,,32,Montenegro,Atlético Madrid,La Liga,Right,64,35,57,57,85,80,,DEF,SILVER,4
+204963,Carvajal,82,RB,,31,Spain,Real Madrid,La Liga,Right,82,54,76,79,77,79,,DEF,SILVER,4
+209889,R. Guerreiro,82,LB,LM|CM,29,Portugal,FC Bayern München,Bundesliga,Left,65,78,85,88,76,55,,DEF,SILVER,4
+210047,F. Schär,82,CB,,31,Switzerland,Newcastle United,Premier League,Right,54,68,75,73,84,77,,DEF,SILVER,4
+211688,Gayà,82,LB,LWB,28,Spain,Valencia,La Liga,Left,81,61,77,79,78,74,,DEF,SILVER,4
+228618,F. Mendy,82,LB,,28,France,Real Madrid,La Liga,Left,92,64,76,77,77,86,,DEF,SILVER,4
+230375,Josué Chiamulera,82,CB,,31,Brazil,Athletico Paranaense,Serie A,Right,78,43,56,64,84,79,,DEF,SILVER,4
+231591,Javi Galán,82,LB,LWB,28,Spain,Atlético Madrid,La Liga,Left,81,56,77,83,79,72,,DEF,SILVER,4
+193525,Mário Fernandes,82,RB,,30,Russia,CSKA Moskva,Premier League,Right,82,61,74,78,79,79,,DEF,SILVER,4
+177457,L. Bender,82,RB,CDM|CM,31,Germany,Bayer 04 Leverkusen,Bundesliga,Right,60,64,72,72,84,77,,DEF,SILVER,4
+146530,Dani Alves,82,RB,,35,Brazil,Paris Saint Germain,Ligue 1,Right,78,71,81,84,77,66,,DEF,SILVER,4
+167905,A. Valencia,82,RB,,32,Ecuador,Manchester United,Premier League,Right,85,67,76,80,79,79,,DEF,SILVER,4
+183280,A. Rami,82,CB,,32,France,Olympique de Marseille,Ligue 1,Right,60,53,54,60,81,87,,DEF,SILVER,4
+163824,A. Williams,82,CB,,32,Wales,Everton,Premier League,Right,65,43,56,61,81,81,,DEF,SILVER,4
+163419,B. Sagna,82,RB,,33,France,Manchester City,Premier League,Right,75,53,66,74,83,80,,DEF,SILVER,4
+209119,F. Amorebielsa,82,CB,LB,28,Venezuela,,,Left,53,47,56,50,81,85,,DEF,SILVER,4
+263578,Balde,81,LB,RB,19,Spain,FC Barcelona,La Liga,Left,91,48,73,78,75,64,,DEF,SILVER,3
+237678,I. Konaté,81,CB,,24,France,Liverpool,Premier League,Right,77,34,57,68,82,82,,DEF,SILVER,3
+247263,E. Tapsoba,81,CB,,24,Burkina Faso,Bayer 04 Leverkusen,Bundesliga,Right,75,54,65,70,82,79,,DEF,SILVER,3
+228881,D. Calabria,81,RB,RWB,26,Italy,Milan,Serie A,Right,79,57,71,77,79,73,,DEF,SILVER,3
+229984,B. Chilwell,81,LB,LWB,26,England,Chelsea,Premier League,Left,74,60,78,78,77,73,,DEF,SILVER,3
+243576,Pedro Porro,81,RB,RWB,23,Spain,Tottenham Hotspur,Premier League,Right,82,73,77,81,74,77,,DEF,SILVER,3
+208920,N. Aké,81,CB,LB,28,Netherlands,Manchester City,Premier League,Left,75,53,72,74,82,77,,DEF,SILVER,3
+213331,J. Tah,81,CB,,27,Germany,Bayer 04 Leverkusen,Bundesliga,Right,67,37,59,61,81,85,,DEF,SILVER,3
+227950,Yeray,81,CB,,28,Spain,Athletic Club,La Liga,Right,64,49,68,65,83,76,,DEF,SILVER,3
+233096,D. Dumfries,81,RWB,RM,27,Netherlands,Inter,Serie A,Right,83,63,70,73,78,89,,DEF,SILVER,3
+120533,Pepe,81,CB,,40,Portugal,Porto,Liga Portugal,Right,75,51,60,61,81,87,,DEF,SILVER,3
+157481,Raúl Albiol,81,CB,,37,Spain,Villarreal,La Liga,Right,36,41,62,63,85,68,,DEF,SILVER,3
+179645,S. Kjær,81,CB,,34,Denmark,Milan,Serie A,Right,59,54,64,60,83,76,,DEF,SILVER,3
+184087,T. Alderweireld,81,CB,,34,Belgium,Antwerp,Jupiler Pro League,Right,54,61,74,67,83,79,,DEF,SILVER,3
+197655,S. Coates,81,CB,,32,Uruguay,Sporting CP,Liga Portugal,Right,66,49,55,62,82,88,,DEF,SILVER,3
+199304,Danilo,81,CB,RB,31,Brazil,Juventus,Serie A,Right,73,67,74,74,83,78,,DEF,SILVER,3
+199915,L. Dunk,81,CB,,31,England,Brighton & Hove Albion,Premier League,Right,45,51,66,66,82,80,,DEF,SILVER,3
+204614,Mário Rui,81,LB,,32,Portugal,Napoli,Serie A,Left,81,57,77,80,76,68,,DEF,SILVER,3
+208618,Lucas Vázquez,81,RB,RW,32,Spain,Real Madrid,La Liga,Right,81,73,80,80,73,69,,DEF,SILVER,3
+219693,Diego Carlos,81,CB,,30,Brazil,Aston Villa,Premier League,Right,67,47,63,67,81,77,,DEF,SILVER,3
+230256,Adryan Zonta,81,LWB,LB,31,Brazil,Bragantino,Serie A,Left,93,66,75,76,72,77,,DEF,SILVER,3
+230347,Welington Dano,81,LB,LM|LW,23,Brazil,Atlético Mineiro,Serie A,Left,79,54,76,79,75,74,,DEF,SILVER,3
+236045,Reinildo,81,LB,CB,29,Mozambique,Atlético Madrid,La Liga,Left,84,55,68,75,80,79,,DEF,SILVER,3
+239093,J. Clauss,81,RWB,RM|RB,30,France,Olympique de Marseille,Ligue 1,Right,83,69,76,78,70,70,,DEF,SILVER,3
+244263,A. Rrahmani,81,CB,,29,Kosovo,Napoli,Serie A,Right,63,51,58,62,83,80,,DEF,SILVER,3
+173521,Marcano,81,CB,,33,Spain,Porto,Liga Portugal,Left,65,46,60,59,84,76,,DEF,SILVER,3
+177458,S. Bender,81,CB,CDM,31,Germany,Bayer 04 Leverkusen,Bundesliga,Right,66,52,63,60,84,77,,DEF,SILVER,3
+112316,J. Mathieu,81,CB,,35,France,Sporting CP,Liga Portugal,Left,68,64,73,62,83,81,,DEF,SILVER,3
+168530,Jardel,81,CB,,33,Brazil,Benfica,Liga Portugal,Right,55,42,54,53,82,79,,DEF,SILVER,3
+179784,B. Höwedes,81,CB,LB,31,Germany,Lokomotiv Moskva,Premier League,Right,52,48,62,63,82,74,,DEF,SILVER,3
+164468,G. Cahill,81,CB,,32,England,Chelsea,Premier League,Right,47,58,53,59,83,76,,DEF,SILVER,3
+53612,P. Mertesacker,81,CB,,32,Germany,Arsenal,Premier League,Right,27,41,55,47,85,70,,DEF,SILVER,3
+139997,D. Srna,81,RB,,35,Croatia,Shakhtar Donetsk,Premier League,Right,73,75,85,75,78,74,,DEF,SILVER,3
+142780,G. Rodríguez,81,CB,,33,Argentina,San Lorenzo,Liga Profesional,Right,68,47,61,65,83,76,,DEF,SILVER,3
+173198,D. Astori,81,CB,,30,Italy,Fiorentina,Serie A,Left,68,36,53,60,84,77,,DEF,SILVER,3
+181560,M. Yanga-Mbiwa,81,CB,,27,France,Olympique Lyonnais,Ligue 1,Right,72,35,56,63,81,79,,DEF,SILVER,3
+177635,B. Trémoulinas,81,LB,,30,France,Sevilla,La Liga,Left,82,64,78,78,77,71,,DEF,SILVER,3
+1611,M. Stranzl,81,CB,,35,Austria,Borussia Mönchengladbach,Bundesliga,Right,53,41,54,50,86,77,,DEF,SILVER,3
+136130,Alex,81,CB,,33,Brazil,Milan,Serie A,Right,53,58,50,53,83,81,,DEF,SILVER,3
+34079,A. Cole,81,LB,,33,England,Roma,Serie A,Left,73,55,71,74,80,75,,DEF,SILVER,3
+260815,Arnau Martínez,80,RB,RWB,20,Spain,Girona,La Liga,Right,79,50,72,76,76,70,,DEF,SILVER,3
+237221,J. Foyth,80,RB,CB|CDM,25,Argentina,Villarreal,La Liga,Right,71,46,71,72,81,77,,DEF,SILVER,3
+233738,Zubeldia,80,CB,,26,Spain,Real Sociedad,La Liga,Right,72,63,74,73,80,81,,DEF,SILVER,3
+234574,Diogo Dalot,80,RB,,24,Portugal,Manchester United,Premier League,Right,81,61,76,78,75,79,,DEF,SILVER,3
+236355,Luiz Felipe,80,CB,,26,Italy,Al Ittihad,Pro League,Right,72,29,61,68,81,74,,DEF,SILVER,3
+236804,F. Medina,80,CB,,24,Argentina,Lens,Ligue 1,Left,71,36,69,70,80,78,,DEF,SILVER,3
+237985,K. Danso,80,CB,,24,Austria,Lens,Ligue 1,Right,78,32,55,62,79,85,,DEF,SILVER,3
+247103,D. Hancko,80,CB,LB,25,Slovakia,Feyenoord,Eredivisie,Left,79,64,72,74,80,81,,DEF,SILVER,3
+247257,Ibañez,80,CB,,24,Brazil,Al Ahli Jeddah,Pro League,Right,85,32,45,60,82,81,,DEF,SILVER,3
+229880,A. Wan-Bissaka,80,RB,,25,England,Manchester United,Premier League,Right,83,50,68,77,77,71,,DEF,SILVER,3
+231936,B. White,80,RB,CB,25,England,Arsenal,Premier League,Right,72,30,70,74,82,77,,DEF,SILVER,3
+226491,K. Tierney,80,LB,,26,Scotland,Real Sociedad,La Liga,Left,80,60,75,78,76,75,,DEF,SILVER,3
+227813,O. Zinchenko,80,LB,,26,Ukraine,Arsenal,Premier League,Left,66,66,83,83,78,69,,DEF,SILVER,3
+237942,P. Estupiñán,80,LB,,25,Ecuador,Brighton & Hove Albion,Premier League,Left,77,47,71,76,77,75,,DEF,SILVER,3
+210897,C. Mbemba,80,CB,,28,Congo DR,Olympique de Marseille,Ligue 1,Right,73,55,65,67,80,81,,DEF,SILVER,3
+221660,V. Lindelöf,80,CB,,28,Sweden,Manchester United,Premier League,Right,59,51,73,72,81,76,,DEF,SILVER,3
+226221,Aritz Elustondo,80,CB,RB,29,Spain,Real Sociedad,La Liga,Right,64,39,64,61,80,77,,DEF,SILVER,3
+138956,G. Chiellini,80,CB,,38,Italy,Los Angeles FC,Major League Soccer,Left,64,46,60,58,81,82,,DEF,SILVER,3
+146536,Jesús Navas,80,RB,RM,37,Spain,Sevilla,La Liga,Right,82,68,79,80,76,55,,DEF,SILVER,3
+184344,L. Bonucci,80,CB,,36,Italy,FC Union Berlin,Bundesliga,Right,47,59,70,71,82,75,,DEF,SILVER,3
+184392,M. Darmian,80,CB,RWB|RM,33,Italy,Inter,Serie A,Right,71,59,73,76,83,71,,DEF,SILVER,3
+187598,Rafael Tolói,80,CB,,32,Italy,Atalanta,Serie A,Right,67,52,59,65,82,82,,DEF,SILVER,3
+190149,De Marcos,80,RB,,34,Spain,Athletic Club,La Liga,Right,79,64,75,75,77,79,,DEF,SILVER,3
+193198,N. Gudelj,80,CB,CDM,31,Serbia,Sevilla,La Liga,Right,55,73,78,70,79,85,,DEF,SILVER,3
+197061,J. Matip,80,CB,,31,Cameroon,Liverpool,Premier League,Right,61,46,67,70,81,77,,DEF,SILVER,3
+199564,Sergi Roberto,80,RB,CM,31,Spain,FC Barcelona,La Liga,Right,74,63,79,77,75,73,,DEF,SILVER,3
+201389,C. Biraghi,80,LB,,30,Italy,Fiorentina,Serie A,Left,76,69,78,77,76,75,,DEF,SILVER,3
+202884,L. Spinazzola,80,LWB,LM,30,Italy,Roma,Serie A,Right,91,64,72,79,76,69,,DEF,SILVER,3
+211256,N. Tagliafico,80,LB,,30,Argentina,Olympique Lyonnais,Ligue 1,Left,79,56,72,75,78,80,,DEF,SILVER,3
+217036,Álex Moreno,80,LB,,30,Spain,Aston Villa,Premier League,Left,87,69,73,77,76,70,,DEF,SILVER,3
+219789,H. Traoré,80,RB,,31,Mali,Real Sociedad,La Liga,Right,82,57,72,76,75,78,,DEF,SILVER,3
+224031,A. Marušić,80,LB,RB,30,Montenegro,Lazio,Serie A,Right,88,66,67,74,76,82,,DEF,SILVER,3
+224196,R. Bensebaini,80,LB,CB,28,Algeria,Borussia Dortmund,Bundesliga,Left,77,70,72,77,79,79,,DEF,SILVER,3
+230201,Maikel Catarino,80,RB,RM,27,Brazil,Corinthians,Serie A,Right,76,51,70,77,77,72,,DEF,SILVER,3
+230225,Heberto Gaúcho,80,CB,CDM,27,Brazil,Atlético Mineiro,Serie A,Right,71,61,57,63,82,80,,DEF,SILVER,3
+230313,Tony Abranjes,80,CB,,35,Brazil,Internacional,Serie A,Right,67,39,55,58,81,85,,DEF,SILVER,3
+202335,E. Dier,80,CB,,28,England,Tottenham Hotspur,Premier League,Right,54,64,70,65,80,84,,DEF,SILVER,3
+190815,D. Blind,80,CB,LB|CDM,32,Netherlands,Ajax,Eredivisie,Left,42,62,82,79,81,70,,DEF,SILVER,3
+220182,J. Denayer,80,CB,,26,Belgium,Olympique Lyonnais,Ligue 1,Right,83,43,67,71,81,81,,DEF,SILVER,3
+176676,Marcelo,80,LB,,33,Brazil,Real Madrid,La Liga,Left,73,72,80,87,75,71,,DEF,SILVER,3
+177509,M. Benatia,80,CB,,34,Morocco,Fatih Karagümrük,Super Lig,Right,63,45,52,63,81,82,,DEF,SILVER,3
+177604,Nacho Monreal,80,LB,,35,Spain,Real Sociedad,La Liga,Left,65,61,74,74,80,68,,DEF,SILVER,3
+182493,D. Godín,80,CB,,35,Uruguay,Cagliari,Serie A,Right,57,48,63,61,80,78,,DEF,SILVER,3
+201922,M. Hinteregger,80,CB,,28,Austria,Eintracht Frankfurt,Bundesliga,Left,70,70,67,61,81,81,,DEF,SILVER,3
+203890,Š. Vrsaljko,80,RB,RM,29,Croatia,Atlético Madrid,La Liga,Right,79,55,73,74,78,77,,DEF,SILVER,3
+205705,Z. Feddal,80,CB,,31,Morocco,Sporting CP,Liga Portugal,Left,61,50,63,60,82,77,,DEF,SILVER,3
+216189,Ander Capa,80,RB,,29,Spain,Athletic Club,La Liga,Right,82,64,76,77,74,88,,DEF,SILVER,3
+223724,S. Lainer,80,RB,,28,Austria,Borussia Mönchengladbach,Bundesliga,Right,78,63,70,75,74,80,,DEF,SILVER,3
+211320,D. Rugani,80,CB,,25,Italy,Juventus,Serie A,Right,61,39,55,64,84,72,,DEF,SILVER,3
+200536,N. Schulz,80,LB,LM|LWB,27,Germany,Borussia Dortmund,Bundesliga,Left,87,51,74,75,73,75,,DEF,SILVER,3
+202562,J. Roussillon,80,LB,LM,27,France,VfL Wolfsburg,Bundesliga,Left,88,65,74,80,76,76,,DEF,SILVER,3
+168609,Miranda,80,CB,,35,Brazil,Jiangsu Suning,Super League,Right,65,49,66,69,81,77,,DEF,SILVER,3
+173771,Ł. Piszczek,80,CB,RB,35,Poland,Borussia Dortmund,Bundesliga,Right,72,68,74,72,81,78,,DEF,SILVER,3
+178372,B. Ivanović,80,CB,RB,36,Serbia,West Bromwich Albion,Championship,Right,62,61,68,61,81,83,,DEF,SILVER,3
+179944,David Luiz,80,CB,,33,Brazil,Arsenal,Premier League,Right,60,65,74,71,79,77,,DEF,SILVER,3
+188829,N. Nkoulou,80,CB,,30,Cameroon,Torino,Serie A,Right,70,44,64,70,82,73,,DEF,SILVER,3
+194022,André Almeida,80,RB,,29,Portugal,Benfica,Liga Portugal,Right,66,63,76,75,80,81,,DEF,SILVER,3
+245299,J. Frendado,80,CB,CDM,36,Uruguay,,,Right,71,61,57,62,82,75,,DEF,SILVER,3
+245308,M. Nérez,80,LB,LM,32,Uruguay,,,Left,79,54,75,78,76,74,,DEF,SILVER,3
+245309,E. Schetino,80,CB,,28,Uruguay,,,Right,80,43,56,65,82,76,,DEF,SILVER,3
+199577,Sergi Gómez,80,CB,,27,Spain,Sevilla,La Liga,Right,64,41,65,63,81,75,,DEF,SILVER,3
+205362,M. Nastasić,80,CB,,26,Serbia,Schalke 04,2. Bundesliga,Left,71,32,63,54,82,74,,DEF,SILVER,3
+159147,L. Perrin,80,CB,,33,France,Saint-Étienne,Ligue 2,Right,52,58,69,66,81,76,,DEF,SILVER,3
+171919,Naldo,80,CB,,36,Brazil,Monaco,Ligue 1,Right,53,65,62,60,81,71,,DEF,SILVER,3
+179847,F. Fazio,80,CB,,32,Argentina,Roma,Serie A,Right,33,41,54,53,82,81,,DEF,SILVER,3
+181098,M. Hasebe,80,CB,CDM,35,Japan,Eintracht Frankfurt,Bundesliga,Right,53,51,76,71,81,69,,DEF,SILVER,3
+190547,K. Glik,80,CB,,31,Poland,Monaco,Ligue 1,Right,45,32,44,53,79,82,,DEF,SILVER,3
+192985,K. De Bruyne,91,CM,CAM,32,Belgium,Manchester City,Premier League,Right,72,88,94,87,65,78,,MID,ELITE,15
+231866,Rodri,89,CDM,CM,27,Spain,Manchester City,Premier League,Right,58,73,80,80,85,84,,MID,GOLD,10
+200145,Casemiro,89,CDM,,31,Brazil,Manchester United,Premier League,Right,63,75,79,73,89,88,,MID,GOLD,10
+239053,F. Valverde,88,CM,RW,24,Uruguay,Real Madrid,La Liga,Right,88,82,84,84,80,82,,MID,GOLD,10
+212622,J. Kimmich,88,CDM,RB|CM,28,Germany,FC Bayern München,Bundesliga,Right,70,74,88,84,82,79,,MID,GOLD,10
+212198,Bruno Fernandes,88,CAM,CM,28,Portugal,Manchester United,Premier League,Right,71,86,90,83,69,77,,MID,GOLD,10
+218667,Bernardo Silva,88,CM,RW,28,Portugal,Manchester City,Premier League,Left,69,78,86,92,70,69,,MID,GOLD,10
+222665,M. Ødegaard,87,CAM,CM,24,Norway,Arsenal,Premier League,Left,72,81,88,87,61,64,,MID,GOLD,7
+228702,F. de Jong,87,CM,CDM,26,Netherlands,FC Barcelona,La Liga,Right,82,69,86,87,77,78,,MID,GOLD,7
+177003,L. Modrić,87,CM,,37,Croatia,Real Madrid,La Liga,Right,72,76,89,87,72,66,,MID,GOLD,7
+199556,M. Verratti,87,CM,CAM,29,Italy,Paris Saint Germain,Ligue 1,Right,60,61,87,91,79,66,,MID,GOLD,7
+256790,J. Musiala,86,CAM,CM|LM,20,Germany,FC Bayern München,Bundesliga,Right,85,75,76,91,63,61,,MID,GOLD,7
+251854,Pedri,86,CM,,20,Spain,FC Barcelona,La Liga,Right,78,69,82,88,70,74,,MID,GOLD,7
+252371,J. Bellingham,86,CM,CAM,20,England,Real Madrid,La Liga,Right,76,78,80,85,78,82,,MID,GOLD,7
+241096,S. Tonali,86,CDM,CM,23,Italy,Newcastle United,Premier League,Right,84,74,81,81,82,84,,MID,GOLD,7
+224232,N. Barella,86,CM,,26,Italy,Inter,Serie A,Right,78,78,82,85,78,80,,MID,GOLD,7
+182521,T. Kroos,86,CM,CDM,33,Germany,Real Madrid,La Liga,Right,51,80,90,81,70,71,,MID,GOLD,7
+186942,İ. Gündoğan,86,CM,CDM,32,Germany,FC Barcelona,La Liga,Right,62,81,84,86,72,73,,MID,GOLD,7
+189513,Parejo,86,CM,CDM,34,Spain,Villarreal,La Liga,Right,49,83,90,80,73,69,,MID,GOLD,7
+204485,R. Mahrez,86,RM,RW,32,Algeria,Al Ahli Jeddah,Pro League,Left,79,81,81,89,38,60,,MID,GOLD,7
+215914,N. Kanté,86,CDM,CM,32,France,Al Ittihad,Pro League,Right,69,65,73,80,85,77,,MID,GOLD,7
+223848,S. Milinković-Savić,86,CM,,28,Serbia,Al Hilal,Pro League,Right,68,80,82,82,79,86,,MID,GOLD,7
+10535,Xavi,86,CM,,34,Spain,FC Barcelona,La Liga,Right,66,72,91,85,60,58,,MID,GOLD,7
+256630,F. Wirtz,85,CAM,CM,20,Germany,Bayer 04 Leverkusen,Bundesliga,Right,74,76,83,87,52,63,,MID,GOLD,5
+234378,D. Rice,85,CDM,CM,24,England,Arsenal,Premier League,Right,71,65,75,77,83,83,,MID,GOLD,5
+208128,H. Çalhanoğlu,85,CM,CDM,29,Turkey,Inter,Serie A,Right,67,80,86,85,70,66,,MID,GOLD,5
+209658,L. Goretzka,85,CM,CDM,28,Germany,FC Bayern München,Bundesliga,Right,78,81,81,83,80,86,,MID,GOLD,5
+209989,T. Partey,85,CDM,CM,30,Ghana,Arsenal,Premier League,Right,68,71,82,80,81,82,,MID,GOLD,5
+213345,K. Coman,85,LM,RM,27,France,FC Bayern München,Bundesliga,Right,89,76,79,87,30,62,,MID,GOLD,5
+195864,P. Pogba,85,CM,CDM|LM,29,France,Juventus,Serie A,Right,67,80,85,85,62,80,,MID,GOLD,5
+184267,Y. Brahimi,85,LM,,28,Algeria,Porto,Liga Portugal,Right,80,75,78,90,41,59,,MID,GOLD,5
+173210,C. Marchisio,85,CM,CDM,31,Italy,Juventus,Serie A,Right,78,72,83,84,76,74,,MID,GOLD,5
+241637,A. Tchouaméni,84,CDM,CM,23,France,Real Madrid,La Liga,Right,73,69,79,78,81,81,,MID,SILVER,5
+226754,I. Bennacer,84,CDM,CM|CAM,25,Algeria,Milan,Serie A,Left,80,72,81,86,79,78,,MID,SILVER,5
+241852,M. Diaby,84,RM,LM,23,France,Aston Villa,Premier League,Left,95,73,75,86,42,59,,MID,SILVER,5
+247851,Bruno Guimarães,84,CM,CDM,25,Brazil,Newcastle United,Premier League,Right,71,74,81,84,80,81,,MID,SILVER,5
+224293,Rúben Neves,84,CDM,CM,26,Portugal,Al Hilal,Pro League,Right,60,75,86,77,76,73,,MID,SILVER,5
+212194,J. Brandt,84,CAM,RM|CM,27,Germany,Borussia Dortmund,Bundesliga,Right,71,80,84,86,51,70,,MID,SILVER,5
+213648,P. Højbjerg,84,CDM,CM,27,Denmark,Tottenham Hotspur,Premier League,Right,55,73,78,78,81,82,,MID,SILVER,5
+220697,J. Maddison,84,CAM,RM|CM,26,England,Tottenham Hotspur,Premier League,Right,71,81,86,86,54,63,,MID,SILVER,5
+225193,Mikel Merino,84,CM,CAM|LM,27,Spain,Real Sociedad,La Liga,Left,72,78,82,82,83,82,,MID,SILVER,5
+235805,F. Chiesa,84,LM,LW|RW,25,Italy,Juventus,Serie A,Right,91,82,76,86,53,75,,MID,SILVER,5
+189509,Thiago,84,CM,,32,Spain,Liverpool,Premier League,Right,61,72,86,89,71,67,,MID,SILVER,5
+189596,T. Müller,84,CAM,CF|ST,33,Germany,FC Bayern München,Bundesliga,Right,59,82,83,79,55,69,,MID,SILVER,5
+193747,Koke,84,CDM,CM,31,Spain,Atlético Madrid,La Liga,Right,69,72,85,79,79,78,,MID,SILVER,5
+198706,Luis Alberto,84,CM,,30,Spain,Lazio,Serie A,Right,69,77,85,84,62,58,,MID,SILVER,5
+206113,S. Gnabry,84,RM,ST|LM,27,Germany,FC Bayern München,Bundesliga,Right,81,84,78,84,43,68,,MID,SILVER,5
+209499,Fabinho,84,CDM,,29,Brazil,Al Ittihad,Pro League,Right,59,69,78,77,82,82,,MID,SILVER,5
+210008,A. Rabiot,84,CM,LM,28,France,Juventus,Serie A,Left,78,76,80,80,82,84,,MID,SILVER,5
+212616,R. De Paul,84,CM,,29,Argentina,Atlético Madrid,La Liga,Right,78,77,83,82,75,83,,MID,SILVER,5
+216435,S. Lobotka,84,CM,CDM,28,Slovakia,Napoli,Serie A,Right,71,70,81,83,77,75,,MID,SILVER,5
+222492,L. Sané,84,RM,LM,27,Germany,FC Bayern München,Bundesliga,Left,91,81,80,85,38,68,,MID,SILVER,5
+226161,Marcos Llorente,84,RM,CM|RB,28,Spain,Atlético Madrid,La Liga,Right,89,78,79,80,78,81,,MID,SILVER,5
+143076,A. Gómez,84,CAM,LW,34,Argentina,Sevilla,La Liga,Right,86,78,83,85,39,54,,MID,SILVER,5
+190286,Canales,84,RM,CAM|CDM,31,Spain,Real Betis,La Liga,Left,83,79,85,82,68,71,,MID,SILVER,5
+190483,Douglas Costa,84,LM,RW|LW,29,Brazil,Juventus,Serie A,Left,93,73,79,91,43,59,,MID,SILVER,5
+45197,Xabi Alonso,84,CDM,CM,34,Spain,FC Bayern München,Bundesliga,Right,33,70,87,75,76,71,,MID,SILVER,5
+264240,Gavi,83,CM,LW,18,Spain,FC Barcelona,La Liga,Right,76,66,78,85,68,70,,MID,SILVER,4
+247090,E. Fernández,83,CM,CDM,22,Argentina,Chelsea,Premier League,Right,73,73,81,80,75,79,,MID,SILVER,4
+244260,Dani Olmo,83,CAM,CF,25,Spain,RB Leipzig,Bundesliga,Right,68,76,82,86,50,59,,MID,SILVER,4
+225375,K. Laimer,83,CDM,CM,26,Austria,FC Bayern München,Bundesliga,Right,80,69,77,78,81,79,,MID,SILVER,4
+225659,G. Rodríguez,83,CDM,,28,Argentina,Real Betis,La Liga,Right,51,58,72,70,85,80,,MID,SILVER,4
+227236,A. Zambo Anguissa,83,CDM,CM,27,Cameroon,Napoli,Serie A,Right,78,68,72,81,81,86,,MID,SILVER,4
+228251,L. Pellegrini,83,CAM,CM|CF,27,Italy,Roma,Serie A,Right,79,76,83,83,74,78,,MID,SILVER,4
+229391,Palhinha,83,CDM,CM,27,Portugal,Fulham,Premier League,Right,62,67,71,76,84,89,,MID,SILVER,4
+230142,Oyarzabal,83,LM,RM|LW,26,Spain,Real Sociedad,La Liga,Left,77,83,80,83,41,62,,MID,SILVER,4
+188350,M. Reus,83,CAM,CF,34,Germany,Borussia Dortmund,Bundesliga,Right,65,83,83,85,53,63,,MID,SILVER,4
+189511,Sergio Busquets,83,CDM,,34,Spain,Inter Miami,Major League Soccer,Right,37,62,79,79,81,73,,MID,SILVER,4
+190460,C. Eriksen,83,CM,CDM,31,Denmark,Manchester United,Premier League,Right,59,77,89,81,51,53,,MID,SILVER,4
+202648,Sergi Darder,83,CM,CDM|CAM,29,Spain,Mallorca,La Liga,Right,81,76,82,83,74,77,,MID,SILVER,4
+205498,Jorginho,83,CDM,CM,31,Italy,Arsenal,Premier League,Right,53,67,84,81,74,73,,MID,SILVER,4
+208333,E. Can,83,CDM,CB,29,Germany,Borussia Dortmund,Bundesliga,Right,79,78,77,79,82,87,,MID,SILVER,4
+208574,F. Kostić,83,LM,LW,30,Serbia,Juventus,Serie A,Left,85,76,82,82,70,80,,MID,SILVER,4
+210324,J. Hofmann,83,CAM,RM|LM,30,Germany,Bayer 04 Leverkusen,Bundesliga,Right,76,79,83,81,64,73,,MID,SILVER,4
+210406,P. Zieliński,83,CM,CAM,29,Poland,Napoli,Serie A,Right,81,77,81,86,71,63,,MID,SILVER,4
+216352,M. Brozović,83,CDM,CM,30,Croatia,Al Nassr,Pro League,Right,66,74,81,80,80,78,,MID,SILVER,4
+216594,N. Fekir,83,CAM,,29,France,Real Betis,La Liga,Left,82,81,81,86,39,80,,MID,SILVER,4
+230481,Ronaldo Cabrais,83,CAM,RM,31,Brazil,Palmeiras,Serie A,Right,88,77,83,84,35,72,,MID,SILVER,4
+168542,David Silva,83,CAM,CM,36,Spain,Real Sociedad,La Liga,Left,61,72,86,85,52,53,,MID,SILVER,4
+135507,Fernandinho,83,CDM,CB,36,Brazil,Manchester City,Premier League,Right,59,72,75,78,84,75,,MID,SILVER,4
+187961,Paulinho,83,CM,CAM|CDM,32,Brazil,Al Ahli Jeddah,Pro League,Right,72,81,77,81,80,85,,MID,SILVER,4
+169195,Renato Augusto,83,CM,CAM|LM,32,Brazil,Beijing Guoan,Super League,Right,71,79,82,81,72,77,,MID,SILVER,4
+20289,Y. Touré,83,CM,CDM,34,Côte d'Ivoire,Manchester City,Premier League,Right,63,82,80,76,70,83,,MID,SILVER,4
+139869,W. Sneijder,83,CAM,,33,Netherlands,Nice,Ligue 1,Right,69,78,86,82,38,57,,MID,SILVER,4
+248243,E. Camavinga,82,CDM,CM|LB,20,France,Real Madrid,La Liga,Left,79,66,80,82,76,80,,MID,SILVER,4
+235790,K. Havertz,82,CAM,RW|ST,24,Germany,Arsenal,Premier League,Left,78,79,79,83,45,68,,MID,SILVER,4
+222077,M. Locatelli,82,CDM,CM,25,Italy,Juventus,Serie A,Right,67,70,80,78,79,80,,MID,SILVER,4
+236772,D. Szoboszlai,82,CAM,,22,Hungary,Liverpool,Premier League,Right,83,82,84,82,34,64,,MID,SILVER,4
+243245,O. Kökçü,82,CM,CAM,22,Turkey,Benfica,Liga Portugal,Right,72,76,83,80,69,79,,MID,SILVER,4
+227535,R. Bentancur,82,CM,CDM,26,Uruguay,Tottenham Hotspur,Premier League,Right,70,67,81,83,79,77,,MID,SILVER,4
+244369,V. Tsygankov,82,RM,CM|CAM,25,Ukraine,Girona,La Liga,Left,85,78,79,81,46,61,,MID,SILVER,4
+216393,Y. Tielemans,82,CM,CDM,26,Belgium,Aston Villa,Premier League,Right,50,79,85,79,69,69,,MID,SILVER,4
+223959,L. Torreira,82,CDM,CM,27,Uruguay,Galatasaray,Super Lig,Right,76,70,77,80,79,78,,MID,SILVER,4
+230938,F. Kessié,82,CDM,CM,26,Côte d'Ivoire,Al Ahli Jeddah,Pro League,Right,79,76,74,79,81,87,,MID,SILVER,4
+231447,D. Malen,82,RM,ST,24,Netherlands,Borussia Dortmund,Bundesliga,Right,89,80,73,85,35,73,,MID,SILVER,4
+239837,A. Mac Allister,82,CM,CAM|CDM,24,Argentina,Liverpool,Premier League,Right,70,79,82,82,70,72,,MID,SILVER,4
+213565,T. Lemar,82,CM,LM,27,France,Atlético Madrid,La Liga,Left,82,78,83,86,67,65,,MID,SILVER,4
+223334,Joelinton,82,CM,LW,26,Brazil,Newcastle United,Premier League,Right,78,71,76,82,81,88,,MID,SILVER,4
+184134,Fernando,82,CDM,CB,35,Brazil,Sevilla,La Liga,Right,63,62,74,73,82,81,,MID,SILVER,4
+192318,M. Götze,82,CAM,CF|LM,31,Germany,Eintracht Frankfurt,Bundesliga,Right,63,75,83,85,55,71,,MID,SILVER,4
+199503,G. Xhaka,82,CM,CDM,30,Switzerland,Bayer 04 Leverkusen,Bundesliga,Left,49,74,82,73,75,82,,MID,SILVER,4
+207410,M. Kovačić,82,CM,CDM,29,Croatia,Manchester City,Premier League,Right,69,69,82,87,71,70,,MID,SILVER,4
+210411,Otávio,82,RM,LM,28,Portugal,Al Nassr,Pro League,Right,78,70,81,85,66,74,,MID,SILVER,4
+212096,V. Grifo,82,LM,CF|CAM,30,Italy,SC Freiburg,Bundesliga,Right,71,80,83,81,40,64,,MID,SILVER,4
+212242,R. Andrich,82,CDM,CM,28,Germany,Bayer 04 Leverkusen,Bundesliga,Right,57,76,76,73,81,85,,MID,SILVER,4
+212814,João Mário,82,RM,LM|CM,30,Portugal,Benfica,Liga Portugal,Right,70,79,81,83,69,70,,MID,SILVER,4
+213516,Ricardo Horta,82,CAM,CF|RM,28,Portugal,Sporting Braga,Liga Portugal,Right,80,83,80,80,43,70,,MID,SILVER,4
+216320,S. Fofana,82,CM,,28,Côte d'Ivoire,Al Nassr,Pro League,Right,71,77,76,80,73,86,,MID,SILVER,4
+232498,Isi Palazón,82,RM,,28,Spain,Rayo Vallecano,La Liga,Left,84,79,79,82,39,64,,MID,SILVER,4
+177388,D. Payet,82,CAM,LW|ST,35,France,Olympique de Marseille,Ligue 1,Right,70,78,84,83,40,65,,MID,SILVER,4
+189242,Coutinho,82,CAM,LW|CM,30,Brazil,Aston Villa,Premier League,Right,62,79,80,88,52,59,,MID,SILVER,4
+193474,I. Gueye,82,CDM,CM,32,Senegal,Everton,Premier League,Right,67,66,72,78,83,76,,MID,SILVER,4
+180206,M. Pjanić,82,CM,,31,Bosnia and Herzegovina,Beşiktaş,Super Lig,Right,65,68,83,81,75,67,,MID,SILVER,4
+53302,D. De Rossi,82,CDM,,35,Italy,Boca Juniors,Liga Profesional,Right,59,64,73,69,85,77,,MID,SILVER,4
+146562,Santi Cazorla,82,CM,CDM|LM,34,Spain,Villarreal,La Liga,Right,56,73,85,83,65,58,,MID,SILVER,4
+158963,L. Biglia,82,CDM,CM,33,Argentina,Milan,Serie A,Right,55,63,81,81,77,68,,MID,SILVER,4
+244675,Sancet,81,CAM,CM|ST,23,Spain,Athletic Club,La Liga,Right,73,77,77,82,61,73,,MID,SILVER,3
+253306,M. Ugarte,81,CDM,CM,22,Uruguay,Paris Saint Germain,Ligue 1,Right,72,64,73,77,77,80,,MID,SILVER,3
+233064,M. Mount,81,CAM,RW|CM,24,England,Manchester United,Premier League,Right,72,79,82,80,56,67,,MID,SILVER,3
+233195,X. Schlager,81,CDM,CM,25,Austria,RB Leipzig,Bundesliga,Left,74,70,74,78,75,80,,MID,SILVER,3
+233927,Lucas Paquetá,81,CAM,CM,25,Brazil,West Ham United,Premier League,Left,72,77,79,84,69,76,,MID,SILVER,3
+235173,I. Sangaré,81,CDM,CM,25,Côte d'Ivoire,Nottingham Forest,Premier League,Right,66,66,74,75,81,86,,MID,SILVER,3
+235844,E. Álvarez,81,CDM,CB,25,Mexico,West Ham United,Premier League,Right,68,58,68,70,82,87,,MID,SILVER,3
+208268,B. Cristante,81,CDM,CM,28,Italy,Roma,Serie A,Right,53,73,78,75,78,82,,MID,SILVER,3
+216388,A. Saint-Maximin,81,LM,LW,26,France,Al Ahli Jeddah,Pro League,Right,89,73,73,88,29,68,,MID,SILVER,3
+222737,Malcom,81,RM,,26,Brazil,Al Hilal,Pro League,Left,83,79,78,84,28,66,,MID,SILVER,3
+225126,E. Skhiri,81,CDM,CM,28,Tunisia,Eintracht Frankfurt,Bundesliga,Right,63,73,74,76,80,76,,MID,SILVER,3
+226226,G. Lo Celso,81,CAM,ST,27,Argentina,Tottenham Hotspur,Premier League,Left,70,75,83,84,68,73,,MID,SILVER,3
+232730,D. Kamada,81,CAM,CM|CF,26,Japan,Lazio,Serie A,Right,79,73,80,83,54,64,,MID,SILVER,3
+235944,Brais Méndez,81,CM,CAM|RM,26,Spain,Real Sociedad,La Liga,Left,71,80,82,81,65,73,,MID,SILVER,3
+236786,M. Terrier,81,LM,ST,26,France,Rennes,Ligue 1,Right,84,82,75,79,36,72,,MID,SILVER,3
+252308,A. Al Musrati,81,CDM,CM,27,Libya,Sporting Braga,Liga Portugal,Right,62,66,71,71,80,84,,MID,SILVER,3
+168651,I. Rakitić,81,CM,CDM,35,Croatia,Sevilla,La Liga,Right,50,79,84,78,74,70,,MID,SILVER,3
+178213,E. Capoue,81,CM,CDM,34,France,Villarreal,La Liga,Right,50,75,78,75,79,78,,MID,SILVER,3
+189575,Muniain,81,CAM,LM,30,Spain,Athletic Club,La Liga,Right,80,74,81,85,51,60,,MID,SILVER,3
+191202,N. Matić,81,CDM,CM,34,Serbia,Rennes,Ligue 1,Left,34,67,77,77,79,78,,MID,SILVER,3
+192883,H. Mkhitaryan,81,CAM,CM,34,Armenia,Inter,Serie A,Right,78,79,79,83,56,72,,MID,SILVER,3
+200260,S. Berghuis,81,CAM,CM|RW,31,Netherlands,Ajax,Eredivisie,Left,77,82,82,81,40,69,,MID,SILVER,3
+200888,Danilo Pereira,81,CDM,CB,31,Portugal,Paris Saint Germain,Ligue 1,Right,50,63,70,71,80,86,,MID,SILVER,3
+201455,G. Kondogbia,81,CM,CDM,30,Central African Republic,Olympique de Marseille,Ligue 1,Left,69,75,76,76,81,89,,MID,SILVER,3
+206511,M. Arnold,81,CDM,CM,29,Germany,VfL Wolfsburg,Bundesliga,Left,66,79,79,78,76,75,,MID,SILVER,3
+207566,William Carvalho,81,CDM,CAM,31,Portugal,Real Betis,La Liga,Right,45,68,78,76,76,84,,MID,SILVER,3
+209297,Fred,81,CM,CDM,30,Brazil,Fenerbahçe,Super Lig,Left,75,69,79,81,76,70,,MID,SILVER,3
+214097,B. Bourigeaud,81,CM,RM|RW,29,France,Rennes,Ligue 1,Right,73,77,82,81,67,76,,MID,SILVER,3
+216201,Iñaki Williams,81,RM,ST,29,Ghana,Athletic Club,La Liga,Right,94,78,71,79,43,84,,MID,SILVER,3
+226271,Fabián Ruiz,81,CM,CDM,27,Spain,Paris Saint Germain,Ligue 1,Left,55,78,79,80,74,72,,MID,SILVER,3
+230258,Rosival Dourado,81,CDM,CM|CAM,23,Brazil,Corinthians,Serie A,Right,77,57,74,77,82,69,,MID,SILVER,3
+230384,Nailton Suzuki,81,CAM,CF|ST,27,Brazil,Atlético Mineiro,Serie A,Right,82,73,77,82,52,71,,MID,SILVER,3
+162347,João Moutinho,81,CM,,35,Portugal,Wolverhampton Wanderers,Premier League,Right,47,71,84,79,71,66,,MID,SILVER,3
+214047,M. Uribe,81,CM,CDM,31,Colombia,Porto,Liga Portugal,Right,75,76,75,79,80,82,,MID,SILVER,3
+176266,Lucas Leiva,81,CDM,,34,Brazil,Lazio,Serie A,Right,56,65,73,76,82,69,,MID,SILVER,3
+181872,A. Vidal,81,CM,,34,Chile,Inter,Serie A,Right,65,79,79,79,82,82,,MID,SILVER,3
+187754,Marlos,81,CAM,RM,33,Ukraine,Shakhtar Donetsk,Premier League,Left,79,76,78,86,47,68,,MID,SILVER,3
+210463,D. Machís,81,LM,RM|ST,28,Venezuela,Granada,La Liga,Right,88,80,75,83,38,70,,MID,SILVER,3
+177610,Javi Martínez,81,CDM,CB,31,Spain,FC Bayern München,Bundesliga,Right,37,55,69,63,84,80,,MID,SILVER,3
+179846,S. Khedira,81,CM,CDM,33,Germany,Juventus,Serie A,Right,45,74,77,77,79,78,,MID,SILVER,3
+188803,Taison,81,LM,CAM,32,Brazil,Shakhtar Donetsk,Premier League,Right,92,78,75,86,47,67,,MID,SILVER,3
+162895,Cesc Fàbregas,81,CM,CDM,32,Spain,Monaco,Ligue 1,Right,53,73,87,77,60,56,,MID,SILVER,3
+177600,Beñat,81,CM,,32,Spain,Athletic Club,La Liga,Right,49,73,84,74,67,71,,MID,SILVER,3
+184144,N. Gaitán,81,CAM,,31,Argentina,Chicago Fire,Major League Soccer,Left,78,72,80,82,41,58,,MID,SILVER,3
+207471,F. Vázquez,81,CM,CAM,30,Argentina,Sevilla,La Liga,Left,56,78,80,81,58,72,,MID,SILVER,3
+157960,Manuel Fernandes,81,LM,CAM,32,Portugal,Lokomotiv Moskva,Premier League,Right,79,76,79,84,66,72,,MID,SILVER,3
+49370,T. Motta,81,CDM,,34,Italy,Paris Saint Germain,Ligue 1,Left,32,64,76,67,76,82,,MID,SILVER,3
+146954,Gabi,81,CM,,33,Spain,Atlético Madrid,La Liga,Right,64,73,79,76,75,73,,MID,SILVER,3
+161648,H. Ben Arfa,81,CAM,ST,30,France,Paris Saint Germain,Ligue 1,Left,76,77,77,86,35,69,,MID,SILVER,3
+4098,Tiago,81,CM,CDM,35,Portugal,Atlético Madrid,La Liga,Right,55,69,78,74,68,75,,MID,SILVER,3
+13743,S. Gerrard,81,CM,CDM,36,England,LA Galaxy,Major League Soccer,Right,54,81,83,75,68,75,,MID,SILVER,3
+156142,R. Eremenko,81,CAM,,29,Finland,CSKA Moskva,Premier League,Right,76,76,81,79,53,76,,MID,SILVER,3
+176949,B. Ruíz,81,LM,ST|CAM,30,Costa Rica,Sporting CP,Liga Portugal,Left,69,74,80,85,53,58,,MID,SILVER,3
+177553,Vieirinha,81,RM,RB,30,Portugal,VfL Wolfsburg,Bundesliga,Right,80,74,77,85,65,66,,MID,SILVER,3
+181019,Éverton Ribeiro,81,CAM,RM,26,Brazil,,,Left,83,73,79,86,46,52,,MID,SILVER,3
+45119,Mikel Arteta,81,CM,CDM,33,Spain,Arsenal,Premier League,Right,43,73,82,78,73,65,,MID,SILVER,3
+45574,R. van der Vaart,81,CAM,CF|CM,31,Netherlands,Hamburger SV,2. Bundesliga,Left,53,78,81,81,37,63,,MID,SILVER,3
+251852,K. Adeyemi,80,LM,RM|ST,21,Germany,Borussia Dortmund,Bundesliga,Left,96,77,71,81,34,68,,MID,SILVER,3
+239807,D. Frattesi,80,CM,,23,Italy,Inter,Serie A,Right,79,71,78,81,68,70,,MID,SILVER,3
+241390,E. Elmas,80,CAM,CM|LW,23,North Macedonia,Napoli,Serie A,Right,75,73,76,84,66,69,,MID,SILVER,3
+231410,Brahim,80,CAM,CF|RW,23,Spain,Real Madrid,La Liga,Right,81,71,77,83,30,49,,MID,SILVER,3
+234569,Florentino,80,CDM,CM,23,Portugal,Benfica,Liga Portugal,Right,58,47,67,73,79,78,,MID,SILVER,3
+236987,B. Kamara,80,CDM,CM,23,France,Aston Villa,Premier League,Right,68,54,72,73,80,79,,MID,SILVER,3
+248148,Zubimendi,80,CDM,CM,24,Spain,Real Sociedad,La Liga,Right,64,65,74,75,78,71,,MID,SILVER,3
+256079,M. Caicedo,80,CDM,CM,21,Ecuador,Chelsea,Premier League,Right,74,63,72,77,77,74,,MID,SILVER,3
+231521,E. Palacios,80,CM,CDM|CAM,24,Argentina,Bayer 04 Leverkusen,Bundesliga,Right,64,74,77,79,79,73,,MID,SILVER,3
+235997,Fran Beltrán,80,CDM,CM,24,Spain,Celta de Vigo,La Liga,Right,58,56,78,77,78,66,,MID,SILVER,3
+238067,N. Zaniolo,80,RM,CF,23,Italy,Aston Villa,Premier League,Left,83,78,72,81,51,86,,MID,SILVER,3
+245630,Y. Fofana,80,CDM,CM,24,France,Monaco,Ligue 1,Right,69,67,74,77,78,79,,MID,SILVER,3
+255253,Vitinha,80,CM,,23,Portugal,Paris Saint Germain,Ligue 1,Right,69,68,79,85,70,66,,MID,SILVER,3
+224158,S. Amrabat,80,CDM,CM,26,Morocco,Manchester United,Premier League,Right,68,71,77,79,74,80,,MID,SILVER,3
+228813,Aleix García,80,CM,CDM,26,Spain,Girona,La Liga,Right,64,74,81,80,71,66,,MID,SILVER,3
+240679,T. Koopmeiners,80,CM,CDM,25,Netherlands,Atalanta,Serie A,Left,68,75,80,76,76,77,,MID,SILVER,3
+222028,J. Weigl,80,CDM,,27,Germany,Borussia Mönchengladbach,Bundesliga,Right,56,64,77,76,76,74,,MID,SILVER,3
+226162,E. Buendía,80,RM,CAM,26,Argentina,Aston Villa,Premier League,Right,69,74,81,83,66,71,,MID,SILVER,3
+232665,M. Arambarri,80,CDM,CM,27,Uruguay,Getafe,La Liga,Right,62,65,74,76,79,78,,MID,SILVER,3
+236632,David Neres,80,RM,RW|CAM,26,Brazil,Benfica,Liga Portugal,Left,86,75,75,86,43,64,,MID,SILVER,3
+238896,Pepê,80,RM,LM|RB,26,Brazil,Porto,Liga Portugal,Right,86,68,71,83,62,60,,MID,SILVER,3
+255565,K. Mitoma,80,LM,,26,Japan,Brighton & Hove Albion,Premier League,Right,84,73,74,85,57,65,,MID,SILVER,3
+181291,G. Wijnaldum,80,CM,CDM,32,Netherlands,Al Ettifaq,Pro League,Right,68,72,77,80,77,74,,MID,SILVER,3
+183711,J. Henderson,80,CM,CDM,33,England,Al Ettifaq,Pro League,Right,61,73,80,77,76,78,,MID,SILVER,3
+189271,F. Coquelin,80,CM,LM|RM,32,France,Villarreal,La Liga,Right,67,68,78,79,78,79,,MID,SILVER,3
+193082,J. Cuadrado,80,RM,RB|RW,35,Colombia,Inter,Serie A,Right,88,73,78,84,74,68,,MID,SILVER,3
+197781,Isco,80,CAM,LM|CM,31,Spain,Real Betis,La Liga,Right,62,72,80,83,59,56,,MID,SILVER,3
+198164,Jonathan Viera,80,CAM,CM|LM,33,Spain,Las Palmas,La Liga,Right,80,74,79,80,63,72,,MID,SILVER,3
+199576,Oriol Romeu,80,CDM,CM,31,Spain,FC Barcelona,La Liga,Right,43,54,69,67,79,82,,MID,SILVER,3
+201519,J. Veretout,80,CM,CDM,30,France,Olympique de Marseille,Ligue 1,Right,74,75,78,79,76,80,,MID,SILVER,3
+204923,M. Sabitzer,80,CM,CAM|CDM,29,Austria,Borussia Dortmund,Bundesliga,Right,69,81,80,80,72,75,,MID,SILVER,3
+205686,T. Savanier,80,CAM,CM,31,France,Montpellier,Ligue 1,Right,62,75,83,82,68,70,,MID,SILVER,3
+208421,Saúl,80,CM,LM|LWB,28,Spain,Atlético Madrid,La Liga,Left,69,76,76,78,77,75,,MID,SILVER,3
+208448,E. Forsberg,80,CAM,CF,31,Sweden,RB Leipzig,Bundesliga,Right,65,73,82,82,36,61,,MID,SILVER,3
+208461,M. de Roon,80,CDM,CM|CB,32,Netherlands,Atalanta,Serie A,Right,69,70,71,72,82,83,,MID,SILVER,3
+223273,M. Pašalić,80,CAM,CF|CM,28,Croatia,Atalanta,Serie A,Right,73,78,76,80,67,77,,MID,SILVER,3
+223874,V. Rongier,80,CDM,CM,28,France,Olympique de Marseille,Ligue 1,Right,68,65,75,78,76,80,,MID,SILVER,3
+224309,Joan Jordán,80,CM,CDM,28,Spain,Sevilla,La Liga,Right,56,76,79,77,70,75,,MID,SILVER,3
+225201,Álex Berenguer,80,LM,RM,27,Spain,Athletic Club,La Liga,Right,82,75,76,82,64,66,,MID,SILVER,3
+230271,Laure Santeiro,80,CAM,LM|LW,23,Brazil,Fluminense,Serie A,Left,80,72,77,82,26,45,,MID,SILVER,3
+232487,W. Endo,80,CM,CDM,30,Japan,Liverpool,Premier League,Right,67,68,73,80,79,75,,MID,SILVER,3
+238744,W. McKennie,80,CM,LM,23,United States,Juventus,Serie A,Right,82,74,76,80,78,83,,MID,SILVER,3
+171877,M. Hamšík,80,CM,CDM|CAM,34,Slovakia,Trabzonspor,Super Lig,Right,64,77,82,80,71,71,,MID,SILVER,3
+199042,C. Aránguiz,80,CDM,CM,33,Chile,Bayer 04 Leverkusen,Bundesliga,Right,46,71,79,77,76,71,,MID,SILVER,3
+199914,Allan,80,CDM,CM,31,Brazil,Everton,Premier League,Right,70,69,73,79,79,77,,MID,SILVER,3
+207439,L. Paredes,80,CDM,CM,28,Argentina,Juventus,Serie A,Right,64,71,82,78,76,78,,MID,SILVER,3
+222716,Everton,80,LM,CAM,25,Brazil,Benfica,Liga Portugal,Right,86,75,73,85,32,62,,MID,SILVER,3
+225085,J. Bamba,80,LM,,25,France,Lille,Ligue 1,Right,89,75,74,81,39,69,,MID,SILVER,3
+211117,D. Alli,80,CAM,CM,25,England,Tottenham Hotspur,Premier League,Right,68,78,78,82,65,75,,MID,SILVER,3
+178518,R. Nainggolan,80,CAM,CM|CF,33,Belgium,Antwerp,Jupiler Pro League,Right,71,84,78,74,73,80,,MID,SILVER,3
+185020,José Callejón,80,RM,RW,34,Spain,Fiorentina,Serie A,Right,77,76,76,81,48,59,,MID,SILVER,3
+186561,A. Ramsey,80,CM,CAM|LM,30,Wales,Juventus,Serie A,Right,66,70,81,83,66,66,,MID,SILVER,3
+190972,E. Salvio,80,RM,RW,30,Argentina,Boca Juniors,Liga Profesional,Right,86,76,73,84,57,68,,MID,SILVER,3
+201400,Rafinha,80,CM,CAM,28,Brazil,Paris Saint Germain,Ligue 1,Left,71,75,80,84,69,68,,MID,SILVER,3
+202325,D. Demme,80,CDM,CM,29,Germany,Napoli,Serie A,Right,57,42,75,77,76,76,,MID,SILVER,3
+203980,K. Fortounis,80,CAM,LW|RW,28,Greece,Olympiakos Piraeus,Super League,Right,75,77,79,82,43,69,,MID,SILVER,3
+208808,Q. Promes,80,CAM,LW,29,Netherlands,Spartak Moskva,Premier League,Right,88,78,78,81,46,69,,MID,SILVER,3
+219953,Embarba,80,RM,LM|ST,29,Spain,Espanyol,La Liga 2,Right,83,77,78,79,55,72,,MID,SILVER,3
+9014,A. Robben,80,RM,CAM,36,Netherlands,FC Groningen,Eredivisie,Left,74,82,78,86,30,57,,MID,SILVER,3
+184431,S. Giovinco,80,CAM,CF,33,Italy,Al Hilal,Pro League,Right,80,77,78,86,27,56,,MID,SILVER,3
+184942,Giuliano,80,CAM,,30,Brazil,Al Nassr,Pro League,Right,79,76,77,81,46,75,,MID,SILVER,3
+185221,Luiz Gustavo,80,CDM,CB,32,Brazil,Fenerbahçe,Super Lig,Left,57,60,69,69,78,82,,MID,SILVER,3
+190544,A. Ljajić,80,CAM,LW,28,Serbia,Beşiktaş,Super Lig,Right,78,75,80,84,37,61,,MID,SILVER,3
+245300,M. Baldona,80,CDM,CM,36,Uruguay,,,Right,68,62,74,76,78,77,,MID,SILVER,3
+245304,S. Ardero,80,CAM,LM|LW,32,Uruguay,,,Left,82,72,77,83,26,51,,MID,SILVER,3
+245313,J. Sildero,80,CAM,RM,28,Uruguay,,,Right,81,77,80,79,40,71,,MID,SILVER,3
+226168,M. Eggestein,80,CM,CAM|CDM,22,Germany,Werder Bremen,Bundesliga,Right,73,70,75,78,73,78,,MID,SILVER,3
+215785,K. Baldé,80,RM,ST|LM,24,Senegal,Monaco,Ligue 1,Right,91,76,72,83,29,69,,MID,SILVER,3
+189712,K. Strootman,80,CM,CDM,29,Netherlands,Olympique de Marseille,Ligue 1,Left,57,72,80,73,77,80,,MID,SILVER,3
+196889,S. Verdi,80,LM,RW,26,Italy,Napoli,Serie A,Left,86,73,80,83,48,53,,MID,SILVER,3
+121944,B. Schweinsteiger,80,CM,CDM|CB,33,Germany,Chicago Fire,Major League Soccer,Right,37,75,80,73,77,74,,MID,SILVER,3
+147782,I. Denisov,80,CDM,,34,Russia,Lokomotiv Moskva,Premier League,Right,66,65,73,75,78,75,,MID,SILVER,3
+163711,L. Diarra,80,CDM,CB,33,France,Paris Saint Germain,Ligue 1,Right,69,52,70,77,77,74,,MID,SILVER,3
+187735,A. Dzagoev,80,CM,CDM|CF,28,Russia,CSKA Moskva,Premier League,Right,77,74,78,78,70,70,,MID,SILVER,3
+187688,Ganso,80,CAM,CM,27,Brazil,Sevilla,La Liga,Left,35,75,85,81,38,63,,MID,SILVER,3
+21146,M. Carrick,80,CDM,,35,England,Manchester United,Premier League,Right,44,65,81,72,75,66,,MID,SILVER,3
+124635,M. Topal,80,CDM,CM|CB,31,Turkey,Fenerbahçe,Super Lig,Right,68,66,67,73,82,80,,MID,SILVER,3
+231747,K. Mbappé,91,ST,LW,24,France,Paris Saint Germain,Ligue 1,Right,97,90,80,92,36,78,,ATT,ELITE,15
+239085,E. Haaland,91,ST,,22,Norway,Manchester City,Premier League,Left,89,93,66,80,45,88,,ATT,ELITE,15
+158023,L. Messi,90,CF,CAM,36,Argentina,Inter Miami,Major League Soccer,Left,80,87,90,94,33,64,,ATT,ELITE,15
+165153,K. Benzema,90,CF,ST,35,France,Al Ittihad,Pro League,Right,79,88,83,87,39,78,,ATT,ELITE,15
+188545,R. Lewandowski,90,ST,,34,Poland,FC Barcelona,La Liga,Right,75,91,80,87,44,84,,ATT,ELITE,15
+202126,H. Kane,90,ST,,29,England,FC Bayern München,Bundesliga,Right,69,93,84,83,49,83,,ATT,ELITE,15
+238794,Vini Jr.,89,LW,,22,Brazil,Real Madrid,La Liga,Right,95,82,78,90,29,68,,ATT,GOLD,10
+190871,Neymar Jr,89,LW,,31,Brazil,Al Hilal,Pro League,Right,86,83,85,93,37,61,,ATT,GOLD,10
+209331,M. Salah,89,RW,,31,Egypt,Liverpool,Premier League,Left,89,87,81,88,45,76,,ATT,GOLD,10
+232293,V. Osimhen,88,ST,,24,Nigeria,Napoli,Serie A,Right,90,86,66,83,42,82,,ATT,GOLD,10
+194765,A. Griezmann,88,ST,CF,32,France,Atlético Madrid,La Liga,Left,80,88,87,88,58,75,,ATT,GOLD,10
+231478,L. Martínez,87,ST,,25,Argentina,Inter,Serie A,Right,80,86,71,85,48,85,,ATT,GOLD,7
+200104,H. Son,87,LW,,30,Korea Republic,Tottenham Hotspur,Premier League,Right,87,88,80,84,42,70,,ATT,GOLD,7
+153079,S. Agüero,87,ST,,33,Argentina,FC Barcelona,La Liga,Right,71,89,75,87,33,69,,ATT,GOLD,7
+247635,K. Kvaratskhelia,86,LW,RW,22,Georgia,Napoli,Serie A,Right,84,80,81,87,41,71,,ATT,GOLD,7
+241721,Rafael Leão,86,LW,CF|ST,24,Portugal,Milan,Serie A,Right,93,80,75,87,27,76,,ATT,GOLD,7
+246669,B. Saka,86,RW,RM,21,England,Arsenal,Premier League,Left,85,81,79,87,60,70,,ATT,GOLD,7
+232411,C. Nkunku,86,CF,CAM|ST,25,France,Chelsea,Premier League,Right,82,81,83,88,62,67,,ATT,GOLD,7
+231443,O. Dembélé,86,RW,LW,26,France,Paris Saint Germain,Ligue 1,Left,93,77,81,87,36,57,,ATT,GOLD,7
+20801,Cristiano Ronaldo,86,ST,,38,Portugal,Al Nassr,Pro League,Right,77,88,75,80,34,74,,ATT,GOLD,7
+208722,S. Mané,86,CF,LM|ST,31,Senegal,Al Nassr,Pro League,Right,85,83,79,87,44,74,,ATT,GOLD,7
+211110,P. Dybala,86,CF,CAM,29,Argentina,Roma,Serie A,Left,80,85,85,90,40,60,,ATT,GOLD,7
+243812,Rodrygo,85,RW,LW|ST,22,Brazil,Real Madrid,La Liga,Right,88,81,79,86,31,62,,ATT,GOLD,5
+237692,P. Foden,85,LW,RW,23,England,Manchester City,Premier League,Left,81,79,82,88,57,60,,ATT,GOLD,5
+231677,M. Rashford,85,LW,LM|ST,25,England,Manchester United,Premier League,Right,90,86,78,84,42,74,,ATT,GOLD,5
+224458,Diogo Jota,85,CF,LW,26,Portugal,Liverpool,Premier League,Right,82,82,75,85,57,77,,ATT,GOLD,5
+192387,C. Immobile,85,ST,,33,Italy,Lazio,Serie A,Right,85,87,68,78,39,74,,ATT,GOLD,5
+192629,Iago Aspas,85,ST,,35,Spain,Celta de Vigo,La Liga,Left,81,85,79,86,35,64,,ATT,GOLD,5
+206517,J. Grealish,85,LW,LM,27,England,Manchester City,Premier League,Right,76,76,84,88,53,73,,ATT,GOLD,5
+210935,D. Berardi,85,RW,RM,28,Italy,Sassuolo,Serie A,Left,82,83,81,87,36,72,,ATT,GOLD,5
+251566,Gabriel Martinelli,84,LW,LM,22,Brazil,Arsenal,Premier League,Right,89,78,76,86,46,72,,ATT,SILVER,5
+237679,R. Kolo Muani,84,ST,RM,24,France,Paris Saint Germain,Ligue 1,Right,91,78,73,86,38,67,,ATT,SILVER,5
+230666,Gabriel Jesus,84,ST,RW,26,Brazil,Arsenal,Premier League,Right,83,82,75,88,40,77,,ATT,SILVER,5
+233419,Raphinha,84,RW,,26,Brazil,FC Barcelona,La Liga,Left,91,79,78,86,53,73,,ATT,SILVER,5
+241084,L. Díaz,84,LW,LM,26,Colombia,Liverpool,Premier League,Right,91,81,75,87,34,74,,ATT,SILVER,5
+192505,R. Lukaku,84,ST,,30,Belgium,Roma,Serie A,Left,80,84,74,77,38,82,,ATT,SILVER,5
+202556,M. Depay,84,CF,LW|ST,29,Netherlands,Atlético Madrid,La Liga,Right,82,82,81,85,30,80,,ATT,SILVER,5
+208418,Y. Carrasco,84,LW,LWB,29,Belgium,Al Shabab,Pro League,Right,88,81,80,85,59,66,,ATT,SILVER,5
+176580,L. Suárez,84,ST,,35,Uruguay,Nacional,Primera Division,Right,70,86,78,78,46,81,,ATT,SILVER,5
+183277,E. Hazard,84,LW,,31,Belgium,Real Madrid,La Liga,Right,83,80,82,87,35,63,,ATT,SILVER,5
+200647,J. Iličić,84,CF,ST,33,Slovenia,Atalanta,Serie A,Left,75,86,84,86,40,67,,ATT,SILVER,5
+181783,M. Mandžukić,84,ST,LW,33,Croatia,Juventus,Serie A,Right,68,80,71,75,65,86,,ATT,SILVER,5
+176769,Jonas,84,ST,,34,Brazil,Benfica,Liga Portugal,Right,64,86,77,84,38,65,,ATT,SILVER,5
+196144,J. Martínez,84,ST,,28,Colombia,Atlético Madrid,La Liga,Right,81,82,67,79,44,85,,ATT,SILVER,5
+242516,C. Gakpo,83,CF,LW,24,Netherlands,Liverpool,Premier League,Right,85,82,78,84,42,73,,ATT,SILVER,4
+246430,D. Vlahović,83,ST,,23,Serbia,Juventus,Serie A,Left,80,85,66,79,29,82,,ATT,SILVER,4
+234236,P. Schick,83,ST,,27,Czech Republic,Bayer 04 Leverkusen,Bundesliga,Left,79,80,71,81,37,76,,ATT,SILVER,4
+180930,E. Džeko,83,ST,,37,Bosnia and Herzegovina,Fenerbahçe,Super Lig,Right,59,84,72,77,45,76,,ATT,SILVER,4
+183898,Á. Di María,83,CF,RW|RM,35,Argentina,Benfica,Liga Portugal,Left,78,78,86,89,48,67,,ATT,SILVER,4
+193301,A. Lacazette,83,ST,,32,France,Olympique Lyonnais,Ligue 1,Right,72,84,77,83,44,77,,ATT,SILVER,4
+199451,W. Ben Yedder,83,ST,,32,France,Monaco,Ligue 1,Right,80,84,78,87,39,68,,ATT,SILVER,4
+201153,Morata,83,ST,,30,Spain,Atlético Madrid,La Liga,Right,82,82,72,79,31,79,,ATT,SILVER,4
+202652,R. Sterling,83,LW,RW|ST,28,England,Chelsea,Premier League,Right,85,78,76,85,45,67,,ATT,SILVER,4
+205693,S. Haller,83,ST,,29,Côte d'Ivoire,Borussia Dortmund,Bundesliga,Right,62,81,63,76,52,81,,ATT,SILVER,4
+208093,Gerard Moreno,83,ST,RM,31,Spain,Villarreal,La Liga,Left,77,85,77,81,46,72,,ATT,SILVER,4
+216547,Rafa,83,CF,RM,30,Portugal,Benfica,Liga Portugal,Right,93,77,77,86,50,54,,ATT,SILVER,4
+220834,Marco Asensio,83,RW,,27,Spain,Paris Saint Germain,Ligue 1,Left,81,81,81,83,43,63,,ATT,SILVER,4
+224179,Borja Iglesias,83,ST,,30,Spain,Real Betis,La Liga,Right,69,84,66,76,40,82,,ATT,SILVER,4
+241461,Ferran Torres,82,LW,RW|ST,23,Spain,FC Barcelona,La Liga,Right,83,79,78,83,35,68,,ATT,SILVER,4
+253072,D. Núñez,82,ST,LW,24,Uruguay,Liverpool,Premier League,Right,90,81,71,76,43,85,,ATT,SILVER,4
+233049,J. Sancho,82,LW,LM,23,England,Manchester United,Premier League,Right,78,70,80,87,33,47,,ATT,SILVER,4
+243580,L. Openda,82,ST,,23,Belgium,RB Leipzig,Bundesliga,Right,93,79,68,80,31,78,,ATT,SILVER,4
+240950,Pedro Gonçalves,82,LW,RW|CM,25,Portugal,Sporting CP,Liga Portugal,Right,76,82,81,84,58,66,,ATT,SILVER,4
+246242,B. Dia,82,ST,LW|CF,26,Senegal,Salernitana,Serie A,Right,82,81,62,81,27,77,,ATT,SILVER,4
+223197,E. Ünal,82,ST,,26,Turkey,Getafe,La Liga,Right,72,84,70,82,40,80,,ATT,SILVER,4
+212188,T. Werner,82,ST,,27,Germany,RB Leipzig,Bundesliga,Right,91,80,70,82,35,69,,ATT,SILVER,4
+235410,Y. En-Nesyri,82,ST,,26,Morocco,Sevilla,La Liga,Left,81,82,63,76,36,79,,ATT,SILVER,4
+173608,Joselu,82,ST,,33,Spain,Real Madrid,La Liga,Right,63,84,69,74,33,77,,ATT,SILVER,4
+178509,O. Giroud,82,ST,,36,France,Milan,Serie A,Left,43,83,74,74,42,80,,ATT,SILVER,4
+196978,C. Wilson,82,ST,,31,England,Newcastle United,Premier League,Right,80,82,67,79,42,76,,ATT,SILVER,4
+199434,D. Tadić,82,LW,CF|RW,34,Serbia,Fenerbahçe,Super Lig,Left,64,80,85,83,43,76,,ATT,SILVER,4
+201942,Roberto Firmino,82,CF,ST,31,Brazil,Al Ahli Jeddah,Pro League,Right,70,77,79,87,58,77,,ATT,SILVER,4
+214997,Á. Correa,82,ST,RM,28,Argentina,Atlético Madrid,La Liga,Right,85,84,77,86,50,75,,ATT,SILVER,4
+220502,M. Zaccagni,82,LW,,28,Italy,Lazio,Serie A,Right,87,77,74,88,57,67,,ATT,SILVER,4
+241788,M. Taremi,82,ST,CF,30,Iran,Porto,Liga Portugal,Right,78,81,76,81,38,74,,ATT,SILVER,4
+41236,Z. Ibrahimović,82,ST,,40,Sweden,Milan,Serie A,Right,58,85,76,77,34,72,,ATT,SILVER,4
+204838,R. Jiménez,82,ST,,31,Mexico,Wolverhampton Wanderers,Premier League,Right,73,81,76,80,47,82,,ATT,SILVER,4
+180403,Willian,82,RW,LW|RM,31,Brazil,Arsenal,Premier League,Right,82,79,80,85,49,59,,ATT,SILVER,4
+106231,Aduriz,82,ST,,38,Spain,Athletic Club,La Liga,Right,61,82,64,75,49,74,,ATT,SILVER,4
+186627,M. Balotelli,82,ST,,28,Italy,Brescia,Serie B,Right,76,82,73,79,24,76,,ATT,SILVER,4
+242444,João Félix,81,CF,ST|LW,23,Portugal,FC Barcelona,La Liga,Right,81,79,78,85,40,67,,ATT,SILVER,3
+255475,Antony,81,RW,RM,23,Brazil,Manchester United,Premier League,Left,83,76,74,87,46,73,,ATT,SILVER,3
+233731,A. Isak,81,ST,LW,23,Sweden,Newcastle United,Premier League,Right,83,81,72,84,39,72,,ATT,SILVER,3
+246172,S. Chukwueze,81,RW,RM,24,Nigeria,Milan,Serie A,Left,89,75,74,84,36,63,,ATT,SILVER,3
+247394,D. Kulusevski,81,RW,,23,Sweden,Tottenham Hotspur,Premier League,Left,76,77,80,84,56,75,,ATT,SILVER,3
+240690,N. González,81,RW,LW,25,Argentina,Fiorentina,Serie A,Left,87,76,73,83,45,64,,ATT,SILVER,3
+243630,J. David,81,ST,,23,Canada,Lille,Ligue 1,Right,82,81,71,78,34,75,,ATT,SILVER,3
+230899,A. Lookman,81,ST,RM|RW,25,Nigeria,Atalanta,Serie A,Right,86,81,69,85,30,67,,ATT,SILVER,3
+251892,Beto,81,ST,,25,Portugal,Everton,Premier League,Right,86,79,59,75,25,84,,ATT,SILVER,3
+236276,A. Danjuma,81,ST,LM,26,Netherlands,Everton,Premier League,Right,86,81,76,83,44,67,,ATT,SILVER,3
+175943,D. Mertens,81,CF,CAM,36,Belgium,Galatasaray,Super Lig,Right,76,80,80,83,40,49,,ATT,SILVER,3
+184941,A. Sánchez,81,ST,,34,Chile,Inter,Serie A,Right,71,83,80,85,48,66,,ATT,SILVER,3
+198219,L. Insigne,81,LW,CF|LM,32,Italy,Toronto,Major League Soccer,Right,80,78,81,86,36,44,,ATT,SILVER,3
+198717,W. Zaha,81,LW,CF|LM,30,Côte d'Ivoire,Galatasaray,Super Lig,Right,90,78,72,85,37,76,,ATT,SILVER,3
+201995,Felipe Anderson,81,RW,ST,30,Brazil,Lazio,Serie A,Right,87,78,77,85,63,73,,ATT,SILVER,3
+205175,A. Milik,81,ST,,29,Poland,Juventus,Serie A,Left,59,83,72,78,40,74,,ATT,SILVER,3
+207421,L. Trossard,81,CF,LW,28,Belgium,Arsenal,Premier League,Right,81,80,78,84,30,61,,ATT,SILVER,3
+209519,G. Laborde,81,ST,,29,France,Nice,Ligue 1,Left,72,81,76,79,40,79,,ATT,SILVER,3
+212523,Anderson Talisca,81,CF,ST|CAM,29,Brazil,Al Nassr,Pro League,Left,79,84,76,81,52,73,,ATT,SILVER,3
+215333,D. Zapata,81,ST,,32,Colombia,Torino,Serie A,Right,75,80,63,77,35,85,,ATT,SILVER,3
+216354,A. Kramarić,81,CF,CM|CAM,32,Croatia,TSG Hoffenheim,Bundesliga,Right,72,81,76,82,32,74,,ATT,SILVER,3
+216409,M. Politano,81,RW,RM,29,Italy,Napoli,Serie A,Left,83,77,78,84,42,55,,ATT,SILVER,3
+221992,H. Lozano,81,RW,,27,Mexico,PSV,Eredivisie,Right,93,76,72,82,41,61,,ATT,SILVER,3
+230294,Adriano Bisesi,81,ST,CF,31,Brazil,Bragantino,Serie A,Right,78,84,62,72,33,72,,ATT,SILVER,3
+230430,Oswaldinato,81,ST,,31,Brazil,Flamengo,Serie A,Right,76,81,67,77,20,79,,ATT,SILVER,3
+230977,M. Almirón,81,RW,RM,29,Paraguay,Newcastle United,Premier League,Left,87,77,75,81,56,64,,ATT,SILVER,3
+173731,G. Bale,81,RW,RM,32,Wales,Los Angeles FC,Major League Soccer,Left,80,84,81,79,55,69,,ATT,SILVER,3
+124375,B. Yılmaz,81,ST,,35,Turkey,Lille,Ligue 1,Right,79,83,69,73,34,79,,ATT,SILVER,3
+139068,Nani,81,LW,LM,34,Portugal,Orlando City,Major League Soccer,Right,70,77,81,85,37,68,,ATT,SILVER,3
+153244,A. Gignac,81,ST,CF,35,France,Tigres UANL,Liga MX,Right,68,83,73,75,41,84,,ATT,SILVER,3
+167664,G. Higuaín,81,ST,,33,Argentina,Inter Miami,Major League Soccer,Right,58,84,71,78,29,71,,ATT,SILVER,3
+198710,J. Rodríguez,81,RW,CAM|CM,29,Colombia,Everton,Premier League,Left,53,86,86,86,50,60,,ATT,SILVER,3
+200454,Paco Alcácer,81,ST,,27,Spain,Villarreal,La Liga,Right,77,84,69,81,35,61,,ATT,SILVER,3
+150418,M. Gómez,81,ST,,32,Germany,VfB Stuttgart,Bundesliga,Right,67,80,62,72,36,77,,ATT,SILVER,3
+9676,S. Eto'o,81,ST,,36,Cameroon,Antalyaspor,Super Lig,Right,74,83,74,79,37,71,,ATT,SILVER,3
+31432,D. Drogba,81,ST,,38,Côte d'Ivoire,CF Montréal,Major League Soccer,Right,66,82,69,75,36,79,,ATT,SILVER,3
+148803,K. Huntelaar,81,ST,,32,Netherlands,Schalke 04,2. Bundesliga,Right,66,82,64,71,32,73,,ATT,SILVER,3
+11141,M. Klose,81,ST,,37,Germany,Lazio,Serie A,Right,70,77,63,73,28,63,,ATT,SILVER,3
+30110,D. Berbatov,81,ST,CAM,34,Bulgaria,PAOK,Super League,Right,60,81,80,81,23,62,,ATT,SILVER,3
+256903,Gonçalo Ramos,80,ST,,22,Portugal,Paris Saint Germain,Ligue 1,Right,77,78,65,77,47,82,,ATT,SILVER,3
+237681,T. Kubo,80,RW,ST|CAM,22,Japan,Real Sociedad,La Liga,Left,84,75,76,83,40,60,,ATT,SILVER,3
+246191,J. Álvarez,80,ST,CF|CAM,23,Argentina,Manchester City,Premier League,Right,79,81,76,83,55,76,,ATT,SILVER,3
+235619,M. Edwards,80,RW,LW|ST,24,England,Sporting CP,Liga Portugal,Left,85,73,71,86,33,48,,ATT,SILVER,3
+231352,T. Abraham,80,ST,,25,England,Roma,Serie A,Right,81,76,66,77,36,80,,ATT,SILVER,3
+243593,A. Laurienté,80,LW,RW|ST,24,France,Sassuolo,Serie A,Right,84,76,75,82,35,47,,ATT,SILVER,3
+246186,Arthur Cabral,80,ST,,25,Brazil,Benfica,Liga Portugal,Right,74,79,64,76,32,80,,ATT,SILVER,3
+231943,Richarlison,80,ST,LW|RW,26,Brazil,Tottenham Hotspur,Premier League,Right,77,79,72,82,53,78,,ATT,SILVER,3
+234742,H. Barnes,80,LW,LM,25,England,Newcastle United,Premier League,Right,85,77,75,81,43,69,,ATT,SILVER,3
+211300,A. Martial,80,ST,,27,France,Manchester United,Premier League,Right,80,78,73,84,35,66,,ATT,SILVER,3
+221697,O. Watkins,80,ST,,27,England,Aston Villa,Premier League,Right,84,79,68,76,46,75,,ATT,SILVER,3
+228941,André Silva,80,ST,,27,Portugal,Real Sociedad,La Liga,Right,74,80,70,81,46,77,,ATT,SILVER,3
+169416,C. Vela,80,RW,LW|ST,34,Mexico,Los Angeles FC,Major League Soccer,Left,77,79,77,82,29,63,,ATT,SILVER,3
+170368,E. Lamela,80,RW,CAM,31,Argentina,Sevilla,La Liga,Left,79,77,78,83,54,69,,ATT,SILVER,3
+184200,M. Arnautović,80,ST,,34,Austria,Inter,Serie A,Right,74,79,78,79,44,80,,ATT,SILVER,3
+188567,P. Aubameyang,80,ST,,34,Gabon,Olympique de Marseille,Ligue 1,Right,83,81,72,77,35,64,,ATT,SILVER,3
+193165,J. Corona,80,RW,LW,30,Mexico,,,Right,81,65,79,86,73,67,,ATT,SILVER,3
+201399,M. Icardi,80,ST,,30,Argentina,Galatasaray,Super Lig,Right,67,81,69,73,40,72,,ATT,SILVER,3
+202477,Deulofeu,80,CF,ST,29,Spain,Udinese,Serie A,Right,90,79,76,86,30,67,,ATT,SILVER,3
+202651,Suso,80,RW,CAM,29,Spain,Sevilla,La Liga,Left,72,76,80,83,32,51,,ATT,SILVER,3
+205431,N. Füllkrug,80,ST,,30,Germany,Borussia Dortmund,Bundesliga,Right,62,83,70,74,40,78,,ATT,SILVER,3
+205632,L. Ocampos,80,RW,LW,28,Argentina,Sevilla,La Liga,Right,79,80,77,81,62,83,,ATT,SILVER,3
+208670,H. Ziyech,80,RW,CAM,30,Morocco,Galatasaray,Super Lig,Left,74,75,83,81,50,64,,ATT,SILVER,3
+210021,H. Mukhtar,80,CF,ST|CAM,28,Germany,Nashville SC,Major League Soccer,Right,82,75,80,82,44,64,,ATT,SILVER,3
+223710,V. Muriqi,80,ST,,29,Kosovo,Mallorca,La Liga,Left,55,82,63,73,29,82,,ATT,SILVER,3
+227890,Nuno Santos,80,LW,LWB,28,Portugal,Sporting CP,Liga Portugal,Left,83,81,76,80,67,69,,ATT,SILVER,3
+228520,E. Ávila,80,ST,RM|LM,29,Argentina,Osasuna,La Liga,Right,78,81,65,78,45,85,,ATT,SILVER,3
+221479,D. Calvert-Lewin,80,ST,,25,England,Everton,Premier League,Right,81,77,64,76,39,80,,ATT,SILVER,3
+211591,M. Dembélé,80,ST,,25,France,Olympique Lyonnais,Ligue 1,Right,72,79,64,74,30,79,,ATT,SILVER,3
+171579,Raúl García,80,ST,,35,Spain,Athletic Club,La Liga,Right,35,83,82,78,59,84,,ATT,SILVER,3
+183574,M. Kruse,80,CF,CAM,34,Germany,VfL Wolfsburg,Bundesliga,Left,51,81,81,82,40,64,,ATT,SILVER,3
+193983,A. Delort,80,ST,,30,Algeria,Nice,Ligue 1,Right,82,81,72,75,37,82,,ATT,SILVER,3
+200949,Lucas Moura,80,RW,,29,Brazil,Tottenham Hotspur,Premier League,Right,89,77,70,85,46,68,,ATT,SILVER,3
+215330,J. Correa,80,CF,ST,27,Argentina,Inter,Serie A,Right,84,75,76,84,39,69,,ATT,SILVER,3
+220018,A. Rebić,80,LW,LM|ST,28,Croatia,Milan,Serie A,Right,86,80,74,81,48,80,,ATT,SILVER,3
+198951,C. Bakambu,80,ST,,30,Congo DR,Beijing Guoan,Super League,Right,90,80,71,76,36,77,,ATT,SILVER,3
+204399,E. Zahavi,80,ST,,33,Israel,PSV,Eredivisie,Right,77,82,74,79,39,73,,ATT,SILVER,3
+204970,F. Thauvin,80,RW,RM,28,France,Tigres UANL,Liga MX,Left,79,79,79,80,41,68,,ATT,SILVER,3
+207732,Roger Martí,80,ST,,30,Spain,Levante,La Liga 2,Right,77,82,63,77,41,74,,ATT,SILVER,3
+223816,J. Rodríguez,80,ST,LW,27,Uruguay,Cruz Azul,Liga MX,Right,88,80,67,81,38,76,,ATT,SILVER,3
+179844,Diego Costa,80,ST,,31,Spain,Atlético Madrid,La Liga,Right,73,79,65,74,48,86,,ATT,SILVER,3
+189362,Hulk,80,RW,ST,33,Brazil,Shanghai Port,Super League,Left,80,82,77,81,46,86,,ATT,SILVER,3
+245305,L. Dálves,80,ST,CF,28,Uruguay,,,Right,80,82,60,71,34,75,,ATT,SILVER,3
+251700,S. Mandíquez,80,ST,,31,Ecuador,,,Right,80,80,56,74,29,80,,ATT,SILVER,3
+212623,Santi Mina,80,ST,,23,Spain,Celta de Vigo,La Liga,Right,77,79,69,78,53,72,,ATT,SILVER,3
+54050,W. Rooney,80,ST,,33,England,DC United,Major League Soccer,Right,64,81,80,76,56,76,,ATT,SILVER,3
+164029,Charles,80,ST,,35,Brazil,SD Eibar,La Liga 2,Right,60,81,61,79,35,67,,ATT,SILVER,3
+183900,D. Perotti,80,LW,,30,Argentina,Roma,Serie A,Right,75,70,77,86,42,57,,ATT,SILVER,3
+184252,L. Pratto,80,ST,,31,Argentina,River Plate,Liga Profesional,Right,71,79,72,75,58,86,,ATT,SILVER,3
+187491,F. Smolov,80,ST,,29,Russia,Lokomotiv Moskva,Premier League,Right,86,81,70,76,32,73,,ATT,SILVER,3
+194879,Sergi Enrich,80,ST,,29,Spain,SD Eibar,La Liga 2,Right,60,78,70,75,43,78,,ATT,SILVER,3
+202685,S. Zaza,80,ST,,28,Italy,Torino,Serie A,Left,76,79,62,77,50,84,,ATT,SILVER,3
+192991,C. Tosun,80,ST,,27,Turkey,Everton,Premier League,Right,74,80,66,77,36,74,,ATT,SILVER,3
+49369,Fernando Torres,80,ST,,34,Spain,Sagan Tosu,J-League,Right,75,77,71,77,32,67,,ATT,SILVER,3
+171833,D. Sturridge,80,ST,,28,England,Liverpool,Premier League,Left,75,81,68,78,23,63,,ATT,SILVER,3
+180175,Alexandre Pato,80,ST,LW|CAM,28,Brazil,Tianjin Quanjian FC,Super League,Right,85,77,68,80,32,69,,ATT,SILVER,3
+189354,Susaeta,80,RW,LW,30,Spain,Athletic Club,La Liga,Right,75,71,84,83,41,63,,ATT,SILVER,3
+50542,J. Defoe,80,ST,,34,England,AFC Bournemouth,Premier League,Right,74,85,61,79,25,65,,ATT,SILVER,3
+162369,V. Ibišević,80,ST,,32,Bosnia and Herzegovina,Hertha BSC,2. Bundesliga,Right,53,80,68,72,31,76,,ATT,SILVER,3
+202515,Jesé,80,LW,RW|ST,23,Spain,Paris Saint Germain,Ligue 1,Right,86,75,72,84,24,58,,ATT,SILVER,3
+330,R. Keane,80,ST,,35,Republic of Ireland,LA Galaxy,Major League Soccer,Right,68,82,75,82,31,69,,ATT,SILVER,3
+1238,F. Totti,80,CF,ST,39,Italy,Roma,Serie A,Right,38,84,87,81,21,67,,ATT,SILVER,3
+186524,F. Đorđević,80,ST,,27,Serbia,Lazio,Serie A,Left,75,79,58,71,37,84,,ATT,SILVER,3
+199835,E. Emenike,80,ST,RW,27,Nigeria,Fenerbahçe,Super Lig,Right,88,80,56,76,28,83,,ATT,SILVER,3
+177934,S. Sam,80,RW,CF|RM,26,Germany,Schalke 04,2. Bundesliga,Left,90,79,74,81,34,63,,ATT,SILVER,3
+178393,A. Cerci,80,CF,RW,26,Italy,Atlético Madrid,La Liga,Left,87,78,81,83,34,74,,ATT,SILVER,3
+177134,D. Ba,80,ST,,29,Senegal,Beşiktaş,Super Lig,Right,77,81,67,77,45,79,,ATT,SILVER,3
+209097,O. Cardosa,80,ST,,30,Paraguay,,,Left,42,87,72,69,36,71,,ATT,SILVER,3
+245155,M. Kudus,79,RW,CAM,22,Ghana,West Ham United,Premier League,Left,90,74,71,84,59,75,,ATT,BRONZE,2
+247463,F. Balogun,79,ST,,21,United States,Monaco,Ligue 1,Right,80,79,62,77,23,69,,ATT,BRONZE,2
+253002,G. Raspadori,79,CF,ST|LW,23,Italy,Napoli,Serie A,Right,81,78,68,81,27,59,,ATT,BRONZE,2
+237712,V. Castellanos,79,ST,,24,Argentina,Lazio,Serie A,Right,76,79,69,76,42,78,,ATT,BRONZE,2
+240753,A. Gouiri,79,ST,LM|LW,23,France,Rennes,Ligue 1,Right,76,81,76,80,45,71,,ATT,BRONZE,2
+225953,S. Bergwijn,79,LW,RW,25,Netherlands,Ajax,Eredivisie,Right,83,77,74,81,42,71,,ATT,BRONZE,2
+227796,C. Pulisic,79,LW,RW|LM,24,United States,Milan,Serie A,Right,84,71,73,84,37,55,,ATT,BRONZE,2
+228093,M. Thuram,79,ST,,25,France,Inter,Serie A,Right,84,77,71,78,48,76,,ATT,BRONZE,2
+233260,A. Vega,79,LW,ST|LM,25,Mexico,,,Right,80,77,76,83,32,74,,ATT,BRONZE,2
+224411,Gonçalo Guedes,79,ST,LM,26,Portugal,Benfica,Liga Portugal,Right,86,81,73,82,38,70,,ATT,BRONZE,2
+216549,A. Sørloth,79,ST,,27,Norway,Villarreal,La Liga,Left,79,78,69,74,36,85,,ATT,BRONZE,2
+173221,A. Candreva,79,CF,RM|CM,36,Italy,Salernitana,Serie A,Right,69,79,80,81,62,63,,ATT,BRONZE,2
+179813,E. Cavani,79,ST,,36,Uruguay,Boca Juniors,Liga Profesional,Right,59,82,68,72,51,72,,ATT,BRONZE,2
+181458,I. Perišić,79,LW,LWB,34,Croatia,Tottenham Hotspur,Premier League,Right,71,78,80,79,73,75,,ATT,BRONZE,2
+189505,Pedro,79,RW,LW,35,Spain,Lazio,Serie A,Right,70,74,76,86,36,50,,ATT,BRONZE,2
+189805,L. de Jong,79,ST,,32,Netherlands,PSV,Eredivisie,Right,41,79,71,71,46,77,,ATT,BRONZE,2
+199069,V. Aboubakar,79,ST,,31,Cameroon,Beşiktaş,Super Lig,Right,73,80,71,79,36,80,,ATT,BRONZE,2
+199110,L. Muriel,79,ST,,32,Colombia,Atalanta,Serie A,Right,88,80,73,85,27,68,,ATT,BRONZE,2
+199439,M. Gregoritsch,79,ST,,29,Austria,SC Freiburg,Bundesliga,Left,59,79,71,72,42,76,,ATT,BRONZE,2
+200610,K. Volland,79,ST,CAM|CF,30,Germany,FC Union Berlin,Bundesliga,Left,68,82,78,78,46,84,,ATT,BRONZE,2
+209440,Romarinho,79,CF,CAM|ST,32,Brazil,Al Ittihad,Pro League,Right,85,76,71,82,30,67,,ATT,BRONZE,2
+210315,Raúl de Tomás,79,ST,,28,Spain,Rayo Vallecano,La Liga,Right,74,79,76,79,39,75,,ATT,BRONZE,2
+215716,A. Mitrović,79,ST,,28,Serbia,Al Hilal,Pro League,Right,63,79,61,70,27,88,,ATT,BRONZE,2
+216475,Morales,79,ST,LM,35,Spain,Villarreal,La Liga,Right,79,82,75,81,52,67,,ATT,BRONZE,2
+219733,L. Ajorque,79,ST,,29,France,FSV Mainz 05,Bundesliga,Left,58,79,63,70,46,87,,ATT,BRONZE,2
+224151,H. Martín,79,ST,,30,Mexico,,,Right,77,77,64,75,39,86,,ATT,BRONZE,2
+230498,Luimo Boas Santos,79,ST,,23,Brazil,Santos,Serie A,Right,83,79,65,81,28,64,,ATT,BRONZE,2
+234711,J. Brekalo,79,CF,LM,24,Croatia,VfL Wolfsburg,Bundesliga,Right,81,76,76,84,38,55,,ATT,BRONZE,2
+231628,Rafa Mir,79,ST,,25,Spain,Sevilla,La Liga,Right,78,81,67,71,45,78,,ATT,BRONZE,2
+232432,L. Jović,79,ST,,24,Serbia,Fiorentina,Serie A,Right,74,78,68,78,29,74,,ATT,BRONZE,2
+213956,Adama Traoré,79,RW,LW,26,Spain,Wolverhampton Wanderers,Premier League,Right,96,65,68,86,38,83,,ATT,BRONZE,2
+178224,J. Hernández,79,ST,,34,Mexico,LA Galaxy,Major League Soccer,Right,72,77,64,76,31,68,,ATT,BRONZE,2
+182212,A. Modeste,79,ST,,34,France,Borussia Dortmund,Bundesliga,Right,69,78,63,70,35,79,,ATT,BRONZE,2
+195859,D. Ings,79,ST,,29,England,Aston Villa,Premier League,Right,72,82,70,78,45,70,,ATT,BRONZE,2
+199254,João Pedro,79,ST,,30,Italy,Fenerbahçe,Super Lig,Right,81,78,77,80,41,75,,ATT,BRONZE,2
+202166,J. Draxler,79,LW,CAM,28,Germany,Benfica,Liga Portugal,Right,72,76,80,82,58,65,,ATT,BRONZE,2
+208330,A. Januzaj,79,RW,LW,27,Belgium,Sevilla,La Liga,Left,77,72,79,83,30,57,,ATT,BRONZE,2
+212382,P. Onuachu,79,ST,,28,Nigeria,Genk,Jupiler Pro League,Right,70,78,62,70,45,82,,ATT,BRONZE,2
+223689,W. Weghorst,79,ST,,29,Netherlands,Beşiktaş,Super Lig,Right,60,77,60,69,52,86,,ATT,BRONZE,2
+228687,K. Dolberg,79,ST,,23,Denmark,Nice,Ligue 1,Right,73,81,69,77,30,68,,ATT,BRONZE,2
+156616,F. Ribéry,79,CF,LW,38,France,Salernitana,Serie A,Right,69,73,81,85,30,53,,ATT,BRONZE,2
+159145,B. Gomis,79,ST,,35,France,Al Hilal,Pro League,Right,60,81,68,72,36,74,,ATT,BRONZE,2
+188042,M. Suárez,79,ST,LW,33,Argentina,River Plate,Liga Profesional,Right,79,77,77,83,44,75,,ATT,BRONZE,2
+192064,Gao Late,79,ST,RW|CAM,30,China PR,Guangzhou Evergrande,Super League,Right,83,78,77,79,41,72,,ATT,BRONZE,2
+192123,C. Wood,79,ST,,29,New Zealand,Burnley,Premier League,Right,64,79,60,70,40,81,,ATT,BRONZE,2
+192598,Ai Kesen,79,ST,,31,China PR,Guangzhou Evergrande,Super League,Right,84,80,73,79,48,79,,ATT,BRONZE,2
+192906,L. Rodríguez,79,ST,CF,36,Argentina,Gimnasia La Plata,Liga Profesional,Right,68,82,76,83,43,70,,ATT,BRONZE,2
+193348,X. Shaqiri,79,RW,RM,29,Switzerland,Olympique Lyonnais,Ligue 1,Left,75,76,80,81,46,67,,ATT,BRONZE,2
+194209,Y. El Arabi,79,ST,,34,Morocco,Olympiakos Piraeus,Super League,Right,71,83,69,79,37,70,,ATT,BRONZE,2
+223578,Mata,79,ST,,32,Spain,Getafe,La Liga,Right,68,80,61,76,31,76,,ATT,BRONZE,2
+229167,M. Rashica,79,CF,LW|RW,24,Kosovo,Werder Bremen,Bundesliga,Right,88,79,74,84,46,65,,ATT,BRONZE,2
+244621,Vinícius,79,ST,,25,Brazil,Benfica,Liga Portugal,Left,75,80,57,75,41,83,,ATT,BRONZE,2
+176600,K. Gameiro,79,ST,,33,France,Valencia,La Liga,Right,86,79,74,75,43,67,,ATT,BRONZE,2
+178311,Éder,79,ST,,33,Italy,Jiangsu Suning,Super League,Right,87,78,75,80,29,67,,ATT,BRONZE,2
+186537,C. Stuani,79,ST,,33,Uruguay,Girona,La Liga,Right,67,81,70,73,48,82,,ATT,BRONZE,2
+188081,Alex Teixeira,79,ST,LW|CAM,30,Brazil,Jiangsu Suning,Super League,Right,93,76,73,81,40,72,,ATT,BRONZE,2
+199416,Ibai Gómez,79,RW,LW,30,Spain,Athletic Club,La Liga,Right,75,78,80,79,59,68,,ATT,BRONZE,2
+208498,M. Dabbur,79,ST,,28,Israel,TSG Hoffenheim,Bundesliga,Right,70,78,66,79,32,69,,ATT,BRONZE,2
+213761,A. Hamdallah,79,ST,,29,Morocco,Al Nassr,Pro League,Right,76,80,69,75,30,75,,ATT,BRONZE,2
+215061,D. Benedetto,79,ST,,30,Argentina,Olympique de Marseille,Ligue 1,Right,77,80,67,75,38,75,,ATT,BRONZE,2
+227536,M. Marega,79,ST,RM,29,Mali,Porto,Liga Portugal,Right,89,79,62,65,41,90,,ATT,BRONZE,2
+232381,Wesley,79,ST,,22,Brazil,Aston Villa,Premier League,Right,77,76,68,73,38,88,,ATT,BRONZE,2
+221639,Mariano,79,ST,,25,Dominican Republic,Real Madrid,La Liga,Right,82,80,61,73,45,80,,ATT,BRONZE,2
