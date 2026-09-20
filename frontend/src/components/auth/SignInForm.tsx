@@ -1,20 +1,36 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/stores/auth.store";
 import { Button, Input, Toast } from "@/components/ui";
-import { LogIn, Mail, Lock, ShieldCheck } from "lucide-react";
+import { LogIn, Mail, Lock } from "lucide-react";
 
 export const SignInForm: React.FC = () => {
   const router = useRouter();
-  const { signIn, isLoading, error, clearError } = useAuthStore();
+  const searchParams = useSearchParams();
+  const { signIn, isLoading, isAuthenticated, isRestoring, error, clearError } =
+    useAuthStore();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Sanitise redirectTo — must be an internal path, no open-redirect
+  const rawRedirect = searchParams.get("redirectTo") ?? "/home";
+  const safeRedirect =
+    rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+      ? rawRedirect
+      : "/home";
+
+  // If the user is already authenticated (e.g. navigated back to /signin),
+  // redirect them away once auth state is known.
+  useEffect(() => {
+    if (!isRestoring && isAuthenticated) {
+      router.replace(safeRedirect);
+    }
+  }, [isRestoring, isAuthenticated, router, safeRedirect]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,13 +48,12 @@ export const SignInForm: React.FC = () => {
 
     const success = await signIn({ email, password });
     if (success) {
-      // Full navigation so the server-side proxy sees the fresh Supabase
-      // session cookie on the next request — router.push() keeps the old
-      // cookie context and the proxy bounces back to /auth/signin.
-      window.location.replace("/home");
+      // router.replace navigates client-side; router.refresh() re-runs
+      // the server component tree so the proxy sees the fresh session cookie.
+      router.replace(safeRedirect);
+      router.refresh();
     }
   };
-
 
   return (
     <div className="w-full max-w-md mx-auto rounded-2xl bg-[#0e121a] border border-[#242c3d] p-7 shadow-2xl">
@@ -93,7 +108,6 @@ export const SignInForm: React.FC = () => {
 
         <div className="flex items-center justify-between text-xs pt-1">
           <span className="text-[#94a3b8]">Your session is restored automatically.</span>
-
         </div>
 
         <Button
@@ -109,7 +123,10 @@ export const SignInForm: React.FC = () => {
 
       <div className="mt-6 text-center text-xs text-[#94a3b8]">
         Don&apos;t have an account yet?{" "}
-        <Link href="/auth/signup" className="text-[#00ff87] font-semibold hover:underline">
+        <Link
+          href="/auth/signup"
+          className="text-[#00ff87] font-semibold hover:underline"
+        >
           Create Account
         </Link>
       </div>
