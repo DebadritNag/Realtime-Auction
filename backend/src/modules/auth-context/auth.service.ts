@@ -7,7 +7,23 @@ export class JwtAuthService implements AuthService {
   constructor(private options: { secret?: string; jwksUrl?: string; issuer: string; audience: string }) {
     if (Boolean(options.secret) === Boolean(options.jwksUrl)) throw new Error('Configure exactly one JWT secret or JWKS URL.');
     if (options.secret && options.secret.length < 32) throw new Error('JWT secret must contain at least 32 characters.');
-    this.key = options.jwksUrl ? createRemoteJWKSet(new URL(options.jwksUrl)) : new TextEncoder().encode(options.secret!);
+    if (options.jwksUrl) {
+      this.key = createRemoteJWKSet(new URL(options.jwksUrl));
+    } else {
+      // Supabase JWT secrets are base64-encoded. Decode to raw bytes so jose
+      // verifies with the same key Supabase used to sign the token.
+      // Falls back to UTF-8 encoding if the secret is not valid base64.
+      try {
+        const decoded = Buffer.from(options.secret!, 'base64');
+        // Only use decoded bytes if decoding actually changed the length
+        // (i.e. the input really was base64 and not a plain string)
+        this.key = decoded.length < options.secret!.length
+          ? decoded
+          : new TextEncoder().encode(options.secret!);
+      } catch {
+        this.key = new TextEncoder().encode(options.secret!);
+      }
+    }
   }
   async verifyAccessToken(token: string): Promise<AuthContext> {
     try {
