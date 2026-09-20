@@ -26,7 +26,7 @@ export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
   const [confirmEndOpen, setConfirmEndOpen] = useState(false);
 
   return (
-    <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-[#080a0f] border border-[#242c3d] text-xs">
+    <div className="auction-host-controls flex items-center justify-between gap-2 p-2.5 rounded-xl bg-[#080a0f] border border-[#242c3d] text-xs">
       <div className="flex items-center gap-2">
         <span className="text-[10px] font-black uppercase tracking-widest text-[#00ff87] bg-[#00ff87]/15 px-2 py-0.5 rounded border border-[#00ff87]/30">
           HOST CONTROLS

@@ -35,7 +35,7 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
   const totalCount = players.length;
 
   return (
-    <div className="flex flex-col h-full bg-[#0e121a] rounded-2xl border border-[#242c3d] p-3 text-[#f8fafc] shadow-lg">
+    <div className="auction-pool-panel flex flex-col h-full bg-[#0e121a] rounded-2xl border border-[#242c3d] p-3 text-[#f8fafc] shadow-lg">
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-[#242c3d]">
         <div className="flex items-center gap-2">
@@ -54,6 +54,7 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
         {potCategories.map((cat) => (
           <button
             key={cat.id}
+            aria-pressed={selectedPot === cat.id}
             onClick={() => setSelectedPot(cat.id)}
             className={`px-2 py-1 text-[11px] font-semibold rounded-md shrink-0 transition-colors select-none ${
               selectedPot === cat.id
@@ -70,6 +71,7 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
       <div className="relative my-2">
         <input
           type="text"
+          aria-label="Filter player pool"
           placeholder="Filter players by name or club..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -87,10 +89,10 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
       </div>
 
       {/* Players List */}
-      <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 mt-1">
+      <div className="auction-player-list flex-1 overflow-y-auto space-y-1.5 pr-1 mt-1">
         {filteredPlayers.length === 0 ? (
           <p className="text-center text-xs text-[#64748b] py-8">
-            No players found in this category.
+            No players match this filter.
           </p>
         ) : (
           filteredPlayers.map((player) => {
@@ -101,11 +103,13 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
             return (
               <div
                 key={player.id}
-                className={`flex items-center justify-between p-2 rounded-xl border transition-all text-xs ${
+                className={`auction-player-row flex items-center justify-between p-2 rounded-xl border transition-all text-xs ${
                   isLive
                     ? "bg-[#00ff87]/15 border-[#00ff87] shadow-[0_0_15px_rgba(0,255,135,0.15)]"
                     : isSold
                     ? "bg-[#151a24]/60 border-[#242c3d]/40 opacity-75"
+                    : isUnsold
+                    ? "bg-amber-900/10 border-amber-800/30 opacity-70"
                     : "bg-[#151a24] border-[#242c3d] hover:border-[#37435e]"
                 }`}
               >
@@ -114,6 +118,12 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
                     <PlayCircle className="w-3.5 h-3.5 text-[#00ff87] animate-pulse shrink-0" />
                   ) : isSold ? (
                     <CheckCircle2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                  ) : isUnsold ? (
+                    <span className="w-3.5 h-3.5 shrink-0 flex items-center justify-center text-amber-500/70">
+                      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="9"/><path d="M12 8v4m0 4h.01" strokeLinecap="round"/>
+                      </svg>
+                    </span>
                   ) : (
                     <Clock className="w-3.5 h-3.5 text-[#64748b] shrink-0" />
                   )}
@@ -149,7 +159,13 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
                     </span>
                   )}
 
-                  {!isLive && !isSold && (
+                  {isUnsold && (
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-amber-900/30 text-amber-500/80 border border-amber-700/30">
+                      UNSOLD
+                    </span>
+                  )}
+
+                  {!isLive && !isSold && !isUnsold && (
                     <span className="text-[10px] font-mono text-[#64748b]">
                       {formatCr(player.basePrice)}
                     </span>

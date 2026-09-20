@@ -11,7 +11,7 @@ export interface BidFeedProps {
 
 export const BidFeed: React.FC<BidFeedProps> = ({ bids }) => {
   return (
-    <div className="w-full rounded-2xl bg-[#0e121a] border border-[#242c3d] p-3 text-[#f8fafc]">
+    <div className="auction-bid-feed w-full rounded-2xl bg-[#0e121a] border border-[#242c3d] p-3 text-[#f8fafc]">
       <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#242c3d]/60 text-[10px] font-bold uppercase tracking-wider text-[#64748b]">
         <span>LIVE BID LOG</span>
         <span>{bids.length} BIDS RECORDED</span>

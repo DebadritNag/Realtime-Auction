@@ -70,9 +70,13 @@ export default function ProfilePage() {
 
       {stats && <ProfileStats stats={stats} />}
 
-      <AchievementGrid achievements={achievements} />
+      <section id="achievements">
+        <AchievementGrid achievements={achievements} />
+      </section>
 
-      <AuctionHistory history={history} />
+      <section id="history">
+        <AuctionHistory history={history} />
+      </section>
     </div>
   );
 }

@@ -18,7 +18,7 @@ export const BudgetTicker: React.FC<BudgetTickerProps> = ({
   const { openTeamQuickView } = useUIStore();
 
   return (
-    <div className="w-full bg-[#0b0e14] border-b border-[#242c3d] overflow-x-auto py-2 px-3 shadow-inner">
+    <div className="auction-budget-ticker w-full bg-[#0b0e14] border-b border-[#242c3d] overflow-x-auto py-2 px-3 shadow-inner">
       <div className="flex items-center gap-3 min-w-max">
         <span className="text-[10px] font-bold uppercase tracking-widest text-[#64748b] pl-1 pr-2 border-r border-[#242c3d]">
           PURSE TICKER

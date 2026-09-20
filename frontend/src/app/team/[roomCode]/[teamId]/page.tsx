@@ -61,7 +61,7 @@ export default function TeamSquadPage({
         <span className="font-mono text-xs text-[#64748b]">Room: {roomCode}</span>
       </div>
 
-      <SquadFormationView team={team} squad={squad} />
+      <SquadFormationView team={team} squad={squad} roomCode={roomCode} />
     </div>
   );
 }

@@ -14,9 +14,9 @@ export const AISuggestionPanel: React.FC<AISuggestionPanelProps> = ({
 }) => {
   if (!suggestion) {
     return (
-      <div className="rounded-2xl bg-[#0e121a] border border-[#242c3d] p-4 text-center text-xs text-[#64748b]">
+      <div className="auction-ai-panel rounded-2xl bg-[#0e121a] border border-[#242c3d] p-4 text-center text-xs text-[#64748b]">
         <Bot className="w-5 h-5 mx-auto mb-2 opacity-50 text-[#00ff87]" />
-        <span>Synthesizing live tactical valuation...</span>
+        <span>Recommendations will appear when available.</span>
       </div>
     );
   }
@@ -28,7 +28,7 @@ export const AISuggestionPanel: React.FC<AISuggestionPanelProps> = ({
   };
 
   return (
-    <div className="rounded-2xl bg-[#0e121a] border border-[#242c3d] p-4 text-[#f8fafc] shadow-lg space-y-3 relative overflow-hidden">
+    <div className="auction-ai-panel rounded-2xl bg-[#0e121a] border border-[#242c3d] p-4 text-[#f8fafc] shadow-lg space-y-3 relative overflow-hidden">
       <div className="flex items-center justify-between border-b border-[#242c3d] pb-2.5">
         <div className="flex items-center gap-2">
           <div className="p-1 rounded-md bg-[#00ff87]/15 text-[#00ff87]">
@@ -51,7 +51,7 @@ export const AISuggestionPanel: React.FC<AISuggestionPanelProps> = ({
       </div>
 
       {/* Recommended Range & Ceiling */}
-      <div className="grid grid-cols-2 gap-2 text-center">
+      <div className="auction-ai-values grid grid-cols-2 gap-2 text-center">
         <div className="bg-[#151a24] p-2.5 rounded-xl border border-[#242c3d]">
           <span className="text-[10px] text-[#94a3b8] font-bold uppercase block mb-0.5">
             RECOMMENDED RANGE

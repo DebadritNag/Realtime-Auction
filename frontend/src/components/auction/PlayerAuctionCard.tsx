@@ -4,13 +4,15 @@ import React from "react";
 import { Player } from "@/types";
 import { Badge } from "@/components/ui/Badge";
 import { formatCr } from "@/lib/utils";
-import { Shield, Sparkles } from "lucide-react";
+import { Shield, Sparkles, UserRound } from "lucide-react";
 
 export interface PlayerAuctionCardProps {
   player: Player | null;
+  variant?: "default" | "auction";
 }
 
-export const PlayerAuctionCard: React.FC<PlayerAuctionCardProps> = ({ player }) => {
+export const PlayerAuctionCard: React.FC<PlayerAuctionCardProps> = ({ player, variant = "default" }) => {
+  if (variant === "auction") return <LivePlayerCard player={player} />;
   if (!player) {
     return (
       <div className="w-full aspect-[4/5] max-w-sm mx-auto rounded-3xl bg-[#0e121a] border border-[#242c3d] flex flex-col items-center justify-center p-6 text-center text-[#64748b]">
@@ -144,3 +146,26 @@ export const PlayerAuctionCard: React.FC<PlayerAuctionCardProps> = ({ player }) 
     </div>
   );
 };
+
+function LivePlayerCard({player}: {player: Player | null}) {
+  const [failedPhoto, setFailedPhoto] = React.useState<string | null>(null);
+  if (!player) return <section className="live-player-card live-player-empty" aria-label="Current player"><Shield size={32}/><h2>Waiting for the next player</h2><p>The next selection will appear when the server starts bidding.</p></section>;
+  const stats = Object.entries(player.stats);
+  const photo = player.photoUrl && /^https?:\/\//.test(player.photoUrl) && failedPhoto !== player.photoUrl;
+  return <section className="live-player-card" aria-label="Current player">
+    <div className="live-player-heading"><span className="live-player-position">{player.subPosition || player.position} <span>· {player.pot}</span></span>
+      <span className="live-player-nationality">{player.flagEmoji} {player.nationality || 'Nation unavailable'}</span></div>
+    <div className="live-player-identity">
+      <div className="live-player-rating"><strong>{player.ovr}</strong><span>OVR</span></div>
+      <div className="live-player-bio"><h2>{player.name}</h2><p>{player.club || 'Club unavailable'}</p>
+        <div className="live-player-facts"><span>Age <b>{player.age ?? '—'}</b></span><span>Foot <b>{player.preferredFoot ?? '—'}</b></span></div>
+      </div>
+      <div className="live-player-portrait">{photo ?
+        // Player images originate from the configured server catalog.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={player.photoUrl} alt={player.name} onError={()=>setFailedPhoto(player.photoUrl ?? null)}/> : <UserRound size={54} strokeWidth={1.2} aria-hidden="true"/>}</div>
+    </div>
+    <div className="live-player-price"><span>Base price <strong>{formatCr(player.basePrice)}</strong></span>{player.ovr >= 90 && <span className="live-player-tier"><Sparkles size={12}/> Elite player</span>}</div>
+    <dl className="live-player-stats">{stats.map(([name,value])=><div key={name}><dt>{name.toUpperCase()}</dt><dd>{value ?? '—'}</dd></div>)}</dl>
+  </section>;
+}

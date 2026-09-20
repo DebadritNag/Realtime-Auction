@@ -6,8 +6,7 @@ import { useAuctionStore } from "@/stores/auction.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { useUIStore } from "@/stores/ui.store";
 import { useConnectionStore } from "@/stores/connection.store";
-import { auctionService } from "@/services/auction.service";
-import type { Player } from "@/types";
+import "./auction.css";
 
 import { BudgetTicker } from "@/components/auction/BudgetTicker";
 import { PlayerPoolSidebar } from "@/components/auction/PlayerPoolSidebar";
@@ -17,6 +16,7 @@ import { AuctionTimer } from "@/components/auction/AuctionTimer";
 import { AuctionControls } from "@/components/auction/AuctionControls";
 import { TeamPanel } from "@/components/auction/TeamPanel";
 import { TeamQuickView } from "@/components/auction/TeamQuickView";
+import { TeamViewDrawer } from "@/components/auction/TeamViewDrawer";
 import { AISuggestionPanel } from "@/components/auction/AISuggestionPanel";
 import { HostAuctionControls } from "@/components/auction/HostAuctionControls";
 import { SoldOverlay } from "@/components/auction/SoldOverlay";
@@ -66,8 +66,6 @@ export default function LiveAuctionPage({
   const antiSnipingNotice = useAuctionStore((state) => state.antiSnipingNotice);
   const bidErrorNotice = useAuctionStore((state) => state.bidErrorNotice);
 
-  const initAuction = useAuctionStore((state) => state.initAuction);
-  const leaveAuction = useAuctionStore((state) => state.leaveAuction);
   const placeBid = useAuctionStore((state) => state.placeBid);
   const hostPause = useAuctionStore((state) => state.hostPause);
   const hostResume = useAuctionStore((state) => state.hostResume);
@@ -82,6 +80,11 @@ export default function LiveAuctionPage({
     isTeamQuickViewOpen,
     selectedTeamId,
     closeTeamQuickView,
+    isTeamViewOpen,
+    teamViewTeamId,
+    openTeamView,
+    closeTeamView,
+    setTeamViewTeam,
     isMobilePlayerDrawerOpen,
     isMobileTeamDrawerOpen,
     isMobileAIDrawerOpen,
@@ -105,13 +108,13 @@ export default function LiveAuctionPage({
     teams.find((t) => t.id === selectedTeamId) || null;
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex flex-col bg-[#07090d] text-[#f8fafc] relative overflow-x-hidden">
+    <div className="auction-workspace">
       {!snapshot && <div className="p-4 text-center text-sm text-amber-300">{bidErrorNotice || "Synchronizing room state…"}</div>}
       {/* 1. TOP STICKY BUDGET TICKER */}
       <BudgetTicker teams={teams} currentTeamId={userTeam?.id} />
 
       {/* Subheader with room code, status, and mobile drawer buttons */}
-      <div className="w-full bg-[#0b0e14] border-b border-[#242c3d] px-4 py-2 flex items-center justify-between">
+      <div className="auction-subheader">
         <div className="flex items-center gap-3">
           <span className="font-mono text-xs font-black text-[#00ff87]">
             {roomCode}
@@ -123,7 +126,7 @@ export default function LiveAuctionPage({
         </div>
 
         {/* Mobile / Tablet Triggers for Drawers */}
-        <div className="flex lg:hidden items-center gap-1.5">
+        <div className="auction-mobile-tools flex items-center gap-1.5">
           <Button
             variant="secondary"
             size="sm"
@@ -143,6 +146,14 @@ export default function LiveAuctionPage({
           <Button
             variant="secondary"
             size="sm"
+            onClick={() => openTeamView(userTeam?.id)}
+            leftIcon={<Users className="w-3.5 h-3.5 text-[#00ff87]" />}
+          >
+            My Squad
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => setMobileAIDrawer(true)}
             leftIcon={<Bot className="w-3.5 h-3.5 text-purple-400" />}
           >
@@ -157,7 +168,7 @@ export default function LiveAuctionPage({
 
       {/* Host Bar if current user is room host */}
       {isHost && (
-        <div className="px-4 py-1.5 bg-[#080a0f] border-b border-[#242c3d]">
+        <div className="auction-hostbar">
           <HostAuctionControls
             isPaused={auctionStatus === "PAUSED"}
             onPause={hostPause}
@@ -174,9 +185,9 @@ export default function LiveAuctionPage({
       )}
 
       {/* 2. MAIN 3-COLUMN AUCTION LAYOUT */}
-      <div className="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+      <div className="auction-grid">
         {/* LEFT COLUMN: Pot / Player Pool Sidebar (Hidden on mobile/tablet, available via Drawer) */}
-        <div className="hidden lg:block lg:col-span-3 h-[calc(100vh-10rem)] sticky top-28">
+        <div className="auction-pool-column">
           <PlayerPoolSidebar
             players={playerPool}
             activePlayerId={activePlayer?.id}
@@ -185,12 +196,12 @@ export default function LiveAuctionPage({
         </div>
 
         {/* CENTER COLUMN: Player Card & Live Auction Console */}
-        <div className="lg:col-span-6 space-y-4 max-w-xl mx-auto w-full">
+        <div className="auction-center">
           {/* Player Card */}
-          <PlayerAuctionCard player={activePlayer} />
+          <PlayerAuctionCard player={activePlayer} variant="auction" />
 
-          {/* Current Bid & Timer in 2-column on center */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <section className="auction-bid-console" aria-label="Live bidding">
+          <div className="auction-metrics">
             <CurrentBid
               currentBid={currentBid}
               highestBidder={highestBidder}
@@ -222,17 +233,28 @@ export default function LiveAuctionPage({
             onClearError={clearBidError}
           />
 
+          </section>
           {/* Live Recent Bids Feed */}
           <BidFeed bids={recentBids} />
         </div>
 
         {/* RIGHT COLUMN: Teams & AI Assistant (Hidden on mobile/tablet, available via Drawer) */}
-        <div className="hidden lg:flex lg:col-span-3 flex-col gap-4 h-[calc(100vh-10rem)] sticky top-28">
-          <div className="flex-1 overflow-hidden min-h-[300px]">
+        <div className="auction-right-column">
+          <div className="auction-teams-slot">
+            <div className="flex items-center justify-between mb-1.5 px-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#64748b]">Teams</span>
+              <button
+                onClick={() => openTeamView(userTeam?.id)}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide border border-[#00ff87]/30 bg-[#00ff87]/5 text-[#00ff87] hover:bg-[#00ff87]/15 transition-colors"
+              >
+                <Users className="w-3 h-3" />
+                Team View
+              </button>
+            </div>
             <TeamPanel teams={teams} currentTeamId={userTeam?.id} />
           </div>
 
-          <div className="shrink-0">
+          <div className="auction-assistant-slot">
             <AISuggestionPanel suggestion={aiSuggestion} />
           </div>
         </div>
@@ -291,6 +313,24 @@ export default function LiveAuctionPage({
       {/* 4. OVERLAYS */}
       <SoldOverlay soldData={soldOverlay} onDismiss={dismissSoldOverlay} />
       <UnsoldOverlay unsoldData={unsoldOverlay} onDismiss={dismissUnsoldOverlay} />
+
+      {/* 5. TEAM VIEW DRAWER */}
+      <TeamViewDrawer
+        isOpen={isTeamViewOpen}
+        onClose={closeTeamView}
+        teams={teams}
+        selectedTeamId={teamViewTeamId}
+        currentUserTeamId={userTeam?.id ?? null}
+        roomCode={roomCode}
+        auctionName={snapshot?.room?.auctionName}
+        settings={snapshot ? {
+          maxSquadSize: snapshot.settings.maxSquadSize,
+          minSquadSize: snapshot.settings.minSquadSize,
+          startingBudget: snapshot.settings.startingBudgetCr,
+          minPlayerBasePrice: snapshot.settings.minimumBasePriceCr,
+        } : null}
+        onSelectTeam={setTeamViewTeam}
+      />
     </div>
   );
 }

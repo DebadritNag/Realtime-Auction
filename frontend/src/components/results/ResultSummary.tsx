@@ -1,15 +1,39 @@
 "use client";
 
-import React from "react";
-import { AuctionAnalytics } from "@/types";
+import React, { useState } from "react";
+import { AuctionAnalytics, Team } from "@/types";
+import { Button } from "@/components/ui/Button";
+import { Toast } from "@/components/ui/Toast";
 import { formatCr } from "@/lib/utils";
-import { Trophy, Users, ShoppingBag, DollarSign, RotateCcw } from "lucide-react";
+import { generateResultsPdf } from "@/lib/pdf";
+import { Trophy, Users, ShoppingBag, DollarSign, RotateCcw, Download, Loader2 } from "lucide-react";
 
 export interface ResultSummaryProps {
   analytics: AuctionAnalytics;
+  teams?: Team[];
 }
 
-export const ResultSummary: React.FC<ResultSummaryProps> = ({ analytics }) => {
+export const ResultSummary: React.FC<ResultSummaryProps> = ({ analytics, teams = [] }) => {
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+
+  const handleDownloadPdf = async () => {
+    if (isGeneratingPdf) return;
+    try {
+      setIsGeneratingPdf(true);
+      setPdfError(null);
+      generateResultsPdf({
+        analytics,
+        teams,
+      });
+    } catch (err) {
+      console.error("Failed to generate results PDF:", err);
+      setPdfError("Unable to export results PDF. Please try again.");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Trophy Banner */}
@@ -26,12 +50,27 @@ export const ResultSummary: React.FC<ResultSummaryProps> = ({ analytics }) => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="w-16 h-16 rounded-2xl bg-[#00ff87]/15 border border-[#00ff87]/30 flex items-center justify-center text-3xl shadow-[0_0_30px_rgba(0,255,135,0.25)]">
+        <div className="flex flex-col sm:flex-row items-center gap-4 relative z-10">
+          <Button
+            variant="stadium"
+            size="md"
+            onClick={handleDownloadPdf}
+            isLoading={isGeneratingPdf}
+            leftIcon={<Download className="w-4 h-4 text-[#08090d]" />}
+            className="text-xs font-black uppercase tracking-wider py-3 px-5 whitespace-nowrap shadow-[0_0_20px_rgba(0,255,135,0.3)]"
+          >
+            {isGeneratingPdf ? "GENERATING REPORT..." : "DOWNLOAD RESULTS PDF"}
+          </Button>
+
+          <div className="w-16 h-16 rounded-2xl bg-[#00ff87]/15 border border-[#00ff87]/30 flex items-center justify-center text-3xl shadow-[0_0_30px_rgba(0,255,135,0.25)] shrink-0">
             🏆
           </div>
         </div>
       </div>
+
+      {pdfError && (
+        <Toast type="error" message={pdfError} onClose={() => setPdfError(null)} />
+      )}
 
       {/* Aggregate Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">

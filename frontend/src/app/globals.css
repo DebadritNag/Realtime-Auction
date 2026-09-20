@@ -23,12 +23,70 @@
   }
 
   body {
-    background-color: var(--bg-main);
-    color: var(--text-primary);
+    background-color: #04090E;
+    color: #E2E8F0;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     overflow-x: hidden;
   }
 }
+
+@theme {
+  --color-brand-dark: #050B10;
+  --color-brand-panel: #09151F;
+  --color-brand-panelSoft: #0E1F2C;
+  --color-brand-mint: #00F29D;
+  --color-brand-mintHover: #05ffaa;
+  --color-brand-teal: #00BFA5;
+  --color-brand-cyan: #00E5FF;
+  --color-brand-border: #163143;
+  --color-brand-borderGlow: rgba(0, 242, 157, 0.2);
+
+  --shadow-glow-mint: 0 0 35px -5px rgba(0, 242, 157, 0.45);
+  --shadow-glow-cyan: 0 0 30px -5px rgba(0, 229, 255, 0.35);
+  --shadow-glow-card: 0 0 25px 0 rgba(0, 242, 157, 0.08);
+}
+
+/* Radial ambient glows to replicate dynamic stadium lighting */
+.bg-stadium-glow {
+  background: radial-gradient(circle at 68% 30%, rgba(0, 242, 157, 0.18) 0%, rgba(0, 191, 165, 0.08) 32%, transparent 70%);
+}
+
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, rgba(22, 49, 67, 0.22) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(22, 49, 67, 0.22) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.card-glass {
+  background: linear-gradient(135deg, rgba(14, 31, 44, 0.72) 0%, rgba(7, 18, 26, 0.85) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.hero-script-font {
+  font-family: var(--font-caveat), 'Caveat', cursive;
+  letter-spacing: 0.5px;
+  line-height: 1.05;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.4), 0 0 30px rgba(0, 242, 157, 0.3);
+}
+
+/* Fut card polygon & gold/dark foil effects */
+.fut-card {
+  clip-path: polygon(12% 0, 88% 0, 100% 9%, 100% 91%, 88% 100%, 12% 100%, 0 91%, 0 9%);
+}
+
+.shadow-glow-mint {
+  box-shadow: 0 0 35px -5px rgba(0, 242, 157, 0.45);
+}
+
+.shadow-glow-cyan {
+  box-shadow: 0 0 30px -5px rgba(0, 229, 255, 0.35);
+}
+
+.shadow-glow-card {
+  box-shadow: 0 0 25px 0 rgba(0, 242, 157, 0.08);
+}
+
 
 /* Custom stadium & pitch background accents */
 .pitch-radial-grid {

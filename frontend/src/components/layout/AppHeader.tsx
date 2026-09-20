@@ -35,116 +35,132 @@ export const AppHeader: React.FC = () => {
     : user?.username?.slice(0, 2).toUpperCase() ?? "?";
 
   return (
-    <header className="h-[58px] bg-[rgba(2,14,23,0.96)] border-b border-[rgba(95,135,164,0.18)] sticky top-0 z-50 backdrop-blur-md px-6 flex items-center justify-between flex-shrink-0">
+    <header className="w-full border-b border-brand-border/60 bg-[#060D14]/80 backdrop-blur-md sticky top-0 z-50">
+      <div className="max-w-[1440px] mx-auto px-6 h-20 flex items-center justify-between">
 
-      {/* ── Logo ──────────────────────────────────────────────── */}
-      <Link
-        href={isAuthenticated ? "/home" : "/"}
-        className="flex items-center space-x-3 group flex-shrink-0"
-      >
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#00DDA8] to-[#00F5A0] flex items-center justify-center text-[#020D15] shadow-[0_0_12px_rgba(0,245,160,0.4)] transition-transform group-hover:scale-105">
-          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-            <path d="M5 3h14v2H5V3zm2 4h10v2a5 5 0 0 1-4 4.9V17h3v2H8v-2h3v-3.1A5 5 0 0 1 7 9V7zm-4 1h2v3a4 4 0 0 0 2 3.465V12a6 6 0 0 1-4-4zm18 0v4a6 6 0 0 1-4 4v-2.535a4 4 0 0 0 2-3.465V8h2z" />
-          </svg>
-        </div>
-        <div className="flex flex-col">
-          <span className="text-[17px] font-black tracking-tight leading-none text-white">
-            ARENA<span className="text-[#00F5A0]">AUCTION</span>
-          </span>
-          <span className="text-[7.5px] font-bold tracking-[0.24em] text-[#7E92A5] mt-[2px]">
-            REAL-TIME FOOTBALL
-          </span>
-        </div>
-      </Link>
-
-      {/* ── App nav (authenticated, not on auction screen) ────── */}
-      {showAppNav && !isLiveAuction && (
-        <nav className="hidden md:flex items-center space-x-2 text-[13px] font-semibold">
-          <Link
-            href="/home"
-            className={cn(
-              "flex items-center space-x-2 px-3.5 py-1.5 rounded-full transition-colors",
-              pathname === "/home"
-                ? "text-[#00F5A0] bg-[#00F5A0]/10 border border-[#00F5A0]/70 px-4"
-                : "text-[#8CA0B3] hover:text-white"
-            )}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" strokeLinecap="round" strokeLinejoin="round" />
+        {/* ── Logo ──────────────────────────────────────────────── */}
+        <Link
+          href={isAuthenticated ? "/home" : "/"}
+          className="flex items-center gap-3.5 group flex-shrink-0"
+        >
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-mint/25 to-brand-mint/5 border border-brand-mint/60 flex items-center justify-center shadow-glow-mint transition-transform duration-300 group-hover:scale-105">
+            <svg className="w-6 h-6 text-brand-mint" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.78 2.72 3.23 3.33L10 19v2h4v-2l-.62-2.73c1.45-.61 2.6-1.83 3.23-3.33 2.47-.31 4.39-2.39 4.39-4.94V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z" />
             </svg>
-            <span>Dashboard</span>
-          </Link>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-white font-extrabold tracking-wider text-lg leading-none">
+              ARENA<span className="text-brand-mint">AUCTION</span>
+            </span>
+            <span className="text-[10px] tracking-[0.24em] font-semibold text-slate-400 mt-1 uppercase">
+              Real-Time Football
+            </span>
+          </div>
+        </Link>
 
-          <Link
-            href="/create"
-            className={cn(
-              "flex items-center space-x-2 px-3.5 py-1.5 rounded-full transition-all",
-              pathname === "/create"
-                ? "text-[#00F5A0] bg-[#00F5A0]/10 border border-[#00F5A0]/70 px-4"
-                : "text-[#8CA0B3] hover:text-white"
-            )}
-          >
-            <svg className="w-4 h-4 text-[#00F5A0]" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 8v8m-4-4h8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span>Create Room</span>
-          </Link>
+        {/* ── Center Nav Navigation (Public) ────────────────────── */}
+        {isPublicPage && (
+          <nav className="hidden md:flex items-center space-x-10">
+            <Link
+              href="/"
+              className="relative py-2 text-sm font-semibold text-white tracking-wide transition-colors"
+            >
+              Home
+              {pathname === "/" && (
+                <span className="absolute bottom-0 left-0 w-full h-[2.5px] bg-brand-mint shadow-[0_0_12px_#00F29D] rounded-full" />
+              )}
+            </Link>
+          </nav>
+        )}
 
-          <Link
-            href="/join"
-            className={cn(
-              "flex items-center space-x-2 px-3.5 py-1.5 rounded-full transition-colors",
-              pathname === "/join"
-                ? "text-[#00F5A0] bg-[#00F5A0]/10 border border-[#00F5A0]/70 px-4"
-                : "text-[#8CA0B3] hover:text-white"
-            )}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span>Join Room</span>
-          </Link>
+        {/* ── App nav (authenticated, not on auction screen) ────── */}
+        {showAppNav && !isLiveAuction && (
+          <nav className="hidden md:flex items-center space-x-2 text-[13px] font-semibold">
+            <Link
+              href="/home"
+              className={cn(
+                "flex items-center space-x-2 px-3.5 py-1.5 rounded-full transition-colors",
+                pathname === "/home"
+                  ? "text-brand-mint bg-brand-mint/10 border border-brand-mint/70 px-4"
+                  : "text-[#8CA0B3] hover:text-white"
+              )}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>Dashboard</span>
+            </Link>
 
-          <Link
-            href="/results/PREM-2026"
-            className={cn(
-              "flex items-center space-x-2 px-3.5 py-1.5 rounded-full transition-colors",
-              pathname?.startsWith("/results")
-                ? "text-[#00F5A0] bg-[#00F5A0]/10 border border-[#00F5A0]/70 px-4"
-                : "text-[#8CA0B3] hover:text-white"
-            )}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span>Leaderboard</span>
-          </Link>
-        </nav>
-      )}
+            <Link
+              href="/create"
+              className={cn(
+                "flex items-center space-x-2 px-3.5 py-1.5 rounded-full transition-all",
+                pathname === "/create"
+                  ? "text-brand-mint bg-brand-mint/10 border border-brand-mint/70 px-4"
+                  : "text-[#8CA0B3] hover:text-white"
+              )}
+            >
+              <svg className="w-4 h-4 text-brand-mint" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 8v8m-4-4h8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>Create Room</span>
+            </Link>
 
-      {/* ── Public Sign In / Sign Up links ────────────────────── */}
-      {isPublicPage && (
-        <nav className="hidden md:flex items-center space-x-1 text-[13px] font-semibold">
-          <Link
-            href="/auth/signin"
-            className={cn(
-              "px-4 py-1.5 rounded-full transition-colors",
-              pathname === "/auth/signin"
-                ? "text-[#00F5A0]"
-                : "text-[#8CA0B3] hover:text-white"
-            )}
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/auth/signup"
-            className="px-4 py-1.5 rounded-full bg-[#00F5A0]/10 border border-[#00F5A0]/40 text-[#00F5A0] hover:bg-[#00F5A0]/20 transition-colors"
-          >
-            Sign Up
-          </Link>
-        </nav>
-      )}
+            <Link
+              href="/join"
+              className={cn(
+                "flex items-center space-x-2 px-3.5 py-1.5 rounded-full transition-colors",
+                pathname === "/join"
+                  ? "text-brand-mint bg-brand-mint/10 border border-brand-mint/70 px-4"
+                  : "text-[#8CA0B3] hover:text-white"
+              )}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>Join Room</span>
+            </Link>
+
+            <Link
+              href="/results/PREM-2026"
+              className={cn(
+                "flex items-center space-x-2 px-3.5 py-1.5 rounded-full transition-colors",
+                pathname?.startsWith("/results")
+                  ? "text-brand-mint bg-brand-mint/10 border border-brand-mint/70 px-4"
+                  : "text-[#8CA0B3] hover:text-white"
+              )}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>Leaderboard</span>
+            </Link>
+          </nav>
+        )}
+
+        {/* ── Public Sign In / Sign Up buttons ──────────────────── */}
+        {isPublicPage && (
+          <div className="flex items-center gap-4">
+            <Link
+              href="/auth/signin"
+              className={cn(
+                "px-5 py-2 text-sm font-semibold transition-colors",
+                pathname === "/auth/signin"
+                  ? "text-brand-mint"
+                  : "text-slate-300 hover:text-white"
+              )}
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/auth/signup"
+              className="px-6 py-2.5 rounded-lg bg-brand-mint text-slate-950 font-bold text-sm tracking-wide shadow-glow-mint hover:bg-brand-mintHover hover:shadow-[0_0_40px_rgba(0,242,157,0.7)] transition-all duration-200"
+            >
+              Sign Up
+            </Link>
+          </div>
+        )}
 
       {/* ── Right side controls ───────────────────────────────── */}
       <div className="flex items-center space-x-3">
@@ -227,6 +243,7 @@ export const AppHeader: React.FC = () => {
           </button>
         )}
       </div>
+    </div>
 
       {/* ── Mobile dropdown ───────────────────────────────────── */}
       {showAppNav && mobileMenuOpen && (

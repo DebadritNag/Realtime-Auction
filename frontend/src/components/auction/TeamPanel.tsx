@@ -18,7 +18,7 @@ export const TeamPanel: React.FC<TeamPanelProps> = ({
   const { openTeamQuickView } = useUIStore();
 
   return (
-    <div className="flex flex-col h-full bg-[#0e121a] rounded-2xl border border-[#242c3d] p-3 text-[#f8fafc] shadow-lg">
+    <div className="auction-team-panel flex flex-col h-full bg-[#0e121a] rounded-2xl border border-[#242c3d] p-3 text-[#f8fafc] shadow-lg">
       <div className="flex items-center justify-between pb-3 border-b border-[#242c3d]">
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-[#00ff87]" />
@@ -31,14 +31,16 @@ export const TeamPanel: React.FC<TeamPanelProps> = ({
         </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-2 mt-2 pr-1">
+      <div className="auction-team-list flex-1 overflow-y-auto space-y-2 mt-2 pr-1">
         {teams.map((team) => {
           const isUser = team.id === currentTeamId || team.isCurrentUser;
           return (
-            <div
+            <button
+              type="button"
+              aria-label={`View ${team.name} squad`}
               key={team.id}
               onClick={() => openTeamQuickView(team.id)}
-              className={`p-2.5 rounded-xl border transition-all cursor-pointer select-none group ${
+              className={`auction-team-row w-full text-left p-2.5 rounded-xl border transition-all cursor-pointer select-none group ${
                 isUser
                   ? "bg-[#00ff87]/10 border-[#00ff87]/50 shadow-[0_0_15px_rgba(0,255,135,0.12)]"
                   : "bg-[#151a24] border-[#242c3d] hover:border-[#37435e] hover:bg-[#1a2130]"
@@ -85,7 +87,7 @@ export const TeamPanel: React.FC<TeamPanelProps> = ({
                 <span>ATT {team.positions?.att ?? 0}</span>
                 <ChevronRight className="w-3 h-3 text-[#64748b] group-hover:text-[#00ff87] transition-colors ml-1" />
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

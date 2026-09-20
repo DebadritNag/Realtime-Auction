@@ -21,7 +21,7 @@ export const CurrentBid: React.FC<CurrentBidProps> = ({
     (highestBidder.id === currentTeamId || highestBidder.isCurrentUser);
 
   return (
-    <div className="w-full rounded-2xl bg-[#0e121a] border border-[#242c3d] p-4 text-center relative overflow-hidden shadow-lg">
+    <div className="auction-current-bid w-full rounded-2xl bg-[#0e121a] border border-[#242c3d] p-4 text-center relative overflow-hidden shadow-lg">
       <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest text-[#94a3b8] mb-1">
         <span className="flex items-center gap-1.5">
           <Flame className="w-3.5 h-3.5 text-amber-400" />

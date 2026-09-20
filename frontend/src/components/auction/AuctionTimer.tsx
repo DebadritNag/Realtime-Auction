@@ -25,7 +25,7 @@ export const AuctionTimer: React.FC<AuctionTimerProps> = ({
 
   return (
     <div
-      className={`rounded-2xl border transition-all duration-300 p-4 text-center ${
+      className={`auction-timer rounded-2xl border transition-all duration-300 p-4 text-center ${
         isUrgent
           ? "bg-red-950/30 border-red-500 animate-timer-urgency"
           : isExpired

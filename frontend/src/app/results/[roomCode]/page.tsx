@@ -66,7 +66,7 @@ export default function ResultsPage({
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
       {/* Top Banner and Summary */}
-      <ResultSummary analytics={analytics} />
+      <ResultSummary analytics={analytics} teams={teams} />
 
       {/* Navigation Tabs */}
       <div className="flex items-center justify-between border-b border-[#242c3d] pb-3 overflow-x-auto">

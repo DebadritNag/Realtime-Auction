@@ -1,20 +1,53 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Player, Team } from "@/types";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Toast } from "@/components/ui/Toast";
 import { formatCr } from "@/lib/utils";
-import { Shield, Users, DollarSign } from "lucide-react";
+import { generateTeamPdf } from "@/lib/pdf";
+import { Shield, Users, DollarSign, Download, Loader2 } from "lucide-react";
 
 export interface SquadFormationViewProps {
   team: Team;
   squad: Player[];
+  roomCode?: string;
+  auctionName?: string;
 }
 
 export const SquadFormationView: React.FC<SquadFormationViewProps> = ({
   team,
   squad,
+  roomCode,
+  auctionName,
 }) => {
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+
+  const handleDownloadPdf = async () => {
+    if (isGeneratingPdf) return;
+    try {
+      setIsGeneratingPdf(true);
+      setPdfError(null);
+      const enrichedTeam: Team = {
+        ...team,
+        squad: squad.length > 0 ? squad : team.squad || [],
+      };
+      generateTeamPdf({
+        auctionName: auctionName || "ArenaAuction",
+        roomCode: roomCode || "ROOM",
+        team: enrichedTeam,
+        maxSquadSize: 24,
+        minSquadSize: 15,
+      });
+    } catch (err) {
+      console.error("Failed to generate squad PDF:", err);
+      setPdfError("Unable to export PDF. Please try again.");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
   const gkList = squad.filter((p) => p.position === "GK");
   const defList = squad.filter((p) => p.position === "DEF");
   const midList = squad.filter((p) => p.position === "MID");
@@ -98,35 +131,52 @@ export const SquadFormationView: React.FC<SquadFormationViewProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-xs">
-          <div className="bg-[#151a24] p-3 rounded-xl border border-[#242c3d] text-center min-w-[110px]">
-            <span className="text-[10px] text-[#64748b] font-bold uppercase block mb-1">
-              PURSE SPENT
-            </span>
-            <span className="text-base font-black font-mono text-amber-400">
-              {formatCr(team.budgetSpent)}
-            </span>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="flex items-center gap-3 text-xs">
+            <div className="bg-[#151a24] p-3 rounded-xl border border-[#242c3d] text-center min-w-[100px] flex-1 sm:flex-initial">
+              <span className="text-[10px] text-[#64748b] font-bold uppercase block mb-1">
+                PURSE SPENT
+              </span>
+              <span className="text-base font-black font-mono text-amber-400">
+                {formatCr(team.budgetSpent)}
+              </span>
+            </div>
+
+            <div className="bg-[#151a24] p-3 rounded-xl border border-[#242c3d] text-center min-w-[100px] flex-1 sm:flex-initial">
+              <span className="text-[10px] text-[#64748b] font-bold uppercase block mb-1">
+                LEFTOVER PURSE
+              </span>
+              <span className="text-base font-black font-mono text-[#00ff87]">
+                {formatCr(team.budgetRemaining)}
+              </span>
+            </div>
+
+            <div className="bg-[#151a24] p-3 rounded-xl border border-[#242c3d] text-center min-w-[80px] flex-1 sm:flex-initial">
+              <span className="text-[10px] text-[#64748b] font-bold uppercase block mb-1">
+                ROSTER
+              </span>
+              <span className="text-base font-black font-mono text-[#f8fafc]">
+                {squad.length} / 18
+              </span>
+            </div>
           </div>
 
-          <div className="bg-[#151a24] p-3 rounded-xl border border-[#242c3d] text-center min-w-[110px]">
-            <span className="text-[10px] text-[#64748b] font-bold uppercase block mb-1">
-              LEFTOVER PURSE
-            </span>
-            <span className="text-base font-black font-mono text-[#00ff87]">
-              {formatCr(team.budgetRemaining)}
-            </span>
-          </div>
-
-          <div className="bg-[#151a24] p-3 rounded-xl border border-[#242c3d] text-center min-w-[90px]">
-            <span className="text-[10px] text-[#64748b] font-bold uppercase block mb-1">
-              ROSTER
-            </span>
-            <span className="text-base font-black font-mono text-[#f8fafc]">
-              {squad.length} / 18
-            </span>
-          </div>
+          <Button
+            variant="outline"
+            size="md"
+            onClick={handleDownloadPdf}
+            isLoading={isGeneratingPdf}
+            leftIcon={<Download className="w-4 h-4 text-[#00ff87]" />}
+            className="border-[#00ff87]/50 text-[#00ff87] hover:bg-[#00ff87]/15 text-xs font-bold whitespace-nowrap shadow-[0_0_15px_rgba(0,255,135,0.15)] py-3 px-4"
+          >
+            {isGeneratingPdf ? "GENERATING PDF..." : "DOWNLOAD TEAM PDF"}
+          </Button>
         </div>
       </div>
+
+      {pdfError && (
+        <Toast type="error" message={pdfError} onClose={() => setPdfError(null)} />
+      )}
 
       {/* Position Grouped Formation */}
       <div className="space-y-6">

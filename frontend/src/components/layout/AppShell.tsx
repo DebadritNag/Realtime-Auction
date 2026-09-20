@@ -62,7 +62,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           children
         )}
       </main>
-      <Footer />
+      {!pathname.startsWith("/auction/") && <Footer />}
       <MobileNav />
     </div>
   );
