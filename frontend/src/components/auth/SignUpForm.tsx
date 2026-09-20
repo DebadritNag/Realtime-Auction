@@ -42,7 +42,6 @@ export const SignUpForm: React.FC = () => {
     const success = await signUp({ username, email, password });
     if (success) {
       router.replace("/home");
-      router.refresh();
     }
   };
 

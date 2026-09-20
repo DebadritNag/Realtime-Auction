@@ -48,10 +48,9 @@ export const SignInForm: React.FC = () => {
 
     const success = await signIn({ email, password });
     if (success) {
-      // router.replace navigates client-side; router.refresh() re-runs
-      // the server component tree so the proxy sees the fresh session cookie.
+      // signIn() already set isAuthenticated=true and isRestoring=false in the
+      // store synchronously, so the AppShell guard will pass on the next render.
       router.replace(safeRedirect);
-      router.refresh();
     }
   };
 
