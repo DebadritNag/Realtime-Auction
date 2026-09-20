@@ -25,6 +25,8 @@ export interface Room {
   id: string; code: string; hostUserId: string; auctionName: string; status: RoomStatus;
   createdAt: number; settings: RoomSettings; teams: Team[]; players: AuctionPlayer[];
   active: ActiveAuction | null; playerQueue: string[]; purchases: Purchase[]; bids: Bid[];
+  // Anti-streak tracking: track the last pot used and how many times in a row
+  lastPot?: string; consecutivePotCount?: number;
   sequence: number; nextPlayerAt: number | null; receipts: Record<string, CommandReceipt>;
 }
 export interface ServerEvent {

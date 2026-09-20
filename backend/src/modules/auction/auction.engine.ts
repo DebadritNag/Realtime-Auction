@@ -54,36 +54,10 @@ export class AuctionEngine {
             if (room.settings.playerPoolConfig.playerIds) requireThat(room.settings.playerPoolConfig.playerIds.every(id => pool.some(p => p.id === id)),
               'INVALID_PLAYER_POOL', 'One or more selected players are missing or excluded by pot filters.');
             room.players = pool.map(p => ({ ...p, basePriceUnits: Math.max(p.basePriceUnits, toUnits(room.settings.minimumBasePriceCr)), status: 'WAITING', round: 0 }));
-
-            // ── Shuffle: randomize category order then shuffle within each category ──
-            // This runs once on the server at auction start and is persisted in
-            // room.playerQueue.  Every client that reconnects receives the same
-            // order from ROOM_STATE.  Math.random() is Node's built-in PRNG —
-            // sufficient for a non-security use case.
-            function fisherYates<T>(arr: T[]): T[] {
-              for (let i = arr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [arr[i], arr[j]] = [arr[j]!, arr[i]!];
-              }
-              return arr;
-            }
-            // Group players by potId
-            const potMap = new Map<string, typeof room.players>();
-            for (const p of room.players) {
-              const group = potMap.get(p.potId) ?? [];
-              group.push(p);
-              potMap.set(p.potId, group);
-            }
-            // Shuffle category order, then shuffle each category's players
-            const potOrder = fisherYates([...potMap.keys()]);
-            const orderedIds: string[] = [];
-            for (const pot of potOrder) {
-              const shuffledPot = fisherYates(potMap.get(pot)!);
-              for (const p of shuffledPot) orderedIds.push(p.id);
-            }
-            room.playerQueue = orderedIds;
-            // ── End shuffle ────────────────────────────────────────────────────────
-
+            // playerQueue stays empty — activateNext picks randomly from room.players each time.
+            room.playerQueue = [];
+            room.lastPot = undefined;
+            room.consecutivePotCount = 0;
             transitionRoom(room, 'STARTING');
             transitionRoom(room, 'RUNNING');
             events.push({ type: 'AUCTION_STARTED' });
@@ -115,11 +89,14 @@ export class AuctionEngine {
             this.resolve(room, events);
             break;
           case 'START_RECALL': {
-            requireThat(room.status === 'RUNNING' && !room.active && room.playerQueue.length === 0,
+            requireThat(room.status === 'RUNNING' && !room.active && room.playerQueue.length === 0 && !room.players.some(p => p.status === 'WAITING'),
               'INVALID_STATE', 'Recall requires a running auction between completed rounds.', 409);
             const unsold = room.players.filter(p => p.status === 'UNSOLD');
             requireThat(unsold.length > 0, 'NO_UNSOLD_PLAYERS', 'No unsold players to recall.');
             room.playerQueue = unsold.map(p => p.id);
+            // Reset anti-streak for recall round
+            room.lastPot = undefined;
+            room.consecutivePotCount = 0;
             events.push({ type: 'ROOM_UPDATED', payload: { reason: 'RECALL_STARTED' } });
             this.activateNext(room, events);
             break;
@@ -168,14 +145,56 @@ export class AuctionEngine {
     });
   }
   private planNext(room: Room): void {
-    room.nextPlayerAt = room.settings.autoAdvance && room.playerQueue.length > 0
+    const hasWaiting = room.playerQueue.length > 0 || room.players.some(p => p.status === 'WAITING');
+    room.nextPlayerAt = room.settings.autoAdvance && hasWaiting
       ? this.manager.clock.now() + room.settings.transitionDelaySeconds * 1000 : null;
     // An exhausted round deliberately remains RUNNING with no active player.
     // The host chooses START_RECALL or END_AUCTION.
   }
   private activateNext(room: Room, events: PendingEvent[]): void {
     requireThat(!room.active, 'INVALID_STATE', 'A player is already active.', 409);
-    const id = room.playerQueue.shift();
+
+    let id: string | undefined;
+
+    if (room.playerQueue.length > 0) {
+      // ── Recall round: use the explicit queue (unsold players) ─────────────
+      id = room.playerQueue.shift();
+    } else {
+      // ── Normal round: pick randomly per player selection ─────────────────
+      // 1. Build a map of potId → waiting players
+      const byPot = new Map<string, typeof room.players>();
+      for (const p of room.players) {
+        if (p.status !== 'WAITING') continue;
+        const bucket = byPot.get(p.potId) ?? [];
+        bucket.push(p);
+        byPot.set(p.potId, bucket);
+      }
+
+      if (byPot.size === 0) {
+        // No waiting players — round is over
+        requireThat(false, 'NO_WAITING_PLAYERS', 'Round finished; recall unsold players or end auction.');
+      }
+
+      // 2. Apply anti-streak: if the same pot appeared twice in a row AND other
+      //    pots are available, temporarily exclude it from selection.
+      let eligiblePots = [...byPot.keys()];
+      const lastPot = room.lastPot;
+      const streak = room.consecutivePotCount ?? 0;
+      if (lastPot && streak >= 2 && eligiblePots.length > 1) {
+        eligiblePots = eligiblePots.filter(p => p !== lastPot);
+      }
+
+      // 3. Pick a random pot, then a random player from that pot
+      const pot = eligiblePots[Math.floor(Math.random() * eligiblePots.length)]!;
+      const candidates = byPot.get(pot)!;
+      const player = candidates[Math.floor(Math.random() * candidates.length)]!;
+      id = player.id;
+
+      // 4. Update anti-streak counters
+      room.consecutivePotCount = pot === lastPot ? streak + 1 : 1;
+      room.lastPot = pot;
+    }
+
     requireThat(id, 'NO_WAITING_PLAYERS', 'Round finished; recall unsold players or end auction.');
     const player = room.players.find(p => p.id === id)!;
     transitionPlayer(player, 'ACTIVE');

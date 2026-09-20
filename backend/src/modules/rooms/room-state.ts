@@ -25,7 +25,7 @@ export function roomState(room: Room, userId: string, serverTime: number, connec
     // Falls back to an empty string; the frontend uses a neutral "Manager" label in that case.
     teams: room.teams.map(t => ({ ...publicTeam(t, room.settings), managerUsername: usernames[t.userId] ?? '' })),
     currentUserTeam: { ...publicTeam(team, room.settings), managerUsername: usernames[team.userId] ?? '' }, connectedUsers,
-    playerQueue: room.playerQueue, playerQueueSummary: { remaining: room.playerQueue.length },
+    playerQueue: room.playerQueue, playerQueueSummary: { remaining: room.playerQueue.length + room.players.filter(p => p.status === 'WAITING').length },
     players: room.players.map(publicPlayer),
     soldPlayers: room.purchases.map(({ priceUnits, ...p }) => ({ ...p, priceCr: toCr(priceUnits) })),
     unsoldPlayers: room.players.filter(p => p.status === 'UNSOLD').map(publicPlayer),
