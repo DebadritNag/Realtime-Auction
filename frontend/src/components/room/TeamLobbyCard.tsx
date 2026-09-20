@@ -3,7 +3,7 @@
 import React from "react";
 import { Team } from "@/types";
 import { formatCr } from "@/lib/utils";
-import { CheckCircle2, Clock, Trash2 } from "lucide-react";
+import { Wifi, WifiOff, Loader, Trash2 } from "lucide-react";
 
 export interface TeamLobbyCardProps {
   team: Team;
@@ -36,7 +36,7 @@ export const TeamLobbyCard: React.FC<TeamLobbyCardProps> = ({
               {team.name}
             </h3>
             {team.isCurrentUser && (
-              <span className="text-[9px] font-black uppercase bg-[#00ff87] text-[#08090d] px-1.5 py-0.2 rounded">
+              <span className="text-[9px] font-black uppercase bg-[#00ff87] text-[#08090d] px-1.5 py-0.5 rounded">
                 YOU
               </span>
             )}
@@ -45,7 +45,7 @@ export const TeamLobbyCard: React.FC<TeamLobbyCardProps> = ({
             Manager: <strong className="text-[#94a3b8]">@{team.managerUsername}</strong>
           </p>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[10px] font-mono text-[#00ff87] bg-[#00ff87]/10 px-1.5 py-0.2 rounded">
+            <span className="text-[10px] font-mono text-[#00ff87] bg-[#00ff87]/10 px-1.5 py-0.5 rounded">
               Purse: {formatCr(team.budgetTotal)}
             </span>
           </div>
@@ -53,24 +53,24 @@ export const TeamLobbyCard: React.FC<TeamLobbyCardProps> = ({
       </div>
 
       <div className="flex items-center gap-3 shrink-0 ml-3">
-        {/* Ready indicator */}
+        {/* Presence badge — driven by team.connected from ROOM_STATE connectedUsers */}
         <div className="flex items-center gap-1.5">
-          {team.ready ? (
+          {team.connected ? (
             <span className="inline-flex items-center gap-1 text-xs font-bold text-[#00ff87] bg-[#00ff87]/15 border border-[#00ff87]/30 px-2 py-1 rounded-lg">
-              <CheckCircle2 className="w-3.5 h-3.5" />
+              <Wifi className="w-3.5 h-3.5" />
               ONLINE
             </span>
           ) : (
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#94a3b8] bg-[#151a24] border border-[#242c3d] px-2 py-1 rounded-lg">
-              <Clock className="w-3.5 h-3.5 text-[#64748b]" />
+              <WifiOff className="w-3.5 h-3.5 text-[#64748b]" />
               OFFLINE
             </span>
           )}
         </div>
 
-        {/* Connection status indicator */}
+        {/* Live connection dot */}
         <span
-          className={`w-2.5 h-2.5 rounded-full ${
+          className={`w-2.5 h-2.5 rounded-full transition-colors ${
             team.connected
               ? "bg-[#00ff87] shadow-[0_0_8px_#00ff87]"
               : "bg-red-500 shadow-[0_0_8px_#ef4444]"
