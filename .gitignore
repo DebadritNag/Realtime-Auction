@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Large source datasets
+frontend/male_players.csv
+*.csv.gz
+
+# Build and logs
+dist/
+.next/
+*.log

@@ -1,4 +1,4 @@
-import type { Room, Team } from '../../domain/types.js';
+import type { Player, Room, Team } from '../../domain/types.js';
 import { requireThat } from '../../domain/errors.js';
 import { toCr } from '../../domain/money.js';
 import { getMaximumPermittedBid, remainingBudget } from '../auction/budget.service.js';
@@ -13,9 +13,10 @@ export class DeterministicRecommendationService implements AuctionRecommendation
   async recommend(room: Room, team: Team): Promise<Recommendation> {
     const player = room.players.find(p => p.id === room.active?.playerId);
     requireThat(player, 'NO_ACTIVE_PLAYER', 'Recommendations require an active player.', 409);
-    const targets = { GK: 1, DEF: 4, MID: 3, FWD: 3 };
+    const targets: Record<Player['position'], number> = { GK: 1, DEF: 4, MID: 3, FWD: 3, ATT: 3 };
     const owned = room.players.filter(p => team.playerIds.includes(p.id) && p.position === player.position).length;
-    const desired = Math.max(1, Math.round(targets[player.position] * room.settings.minSquadSize / 11));
+    const target = targets[player.position] ?? 3;
+    const desired = Math.max(1, Math.round(target * room.settings.minSquadSize / 11));
     const need = Math.max(0, (desired - owned) / desired);
     const remaining = room.players.filter(p => ['WAITING', 'UNSOLD'].includes(p.status));
     const similar = remaining.filter(p => p.position === player.position && p.ovr >= player.ovr - 5).length;

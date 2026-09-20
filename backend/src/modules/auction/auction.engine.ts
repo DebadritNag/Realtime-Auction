@@ -49,7 +49,7 @@ export class AuctionEngine {
             requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Auction can only start from the lobby.', 409);
             settingsSchema.parse(room.settings);
             requireThat(room.teams.length >= room.settings.minimumParticipants, 'NOT_ENOUGH_PARTICIPANTS', 'Not enough participants.');
-            const pool = await this.manager.players.listPlayerPool(room.settings.playerPoolConfig);
+            const pool = await this.manager.players.listPlayerPool(room.settings.playerPoolConfig, room.settings.numberOfTeams);
             requireThat(pool.length > 0, 'EMPTY_PLAYER_POOL', 'Player pool is empty.');
             if (room.settings.playerPoolConfig.playerIds) requireThat(room.settings.playerPoolConfig.playerIds.every(id => pool.some(p => p.id === id)),
               'INVALID_PLAYER_POOL', 'One or more selected players are missing or excluded by pot filters.');

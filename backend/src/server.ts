@@ -40,7 +40,7 @@ const { app } = await buildApp({
   playerRepository:
     env.PLAYER_CATALOG_PATH
       ? await CatalogPlayerRepository.fromFile(env.PLAYER_CATALOG_PATH)
-      : new CatalogPlayerRepository(demoPlayers),
+      : await CatalogPlayerRepository.fromDefaultPool().catch(() => new CatalogPlayerRepository(demoPlayers)),
 });
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const)

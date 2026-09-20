@@ -82,7 +82,7 @@ export class PostgresPlayerRepository implements PlayerRepository{
    stats:Object.fromEntries(Object.entries({pace:p.pace,shooting:p.shooting,passing:p.passing,dribbling:p.dribbling,defending:p.defending,physical:p.physical}).filter((entry):entry is [string,number]=>entry[1]!==null)),
    potId:typeof p.metadata?.pot==='string'?p.metadata.pot:position,club:p.club??undefined,nationality:p.nationality??undefined,age:p.age??undefined,preferredFoot:p.preferred_foot??undefined,photoUrl:p.image_url??undefined};
  }
- async listPlayerPool(config:RoomSettings['playerPoolConfig']):Promise<Player[]>{
+ async listPlayerPool(config:RoomSettings['playerPoolConfig'], _teamCount?: number):Promise<Player[]>{
   const rows=await this.sql<PlayerRow[]>`select * from public.football_players where active=true order by overall desc,name,id limit 2000`;
   return rows.map(p=>this.map(p)).filter(p=>(!config.playerIds||config.playerIds.includes(p.id))&&(!config.potIds||config.potIds.includes(p.potId)));
  }

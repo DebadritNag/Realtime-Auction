@@ -13,7 +13,7 @@ export interface UserRepository { findById(id: string): Promise<AuthContext | nu
 export interface TeamRepository { listForRoom(roomId: string): Promise<Team[]> }
 export interface PlayerRepository {
   getPlayer(id: string): Promise<Player | null>;
-  listPlayerPool(config: RoomSettings['playerPoolConfig']): Promise<Player[]>;
+  listPlayerPool(config: RoomSettings['playerPoolConfig'], teamCount?: number): Promise<Player[]>;
   getPlayersByPot(potId: string): Promise<Player[]>;
 }
 export interface AuctionRepository { findByRoom(roomId: string): Promise<Room | null> }

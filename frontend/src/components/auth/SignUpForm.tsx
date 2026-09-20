@@ -41,7 +41,7 @@ export const SignUpForm: React.FC = () => {
 
     const success = await signUp({ username, email, password });
     if (success) {
-      router.push("/home");
+      window.location.replace("/home");
     }
   };
 

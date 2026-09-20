@@ -32,7 +32,10 @@ export const SignInForm: React.FC = () => {
 
     const success = await signIn({ email, password });
     if (success) {
-      router.push("/home");
+      // Full navigation so the server-side proxy sees the fresh Supabase
+      // session cookie on the next request — router.push() keeps the old
+      // cookie context and the proxy bounces back to /auth/signin.
+      window.location.replace("/home");
     }
   };
 

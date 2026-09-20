@@ -4,7 +4,8 @@ export type PlayerStatus = 'WAITING' | 'ACTIVE' | 'SOLD' | 'UNSOLD' | 'SKIPPED';
 export interface AuthContext { userId: string; username?: string; expiresAt?: number }
 export interface Player {
   club?: string; nationality?: string; age?: number; preferredFoot?: string; photoUrl?: string;
-  id: string; name: string; position: 'GK' | 'DEF' | 'MID' | 'FWD'; ovr: number;
+  subPosition?: string; secondaryPositions?: string; league?: string; ratingTier?: string;
+  id: string; name: string; position: 'GK' | 'DEF' | 'MID' | 'FWD' | 'ATT'; ovr: number;
   stats: Record<string, number>; basePriceUnits: number; potId: string;
 }
 export interface AuctionPlayer extends Player { status: PlayerStatus; round: number }
