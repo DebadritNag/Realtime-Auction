@@ -54,7 +54,36 @@ export class AuctionEngine {
             if (room.settings.playerPoolConfig.playerIds) requireThat(room.settings.playerPoolConfig.playerIds.every(id => pool.some(p => p.id === id)),
               'INVALID_PLAYER_POOL', 'One or more selected players are missing or excluded by pot filters.');
             room.players = pool.map(p => ({ ...p, basePriceUnits: Math.max(p.basePriceUnits, toUnits(room.settings.minimumBasePriceCr)), status: 'WAITING', round: 0 }));
-            room.playerQueue = room.players.map(p => p.id);
+
+            // ── Shuffle: randomize category order then shuffle within each category ──
+            // This runs once on the server at auction start and is persisted in
+            // room.playerQueue.  Every client that reconnects receives the same
+            // order from ROOM_STATE.  Math.random() is Node's built-in PRNG —
+            // sufficient for a non-security use case.
+            function fisherYates<T>(arr: T[]): T[] {
+              for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j]!, arr[i]!];
+              }
+              return arr;
+            }
+            // Group players by potId
+            const potMap = new Map<string, typeof room.players>();
+            for (const p of room.players) {
+              const group = potMap.get(p.potId) ?? [];
+              group.push(p);
+              potMap.set(p.potId, group);
+            }
+            // Shuffle category order, then shuffle each category's players
+            const potOrder = fisherYates([...potMap.keys()]);
+            const orderedIds: string[] = [];
+            for (const pot of potOrder) {
+              const shuffledPot = fisherYates(potMap.get(pot)!);
+              for (const p of shuffledPot) orderedIds.push(p.id);
+            }
+            room.playerQueue = orderedIds;
+            // ── End shuffle ────────────────────────────────────────────────────────
+
             transitionRoom(room, 'STARTING');
             transitionRoom(room, 'RUNNING');
             events.push({ type: 'AUCTION_STARTED' });

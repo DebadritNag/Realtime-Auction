@@ -53,7 +53,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-[#08090d] text-[#f8fafc]">
       <AppHeader />
-      <main className="flex-1 pb-16 md:pb-0">
+      <main className={pathname.startsWith("/auction/") ? "flex-1" : "flex-1 pb-16 md:pb-0"}>
         {showLoader ? (
           <div className="p-12 text-center text-sm text-[#94a3b8]">
             {isRestoring ? "Restoring your session…" : "Redirecting…"}
@@ -63,7 +63,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
       </main>
       {!pathname.startsWith("/auction/") && <Footer />}
-      <MobileNav />
+      {!pathname.startsWith("/auction/") && <MobileNav />}
     </div>
   );
 }

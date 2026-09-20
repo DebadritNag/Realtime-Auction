@@ -17,6 +17,8 @@ export const AppHeader: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isLiveAuction = pathname?.startsWith("/auction/");
+  // Full-screen auction workspace — render nothing; the page has its own top bar
+  if (isLiveAuction) return null;
   const isPublicPage =
     PUBLIC_ROUTES.includes(pathname ?? "") ||
     (pathname ?? "").startsWith("/auth/");

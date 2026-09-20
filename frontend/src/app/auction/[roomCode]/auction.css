@@ -1,5 +1,6 @@
 /* Live auction only: the rest of the product retains its existing layout. */
-.auction-workspace { --auction-border:#263342; --auction-muted:#a5b4c5; display:flex; flex-direction:column; min-height:calc(100dvh - 58px); background:#090e15; color:#f1f5f9; }
+/* Header is hidden on /auction/* so we use the full viewport. */
+.auction-workspace { --auction-border:#263342; --auction-muted:#a5b4c5; display:flex; flex-direction:column; min-height:100dvh; background:#090e15; color:#f1f5f9; }
 .auction-workspace * { scrollbar-width:thin; scrollbar-color:#344558 transparent; }
 .auction-workspace :is(button,input):focus-visible { outline:2px solid #00ff87; outline-offset:3px; }
 .auction-workspace ::selection { background:#00ff87; color:#08110e; }
@@ -100,7 +101,7 @@
 .auction-bid-feed > div:last-child { flex:1; min-height:0; max-height:190px; }
 .auction-bid-feed > div:first-child { color:var(--auction-muted); }
 @media (min-width:1200px) {
- .auction-workspace { height:calc(100dvh - 58px); min-height:0; }
+ .auction-workspace { height:100dvh; min-height:0; }
  .auction-grid { grid-template-columns:minmax(0,28fr) minmax(0,46fr) minmax(0,26fr); overflow:hidden; padding:12px 16px; }
  .auction-pool-column { display:block; min-height:0; }
  .auction-center { overflow-y:auto; padding-right:2px; }

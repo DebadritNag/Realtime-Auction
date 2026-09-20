@@ -26,7 +26,7 @@ import { BidFeed } from "@/components/auction/BidFeed";
 import { Drawer } from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
 
-import { Layers, Users, Bot } from "lucide-react";
+import { Layers, Users, Bot, LogOut } from "lucide-react";
 
 export default function LiveAuctionPage({
   params,
@@ -74,6 +74,12 @@ export default function LiveAuctionPage({
   const clearBidError = useAuctionStore((state) => state.clearBidError);
   const dismissSoldOverlay = useAuctionStore((state) => state.dismissSoldOverlay);
   const dismissUnsoldOverlay = useAuctionStore((state) => state.dismissUnsoldOverlay);
+
+  // Exit auction — navigates to the lobby without disconnecting membership.
+  // The WebSocket stays open; the lobby page calls initAuction() anyway.
+  const handleExitAuction = () => {
+    router.push(`/room/${roomCode}`);
+  };
 
   // UI Store
   const {
@@ -188,6 +194,14 @@ export default function LiveAuctionPage({
 
         <div className="flex items-center gap-2">
           <ConnectionStatus status={connectionStatus} latencyMs={latencyMs} />
+          <button
+            onClick={handleExitAuction}
+            title="Exit to lobby (your membership is preserved)"
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide border border-[#263342] text-[#a5b4c5] hover:border-red-500/40 hover:text-red-400 hover:bg-red-500/5 transition-colors"
+          >
+            <LogOut className="w-3 h-3" />
+            <span className="hidden sm:inline">Exit</span>
+          </button>
         </div>
       </div>
 
