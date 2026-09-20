@@ -11,10 +11,6 @@ import { useAuctionStore } from './auction.store';
 import { useUIStore } from './ui.store';
 import { webSocketService } from '@/services/websocket.service';
 
-// Module-level flag so we only register the onAuthStateChange listener once
-// across the lifetime of the browser tab — not once per component mount.
-let listenerRegistered = false;
-
 interface Store {
   user: User | null;
   isAuthenticated: boolean;
@@ -22,6 +18,7 @@ interface Store {
   isRestoring: boolean;
   error: string | null;
   notice: string | null;
+  _listenerRegistered: boolean;
   initializeAuth: () => Promise<void>;
   signIn: (c: SignInCredentials) => Promise<boolean>;
   signUp: (c: SignUpCredentials) => Promise<boolean>;
@@ -37,16 +34,17 @@ export const useAuthStore = create<Store>((set, get) => ({
   isRestoring: true,
   error: null,
   notice: null,
+  _listenerRegistered: false,
 
   initializeAuth: async () => {
-    // If listener is already registered, the onAuthStateChange callback will
-    // keep the store current. We still need to ensure isRestoring is resolved
-    // so that a router.refresh() after sign-in doesn't leave the guard stuck.
-    if (listenerRegistered) {
-      // If we already have a user in the store, auth is resolved — nothing to do.
-      if (!get().isRestoring) return;
-      // isRestoring is still true after a refresh — re-check the session
-      // without re-registering the listener.
+    const state = get();
+
+    // Already fully resolved — nothing to do
+    if (!state.isRestoring && state._listenerRegistered) return;
+
+    // Listener already registered but isRestoring is still true
+    // (can happen after a client-side navigation re-mounts AppShell)
+    if (state._listenerRegistered) {
       try {
         const user = await authService.getSession();
         set({ user, isAuthenticated: !!user, isRestoring: false });
@@ -56,11 +54,10 @@ export const useAuthStore = create<Store>((set, get) => ({
       return;
     }
 
-    listenerRegistered = true;
+    // First initialisation — register listener and fetch session
+    set({ _listenerRegistered: true });
 
     try {
-      // Register the persistent auth state listener first so we never miss
-      // a session event (e.g. SIGNED_IN arriving while getSession is in flight).
       getSupabase().auth.onAuthStateChange((event, session) => {
         if (
           event === 'SIGNED_OUT' ||
@@ -79,8 +76,6 @@ export const useAuthStore = create<Store>((set, get) => ({
         }
       });
 
-      // Eagerly resolve the current session so the store is populated before
-      // the first render completes — onAuthStateChange may fire slightly later.
       const user = await authService.getSession();
       set({ user, isAuthenticated: !!user, isRestoring: false });
     } catch (e) {
@@ -95,9 +90,12 @@ export const useAuthStore = create<Store>((set, get) => ({
     set({ isLoading: true, error: null, notice: null });
     try {
       const res = await authService.signIn(credentials);
-      // Set store state immediately so the AppShell guard sees isAuthenticated=true
-      // before router.replace fires on the next tick.
-      set({ user: res.user, isAuthenticated: true, isLoading: false, isRestoring: false });
+      set({
+        user: res.user,
+        isAuthenticated: true,
+        isLoading: false,
+        isRestoring: false,
+      });
       return true;
     } catch (e) {
       set({ isLoading: false, error: e instanceof Error ? e.message : 'Sign in failed.' });

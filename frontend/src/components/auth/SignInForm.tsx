@@ -1,17 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/stores/auth.store";
 import { Button, Input, Toast } from "@/components/ui";
 import { LogIn, Mail, Lock } from "lucide-react";
 
 export const SignInForm: React.FC = () => {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const { signIn, isLoading, isAuthenticated, isRestoring, error, clearError } =
-    useAuthStore();
+  const { signIn, isLoading, error, clearError } = useAuthStore();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,14 +21,6 @@ export const SignInForm: React.FC = () => {
     rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
       ? rawRedirect
       : "/home";
-
-  // If the user is already authenticated (e.g. navigated back to /signin),
-  // redirect them away once auth state is known.
-  useEffect(() => {
-    if (!isRestoring && isAuthenticated) {
-      router.replace(safeRedirect);
-    }
-  }, [isRestoring, isAuthenticated, router, safeRedirect]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,9 +38,9 @@ export const SignInForm: React.FC = () => {
 
     const success = await signIn({ email, password });
     if (success) {
-      // signIn() already set isAuthenticated=true and isRestoring=false in the
-      // store synchronously, so the AppShell guard will pass on the next render.
-      router.replace(safeRedirect);
+      // Hard navigation so the browser sends the fresh Supabase session cookie
+      // on the next request. Client-side router.replace can race with cookie writes.
+      window.location.href = safeRedirect;
     }
   };
 

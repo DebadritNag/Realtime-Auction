@@ -1,48 +1,27 @@
 /**
- * proxy.ts — Next.js 16 route protection via Supabase session.
+ * proxy.ts — Next.js 16 (was middleware.ts in ≤15)
  *
- * In Next.js 16 the file is named proxy.ts (was middleware.ts in ≤15).
- * The exported function is named `proxy` (was `middleware`).
+ * This proxy ONLY handles session cookie refreshing so Supabase tokens
+ * stay valid on the server side. It does NOT perform route-based redirects.
  *
- * Behaviour:
- *  - Public routes (/, /auth/*, _next/*, public assets) pass through.
- *  - Protected routes require a valid Supabase session cookie.
- *  - Unauthenticated requests to protected routes → redirect to /auth/signin.
- *  - Already-authenticated users hitting /auth/* → redirect to /home.
+ * Route protection is handled client-side by AppShell.tsx:
+ *  - Unauthenticated → redirected to /auth/signin?redirectTo=...
+ *  - Already-authenticated visiting /auth/* → redirected to /home
+ *
+ * Keeping redirects client-side avoids the race between the browser
+ * writing the Supabase session cookie and the Edge proxy reading it.
  */
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PUBLIC_PATHS = ["/", "/auth/signin", "/auth/signup"];
-
-function isPublic(pathname: string): boolean {
-  if (PUBLIC_PATHS.includes(pathname)) return true;
-  // Static/internal Next.js paths
-  if (
-    pathname.startsWith("/_next/") ||
-    pathname.startsWith("/api/") ||       // not used — backend is separate
-    pathname.startsWith("/favicon") ||
-    pathname.startsWith("/images/") ||
-    pathname.startsWith("/public/")
-  ) return true;
-  return false;
-}
-
-function isAuthPage(pathname: string): boolean {
-  return pathname.startsWith("/auth/");
-}
-
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Build a mutable response so Supabase can refresh cookies if needed
+  // Build a mutable response so Supabase can write refreshed session cookies
   let response = NextResponse.next({
     request: { headers: request.headers },
   });
 
-  // Create a Supabase client that can read/write cookies on this response
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -64,40 +43,16 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // Refresh the session (rotates short-lived tokens if needed)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const isAuthenticated = !!user;
-
-  // Redirect authenticated users away from auth pages
-  if (isAuthenticated && isAuthPage(pathname)) {
-    return NextResponse.redirect(new URL("/home", request.url));
-  }
-
-  // Allow public paths through without auth check
-  if (isPublic(pathname)) return response;
-
-  // Protect all other routes
-  if (!isAuthenticated) {
-    const signIn = new URL("/auth/signin", request.url);
-    signIn.searchParams.set("redirectTo", pathname);
-    return NextResponse.redirect(signIn);
-  }
+  // Refresh the session — this rotates tokens and writes fresh cookies
+  // onto the response. We don't make routing decisions here.
+  await supabase.auth.getUser();
 
   return response;
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static  (static files)
-     * - _next/image   (image optimization)
-     * - favicon.ico, sitemap.xml, robots.txt
-     * - /images/ (public folder assets)
-     */
+    // Run on all routes except static assets
     "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|images/).*)",
   ],
 };
