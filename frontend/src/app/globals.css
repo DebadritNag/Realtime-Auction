@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #08090d;
+    --bg-surface: #0e121a;
+    --bg-card: #151a24;
+    --bg-elevated: #1e2433;
+    --border-subtle: #242c3d;
+    --border-highlight: #37435e;
+    
+    --lime-primary: #00ff87;
+    --lime-hover: #15e683;
+    --lime-glow: rgba(0, 255, 135, 0.16);
+
+    --gold-accent: #f59e0b;
+    --red-alert: #ef4444;
+    --blue-tactical: #38bdf8;
+
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    overflow-x: hidden;
+  }
+}
+
+/* Custom stadium & pitch background accents */
+.pitch-radial-grid {
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(0, 255, 135, 0.08) 0%, transparent 60%),
+    linear-gradient(to bottom, transparent, #08090d 90%),
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+}
+
+/* Pitch watermark and glows for dashboard cards */
+.pitch-watermark {
+  background-image: radial-gradient(circle at 50% 50%, rgba(0, 245, 155, 0.08) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.glow-emerald {
+  box-shadow: 0 0 25px -5px rgba(0, 245, 155, 0.18);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 25px -5px rgba(0, 200, 255, 0.18);
+}
+
+.stadium-glow {
+  box-shadow: 0 0 35px -5px rgba(0, 255, 135, 0.2);
+}
+
+.stadium-glow-gold {
+  box-shadow: 0 0 35px -5px rgba(245, 158, 11, 0.25);
+}
+
+.stadium-glow-danger {
+  box-shadow: 0 0 35px -5px rgba(239, 68, 68, 0.3);
+}
+
+/* ArenaAuction Create Room Visual Effects */
+.glow-neon {
+  box-shadow: 0 0 16px rgba(0, 245, 160, 0.35);
+}
+
+.glow-pill {
+  box-shadow: 0 0 12px rgba(0, 245, 160, 0.22);
+}
+
+.subtle-card-border {
+  border: 1px solid rgba(116, 149, 178, 0.2);
+}
+
+.active-db-card {
+  border: 1.5px solid #00F5A0;
+  background: linear-gradient(180deg, rgba(0, 245, 160, 0.08) 0%, rgba(9, 24, 37, 0.95) 100%);
+}
+
+.font-script {
+  font-family: var(--font-caveat), 'Caveat', 'Brush Script MT', cursive;
+}
+
+/* Tabular figures for numbers, counters & money */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #08090d;
+}
+::-webkit-scrollbar-thumb {
+  background: #242c3d;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #37435e;
+}
+
+/* Sold stamp animation */
+@keyframes stamp-in {
+  0% {
+    transform: scale(3) rotate(-15deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(0.95) rotate(-12deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(-12deg);
+    opacity: 1;
+  }
+}
+
+.animate-stamp {
+  animation: stamp-in 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Subtle timer pulse for low countdown */
+@keyframes timer-urgency {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    border-color: rgba(239, 68, 68, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px rgba(239, 68, 68, 0.3);
+    border-color: #ef4444;
+  }
+}
+
+.animate-timer-urgency {
+  animation: timer-urgency 0.8s infinite ease-in-out;
+}
+
+/* Anti-sniping extension subtle slide-in */
+@keyframes notice-slide-down {
+  0% {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-notice {
+  animation: notice-slide-down 0.25s ease-out forwards;
+}
