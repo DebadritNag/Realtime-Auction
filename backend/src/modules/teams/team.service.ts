@@ -7,7 +7,7 @@ export function publicPlayer(player: Player) {
   return { ...rest, basePriceCr: toCr(basePriceUnits) };
 }
 export function publicTeam(team: Team, settings: RoomSettings) {
-  return { id: team.id, userId: team.userId, name: team.name, logoUrl: team.logoUrl,
+  return { id: team.id, userId: team.userId, name: team.name, logoUrl: team.logoUrl, logoEmoji: team.logoEmoji,
     startingBudgetCr: toCr(team.startingBudgetUnits), spentCr: toCr(team.spentUnits),
     remainingBudgetCr: toCr(remainingBudget(team)), playerIds: team.playerIds,
     playersOwned: team.playerIds.length, maximumPermittedBidCr: toCr(getMaximumPermittedBid(team, settings)),

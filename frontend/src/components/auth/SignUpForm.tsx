@@ -9,7 +9,7 @@ import { UserPlus, User, Mail, Lock, CheckCircle } from "lucide-react";
 
 export const SignUpForm: React.FC = () => {
   const router = useRouter();
-  const { signUp, isLoading, error, clearError } = useAuthStore();
+  const { signUp, isLoading, error, notice, clearError } = useAuthStore();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -73,6 +73,7 @@ export const SignUpForm: React.FC = () => {
         </div>
       )}
 
+      {notice && <p role="status" className="mb-4 text-sm text-[#00ff87]">{notice}</p>}
       <form onSubmit={handleSubmit} className="space-y-3.5">
         <Input
           label="Manager Username"

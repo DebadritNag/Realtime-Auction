@@ -86,7 +86,7 @@ export default function CreateRoomPage() {
 
     try {
       setIsSubmitting(true);
-      const roomCode = await createRoom(formData, user?.id || "user-1");
+      const roomCode = await createRoom(formData);
       if (roomCode) {
         router.push(`/room/${roomCode}`);
       }

@@ -43,7 +43,7 @@ export class RoomManager {
     return rooms;
   }
   removeRuntime(code: string): void { this.rooms.delete(code); }
-  async create(auth: AuthContext, input: { auctionName: string; teamName: string; teamLogoUrl?: string; settings?: Partial<RoomSettings> }): Promise<Room> {
+  async create(auth: AuthContext, input: { auctionName: string; teamName: string; teamLogoUrl?: string; teamLogoEmoji?: string; settings?: Partial<RoomSettings> }): Promise<Room> {
     return this.lock.runExclusive('__create__', async () => {
       const settings = settingsSchema.parse(input.settings ?? {});
       const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -52,7 +52,7 @@ export class RoomManager {
         if (await this.repository.findByCode(code)) continue;
         const room: Room = { id: randomUUID(), code, hostUserId: auth.userId, auctionName: input.auctionName,
           status: 'LOBBY', createdAt: this.clock.now(), settings,
-          teams: [{ id: randomUUID(), userId: auth.userId, name: input.teamName, logoUrl: input.teamLogoUrl,
+          teams: [{ id: randomUUID(), userId: auth.userId, name: input.teamName, logoUrl: input.teamLogoUrl, logoEmoji: input.teamLogoEmoji,
             startingBudgetUnits: toUnits(settings.startingBudgetCr), spentUnits: 0, playerIds: [] }],
           players: [], playerQueue: [], purchases: [], bids: [], active: null, sequence: 1, nextPlayerAt: null, receipts: {} };
         try { await this.repository.create(room); }

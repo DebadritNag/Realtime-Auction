@@ -16,13 +16,13 @@ export const ResultSummary: React.FC<ResultSummaryProps> = ({ analytics }) => {
       <div className="rounded-3xl bg-gradient-to-r from-[#111915] via-[#0e121a] to-[#121622] border-2 border-[#00ff87]/30 p-6 sm:p-8 shadow-2xl relative overflow-hidden text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="relative z-10">
           <span className="text-[10px] font-black uppercase tracking-widest text-[#00ff87] bg-[#00ff87]/15 px-3 py-1 rounded-full border border-[#00ff87]/30">
-            AUCTION COMPLETE
+            {analytics.provisional ? "AUCTION IN PROGRESS" : "AUCTION COMPLETE"}
           </span>
           <h1 className="text-2xl sm:text-3xl font-black text-[#f8fafc] tracking-tight mt-2">
             {analytics.auctionName}
           </h1>
           <p className="text-xs text-[#94a3b8] mt-1">
-            Room Code: <strong className="font-mono text-[#cbd5e1]">{analytics.roomCode}</strong> • Official gavel closed
+            Room Code: <strong className="font-mono text-[#cbd5e1]">{analytics.roomCode}</strong> • {analytics.provisional ? "Provisional results" : "Official gavel closed"}
           </p>
         </div>
 

@@ -3,12 +3,13 @@ export type RoomStatus = 'LOBBY' | 'STARTING' | 'RUNNING' | 'PAUSED' | 'COMPLETE
 export type PlayerStatus = 'WAITING' | 'ACTIVE' | 'SOLD' | 'UNSOLD' | 'SKIPPED';
 export interface AuthContext { userId: string; username?: string; expiresAt?: number }
 export interface Player {
+  club?: string; nationality?: string; age?: number; preferredFoot?: string; photoUrl?: string;
   id: string; name: string; position: 'GK' | 'DEF' | 'MID' | 'FWD'; ovr: number;
   stats: Record<string, number>; basePriceUnits: number; potId: string;
 }
 export interface AuctionPlayer extends Player { status: PlayerStatus; round: number }
 export interface Team {
-  id: string; userId: string; name: string; logoUrl?: string;
+  id: string; userId: string; name: string; logoUrl?: string; logoEmoji?: string;
   startingBudgetUnits: number; spentUnits: number; playerIds: string[];
 }
 export interface Bid { id: string; roomId: string; playerId: string; teamId: string; amountUnits: number; at: number; round: number }

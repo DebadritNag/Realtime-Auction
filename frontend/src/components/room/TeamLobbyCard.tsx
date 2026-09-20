@@ -19,7 +19,7 @@ export const TeamLobbyCard: React.FC<TeamLobbyCardProps> = ({
   return (
     <div
       className={`relative flex items-center justify-between p-4 rounded-2xl border transition-all ${
-        team.ready
+        team.connected
           ? "bg-[#0e121a] border-[#00ff87]/30 shadow-[0_0_20px_rgba(0,255,135,0.06)]"
           : "bg-[#0e121a] border-[#242c3d]"
       }`}
@@ -58,12 +58,12 @@ export const TeamLobbyCard: React.FC<TeamLobbyCardProps> = ({
           {team.ready ? (
             <span className="inline-flex items-center gap-1 text-xs font-bold text-[#00ff87] bg-[#00ff87]/15 border border-[#00ff87]/30 px-2 py-1 rounded-lg">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              READY
+              ONLINE
             </span>
           ) : (
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#94a3b8] bg-[#151a24] border border-[#242c3d] px-2 py-1 rounded-lg">
               <Clock className="w-3.5 h-3.5 text-[#64748b]" />
-              WAITING
+              OFFLINE
             </span>
           )}
         </div>

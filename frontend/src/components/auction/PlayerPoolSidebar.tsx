@@ -20,16 +20,7 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
   const [selectedPot, setSelectedPot] = useState<PotCategory | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const potCategories: { id: PotCategory | "all"; label: string }[] = [
-    { id: "all", label: "All Pots" },
-    { id: "elite", label: "Elite" },
-    { id: "attackers", label: "ATT" },
-    { id: "midfielders", label: "MID" },
-    { id: "defenders", label: "DEF" },
-    { id: "goalkeepers", label: "GK" },
-    { id: "wildcard", label: "Wildcard" },
-    { id: "recall", label: "Recall" },
-  ];
+  const potCategories = [{ id: "all", label: "All Pots" }, ...Array.from(new Set(players.map(p => p.pot))).map(id => ({id, label: id}))];
 
   const filteredPlayers = players.filter((p) => {
     const matchesPot = selectedPot === "all" || p.pot === selectedPot;

@@ -13,7 +13,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
   status,
   latencyMs,
 }) => {
-  if (status === "CONNECTED") {
+  if (status === "SYNCED") {
     return (
       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#00ff87]/10 border border-[#00ff87]/30 text-[#00ff87] text-[11px] font-mono select-none">
         <span className="w-2 h-2 rounded-full bg-[#00ff87] shadow-[0_0_8px_#00ff87]" />
@@ -23,11 +23,11 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
     );
   }
 
-  if (status === "RECONNECTING") {
+  if (status === "RECONNECTING" || status === "CONNECTING" || status === "CONNECTED") {
     return (
       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[11px] font-mono animate-pulse select-none">
         <RefreshCw className="w-3 h-3 animate-spin text-amber-400" />
-        <span className="font-bold">RECONNECTING...</span>
+        <span className="font-bold">{status === "RECONNECTING" ? "RECONNECTING…" : "SYNCHRONIZING…"}</span>
       </div>
     );
   }

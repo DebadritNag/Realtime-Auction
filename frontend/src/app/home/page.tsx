@@ -37,15 +37,8 @@ export default function HomePage() {
     loadData();
   }, []);
 
-  const displayUser = user || {
-    id: "user-1",
-    username: "gourab_tactician",
-    displayName: "Gourab Chakraborty",
-    email: "gourab@auctionarena.com",
-    avatarUrl: "",
-    defaultTeamName: "Calcutta United",
-    defaultTeamLogo: "🛡️",
-  };
+  if (!user) return null;
+  const displayUser = user;
 
   return (
     <div

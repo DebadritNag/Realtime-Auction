@@ -29,6 +29,6 @@ export const settingsSchema = settingsShape.superRefine((s, ctx) => {
 export type RoomSettings = z.infer<typeof settingsSchema>;
 export const roomCodeSchema = z.string().regex(/^[A-HJ-NP-Z2-9]{6}$/);
 export const nameSchema = z.string().trim().min(2).max(60).regex(/^[^\x00-\x1f\x7f<>]+$/);
-export const joinSchema = z.object({ teamName: nameSchema, teamLogoUrl: z.string().url().max(2048)
+export const joinSchema = z.object({ teamName: nameSchema, teamLogoEmoji: z.string().min(1).max(16).optional(), teamLogoUrl: z.string().url().max(2048)
   .refine(v => v.startsWith('https://'), 'Logo must use HTTPS').optional() }).strict();
 export const createRoomSchema = joinSchema.extend({ auctionName: nameSchema, settings: settingsShape.partial().optional() }).strict();

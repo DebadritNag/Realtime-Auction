@@ -14,7 +14,7 @@ import { ProfileStats } from "@/components/profile/ProfileStats";
 import { AchievementGrid } from "@/components/profile/AchievementGrid";
 import { AuctionHistory } from "@/components/profile/AuctionHistory";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { MOCK_USER } from "@/services/mock/mockData";
+import { authService } from "@/services/auth.service";
 
 export default function ProfilePage() {
   const { user, setUser } = useAuthStore();
@@ -43,15 +43,14 @@ export default function ProfilePage() {
     loadProfileData();
   }, []);
 
-  const activeUser: User = user || MOCK_USER;
+  const activeUser = user;
 
   const handleProfileUpdate = async (updated: Partial<User>) => {
-    const newProfile = { ...activeUser, ...updated };
+    const newProfile = await authService.updateProfile(updated);
     setUser(newProfile);
-    await profileService.getProfile();
   };
 
-  if (isLoading) {
+  if (isLoading || !activeUser) {
     return (
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 space-y-6">
         <Skeleton className="h-44 w-full rounded-2xl" />

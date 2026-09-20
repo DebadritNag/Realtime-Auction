@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, use, useState } from "react";
+import React, { useEffect, use } from "react";
+import { useRouter } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useAuctionStore } from "@/stores/auction.store";
 import { useAuthStore } from "@/stores/auth.store";
@@ -37,7 +38,9 @@ export default function LiveAuctionPage({
   const roomCode = resolvedParams.roomCode.toUpperCase();
 
   const { user } = useAuthStore();
-  const { status: connectionStatus, latencyMs, initConnectionListener } = useConnectionStore();
+  const { status: connectionStatus, latencyMs } = useConnectionStore();
+  const router = useRouter();
+  const snapshot = useAuctionStore(s => s.snapshot);
 
   // Determine host status from auction store (authoritative from ROOM_STATE)
   const hostUserId = useAuctionStore((state) => state.hostUserId);
@@ -96,43 +99,14 @@ export default function LiveAuctionPage({
     setMobileAIDrawer,
   } = useUIStore();
 
-  const [playerPool, setPlayerPool] = useState<Player[]>([]);
-
+  const playerPool = useAuctionStore(s => s.players);
   useEffect(() => {
-    // 1. Connect the WebSocket — webSocketService.connect() calls joinRoom internally on open
-    initAuction(roomCode);
-    // webSocketService.connect() is called inside initAuction → the service
-    // sends JOIN_ROOM after the socket opens, then ROOM_STATE flows back.
+    if (auctionStatus === "COMPLETED") router.replace(`/results/${roomCode}`);
+    if (snapshot?.status === "LOBBY") router.replace(`/room/${roomCode}`);
+  }, [auctionStatus, snapshot?.status, roomCode, router]);
 
-    const unsubConn = initConnectionListener();
-
-    // 2. Fetch the player pool for the sidebar from REST (non-live data)
-    auctionService.getPlayerPool(roomCode).then((players) => {
-      setPlayerPool(players);
-    });
-
-    // 3. Poll for AI recommendation whenever the active player changes
-    let recTimer: ReturnType<typeof setInterval> | null = null;
-    recTimer = setInterval(async () => {
-      const { activePlayer } = useAuctionStore.getState();
-      if (activePlayer) {
-        const suggestion = await auctionService.getRecommendation(roomCode);
-        if (suggestion) {
-          useAuctionStore.setState({ aiSuggestion: suggestion });
-        }
-      }
-    }, 15_000); // refresh recommendation every 15 s
-
-    return () => {
-      unsubConn();
-      leaveAuction();
-      if (recTimer) clearInterval(recTimer);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomCode]);
-
-  const userTeam = teams.find((t) => t.isCurrentUser || t.managerId === user?.id) || teams[0];
-  const userBudget = userTeam ? userTeam.budgetRemaining : 150;
+  const userTeam = teams.find((t) => t.isCurrentUser || t.managerId === user?.id);
+  const userBudget = userTeam ? userTeam.budgetRemaining : 0;
   const isUserLeading =
     highestBidder && (highestBidder.id === userTeam?.id || highestBidder.isCurrentUser);
 
@@ -141,6 +115,7 @@ export default function LiveAuctionPage({
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex flex-col bg-[#07090d] text-[#f8fafc] relative overflow-x-hidden">
+      {!snapshot && <div className="p-4 text-center text-sm text-amber-300">{bidErrorNotice || "Synchronizing room state…"}</div>}
       {/* 1. TOP STICKY BUDGET TICKER */}
       <BudgetTicker teams={teams} currentTeamId={userTeam?.id} />
 
@@ -198,6 +173,11 @@ export default function LiveAuctionPage({
             onResume={hostResume}
             onSkip={hostSkip}
             onEnd={hostEnd}
+            hasActivePlayer={!!activePlayer}
+            hasBid={!!highestBidder}
+            synced={connectionStatus === "SYNCED"}
+            canRecall={!activePlayer && snapshot?.playerQueue.length === 0 && !!snapshot?.unsoldPlayers.length}
+            onRecall={() => { void useAuctionStore.getState().hostCommand("START_RECALL").catch(() => {}); }}
           />
         </div>
       )}
@@ -230,6 +210,8 @@ export default function LiveAuctionPage({
               endsAt={endsAt}
               serverTimeOffset={serverTimeOffset}
               isPaused={auctionStatus === "PAUSED"}
+              remainingTimeMs={snapshot?.remainingTimeMs ?? null}
+              synced={connectionStatus === "SYNCED"}
             />
           </div>
 
@@ -241,6 +223,9 @@ export default function LiveAuctionPage({
             isUserLeading={!!isUserLeading}
             isPaused={auctionStatus === "PAUSED"}
             onPlaceBid={placeBid}
+            disabled={connectionStatus !== "SYNCED" || !activePlayer || !snapshot?.biddingOpen}
+            maximumPermittedBid={snapshot?.maximumPermittedBidCr ?? 0}
+            allowCustomBids={snapshot?.settings.allowCustomBids ?? false}
             antiSnipingNotice={antiSnipingNotice}
             bidErrorNotice={bidErrorNotice}
             onClearError={clearBidError}

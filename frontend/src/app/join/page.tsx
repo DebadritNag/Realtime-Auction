@@ -15,8 +15,8 @@ function JoinRoomForm() {
   const { joinRoom, isLoading, error, clearError } = useRoomStore();
   const { user } = useAuthStore();
 
-  const [roomCode, setRoomCode] = useState(initialCode || "PREM-2026");
-  const [teamName, setTeamName] = useState(user?.defaultTeamName || "Calcutta United");
+  const [roomCode, setRoomCode] = useState(initialCode);
+  const [teamName, setTeamName] = useState(user?.defaultTeamName || "");
   const [teamLogo, setTeamLogo] = useState(user?.defaultTeamLogo || "⚡");
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -83,7 +83,7 @@ function JoinRoomForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           label="Auction Room Code"
-          placeholder="e.g. PREM-2026"
+          placeholder="e.g. ABC234"
           value={roomCode}
           onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
           leftIcon={<Hash className="w-4 h-4 text-sky-400" />}
@@ -137,14 +137,7 @@ function JoinRoomForm() {
         </div>
       </form>
 
-      {/* Helper text for error simulation testing */}
-      <div className="rounded-xl bg-[#151a24] p-3 border border-[#242c3d]/60 text-[11px] text-[#64748b] space-y-1">
-        <p className="font-bold text-[#94a3b8]">Quick Mock Code Test Cases:</p>
-        <p>• <code className="text-[#00ff87]">PREM-2026</code> (Valid demo room)</p>
-        <p>• <code className="text-amber-400">FULL</code> (Tests room full state)</p>
-        <p>• <code className="text-amber-400">STARTED</code> (Tests auction already started)</p>
-        <p>• <code className="text-[#ef4444]">DENIED</code> (Tests host denied state)</p>
-      </div>
+
     </div>
   );
 }

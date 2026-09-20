@@ -11,8 +11,8 @@ export const SignInForm: React.FC = () => {
   const router = useRouter();
   const { signIn, isLoading, error, clearError } = useAuthStore();
 
-  const [email, setEmail] = useState("gourab@auctionarena.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -36,10 +36,6 @@ export const SignInForm: React.FC = () => {
     }
   };
 
-  const handleQuickDemoFill = () => {
-    setEmail("gourab@auctionarena.com");
-    setPassword("password123");
-  };
 
   return (
     <div className="w-full max-w-md mx-auto rounded-2xl bg-[#0e121a] border border-[#242c3d] p-7 shadow-2xl">
@@ -100,18 +96,9 @@ export const SignInForm: React.FC = () => {
               onChange={(e) => setRememberMe(e.target.checked)}
               className="rounded bg-[#151a24] border-[#242c3d] text-[#00ff87] focus:ring-[#00ff87]"
             />
-            <span>Remember session</span>
+            <span>Session restored automatically</span>
           </label>
-          <a
-            href="#forgot"
-            onClick={(e) => {
-              e.preventDefault();
-              alert("Password reset instructions will be sent to registered email via Supabase Auth.");
-            }}
-            className="text-[#00ff87] hover:underline"
-          >
-            Forgot password?
-          </a>
+
         </div>
 
         <Button
@@ -124,21 +111,6 @@ export const SignInForm: React.FC = () => {
           SIGN IN TO ARENA
         </Button>
       </form>
-
-      {/* Demo Credentials Helper */}
-      <div className="mt-5 rounded-xl bg-[#151a24] border border-[#242c3d]/60 p-3 flex items-center justify-between text-xs">
-        <div className="flex items-center gap-2 text-[#94a3b8]">
-          <ShieldCheck className="w-4 h-4 text-[#00ff87]" />
-          <span>Testing in Mock Mode?</span>
-        </div>
-        <button
-          type="button"
-          onClick={handleQuickDemoFill}
-          className="text-xs font-semibold text-[#00ff87] hover:underline"
-        >
-          Auto-fill Demo
-        </button>
-      </div>
 
       <div className="mt-6 text-center text-xs text-[#94a3b8]">
         Don&apos;t have an account yet?{" "}

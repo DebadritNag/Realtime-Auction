@@ -108,9 +108,9 @@ export const PlayerAuctionCard: React.FC<PlayerAuctionCardProps> = ({ player }) 
             {player.name}
           </h2>
           <div className="flex items-center justify-center gap-3 text-[11px] text-[#94a3b8] mt-0.5">
-            <span>Age: <strong className="text-[#f8fafc]">{player.age}</strong></span>
+            <span>Age: <strong className="text-[#f8fafc]">{player.age ?? "—"}</strong></span>
             <span>•</span>
-            <span>Foot: <strong className="text-[#f8fafc]">{player.preferredFoot}</strong></span>
+            <span>Foot: <strong className="text-[#f8fafc]">{player.preferredFoot ?? "—"}</strong></span>
             <span>•</span>
             <span>Base: <strong className="text-[#00ff87] font-mono">{formatCr(player.basePrice)}</strong></span>
           </div>
@@ -128,14 +128,14 @@ export const PlayerAuctionCard: React.FC<PlayerAuctionCardProps> = ({ player }) 
               </span>
               <span
                 className={`text-sm font-bold font-mono tabular-nums ${
-                  stat.value >= 88
+                  (stat.value ?? 0) >= 88
                     ? "text-[#00ff87]"
                     : stat.value >= 80
                     ? "text-[#f8fafc]"
                     : "text-[#94a3b8]"
                 }`}
               >
-                {stat.value}
+                {stat.value ?? "—"}
               </span>
             </div>
           ))}

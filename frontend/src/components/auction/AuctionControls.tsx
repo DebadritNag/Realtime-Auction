@@ -9,6 +9,9 @@ import { AntiSnipingNotice } from "@/stores/auction.store";
 import { Zap, Clock, AlertCircle, Edit3, ArrowUpCircle } from "lucide-react";
 
 export interface AuctionControlsProps {
+  disabled?: boolean;
+  maximumPermittedBid: number;
+  allowCustomBids: boolean;
   minimumNextBid: number;
   currentBid: number;
   userBudgetRemaining: number;
@@ -21,6 +24,7 @@ export interface AuctionControlsProps {
 }
 
 export const AuctionControls: React.FC<AuctionControlsProps> = ({
+  disabled = false, maximumPermittedBid, allowCustomBids,
   minimumNextBid,
   currentBid,
   userBudgetRemaining,
@@ -36,8 +40,8 @@ export const AuctionControls: React.FC<AuctionControlsProps> = ({
   const [customError, setCustomError] = useState<string | null>(null);
 
   // Use backend provided minimumNextBid as source of truth
-  const nextBidAmount = minimumNextBid > 0 ? minimumNextBid : currentBid + 1;
-  const canAfford = userBudgetRemaining >= nextBidAmount;
+  const nextBidAmount = minimumNextBid;
+  const canAfford = maximumPermittedBid >= nextBidAmount && nextBidAmount > 0;
 
   const handleInstantBid = () => {
     onClearError();
@@ -49,11 +53,11 @@ export const AuctionControls: React.FC<AuctionControlsProps> = ({
     setCustomError(null);
     const parsed = parseFloat(customBidValue);
 
-    if (isNaN(parsed) || parsed < nextBidAmount) {
-      setCustomError(`Custom bid must be at least ${formatCr(nextBidAmount)}`);
+    if (!Number.isFinite(parsed) || !Number.isSafeInteger(parsed * 2) || parsed < nextBidAmount) {
+      setCustomError(`Use ₹0.5 Cr steps; bid must be at least ${formatCr(nextBidAmount)}`);
       return;
     }
-    if (parsed > userBudgetRemaining) {
+    if (parsed > maximumPermittedBid) {
       setCustomError(
         `Insufficient purse! You have only ${formatCr(userBudgetRemaining)} remaining.`
       );
@@ -98,11 +102,11 @@ export const AuctionControls: React.FC<AuctionControlsProps> = ({
           variant="stadium"
           size="xl"
           onClick={handleInstantBid}
-          disabled={isPaused || !canAfford || isUserLeading}
+          disabled={disabled || isPaused || !canAfford || isUserLeading}
           className="w-full flex-1 py-4 text-lg font-black tracking-wider group"
           leftIcon={<Zap className="w-5 h-5 fill-current text-[#08090d] group-hover:scale-110 transition-transform" />}
         >
-          {isUserLeading ? (
+          {disabled ? ("WAITING FOR LIVE STATE") : isUserLeading ? (
             "YOU ARE HIGHEST BIDDER"
           ) : !canAfford ? (
             "INSUFFICIENT BUDGET"
@@ -121,7 +125,7 @@ export const AuctionControls: React.FC<AuctionControlsProps> = ({
             setCustomBidValue(nextBidAmount.toString());
             setIsCustomModalOpen(true);
           }}
-          disabled={isPaused || !canAfford}
+          disabled={disabled || !allowCustomBids || isPaused || !canAfford || isUserLeading}
           className="w-full sm:w-auto px-5 py-4 text-xs font-bold uppercase tracking-wider"
           leftIcon={<Edit3 className="w-4 h-4" />}
         >
@@ -145,6 +149,7 @@ export const AuctionControls: React.FC<AuctionControlsProps> = ({
         </span>
       </div>
 
+      <p className="text-[10px] text-[#64748b]">Bid steps: below ₹10 Cr +₹0.5; ₹10–20 Cr +₹1; ₹20 Cr+ +₹2. Maximum permitted: {formatCr(maximumPermittedBid)}</p>
       {/* Custom Bid Modal */}
       <Modal
         isOpen={isCustomModalOpen}
@@ -159,7 +164,7 @@ export const AuctionControls: React.FC<AuctionControlsProps> = ({
             type="number"
             step="0.5"
             min={nextBidAmount}
-            max={userBudgetRemaining}
+            max={maximumPermittedBid}
             value={customBidValue}
             onChange={(e) => setCustomBidValue(e.target.value)}
             error={customError || undefined}

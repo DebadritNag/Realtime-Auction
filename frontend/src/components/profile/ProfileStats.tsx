@@ -23,7 +23,7 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({ stats }) => {
             AUCTIONS WON
           </span>
           <span className="text-2xl font-black font-mono text-[#00ff87]">
-            {stats.auctionsWon}
+            {stats.auctionsWon ?? "—"}
           </span>
           <p className="text-[10px] text-[#64748b] mt-0.5">
             Out of {stats.auctionsPlayed} total played
@@ -82,14 +82,14 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({ stats }) => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mt-1">
             <div>
               <span className="text-base font-extrabold text-[#f8fafc]">
-                {stats.highestPurchase.playerName}
+                {stats.highestPurchase?.playerName ?? "No purchases yet"}
               </span>
               <p className="text-[10px] text-[#64748b]">
-                {stats.highestPurchase.auctionName} • {stats.highestPurchase.date}
+                {stats.highestPurchase?.auctionName} • {stats.highestPurchase?.date}
               </p>
             </div>
             <span className="text-xl font-black font-mono text-[#00ff87]">
-              {formatCr(stats.highestPurchase.price)}
+              {stats.highestPurchase ? formatCr(stats.highestPurchase.price) : "—"}
             </span>
           </div>
         </div>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { auctionService } from "@/services/auction.service";
 import { Player, Team } from "@/types";
 import { SquadFormationView } from "@/components/team/SquadFormationView";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft } from "lucide-react";
@@ -20,6 +21,7 @@ export default function TeamSquadPage({
 
   const [team, setTeam] = useState<Team | null>(null);
   const [squad, setSquad] = useState<Player[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -29,7 +31,7 @@ export default function TeamSquadPage({
         setTeam(data.team);
         setSquad(data.squad);
       } catch (err) {
-        console.error("Failed to load team squad:", err);
+        setLoadError(err instanceof Error ? err.message : "Unable to load data.");
       } finally {
         setIsLoading(false);
       }
@@ -37,6 +39,7 @@ export default function TeamSquadPage({
     loadSquad();
   }, [roomCode, teamId]);
 
+  if (loadError) return <div className="p-12"><ErrorState message={loadError} onRetry={() => window.location.reload()} /></div>;
   if (isLoading || !team) {
     return (
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 space-y-6">

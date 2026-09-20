@@ -6,6 +6,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { Play, Pause, SkipForward, Ban, Flag, RotateCcw } from "lucide-react";
 
 export interface HostAuctionControlsProps {
+  hasActivePlayer: boolean; hasBid: boolean; synced: boolean; canRecall: boolean; onRecall: () => void;
   isPaused: boolean;
   onPause: () => void;
   onResume: () => void;
@@ -14,6 +15,7 @@ export interface HostAuctionControlsProps {
 }
 
 export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
+  hasActivePlayer, hasBid, synced, canRecall, onRecall,
   isPaused,
   onPause,
   onResume,
@@ -37,6 +39,7 @@ export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
             variant="stadium"
             size="sm"
             onClick={onResume}
+            disabled={!synced}
             leftIcon={<Play className="w-3.5 h-3.5 fill-current" />}
           >
             Resume Auction
@@ -46,6 +49,7 @@ export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
             variant="secondary"
             size="sm"
             onClick={onPause}
+            disabled={!synced}
             leftIcon={<Pause className="w-3.5 h-3.5" />}
           >
             Pause
@@ -55,16 +59,19 @@ export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
         <Button
           variant="secondary"
           size="sm"
-          onClick={() => setConfirmSkipOpen(true)}
+          onClick={() => hasActivePlayer ? setConfirmSkipOpen(true) : onSkip()}
+          disabled={!synced || isPaused || hasBid}
           leftIcon={<SkipForward className="w-3.5 h-3.5" />}
         >
-          Skip Player
+          {hasActivePlayer ? "Mark Unsold" : "Next Player"}
         </Button>
 
+        {canRecall && <Button variant="secondary" size="sm" disabled={!synced || isPaused} onClick={onRecall}>Recall Unsold</Button>}
         <Button
           variant="danger"
           size="sm"
           onClick={() => setConfirmEndOpen(true)}
+          disabled={!synced}
           leftIcon={<Flag className="w-3.5 h-3.5" />}
         >
           End Auction

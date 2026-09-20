@@ -11,6 +11,7 @@ export interface HostControlsProps {
   onStartAuction: () => void;
   onEditSettings?: () => void;
   isStarting?: boolean;
+  disabled?: boolean;
 }
 
 export const HostControls: React.FC<HostControlsProps> = ({
@@ -20,6 +21,7 @@ export const HostControls: React.FC<HostControlsProps> = ({
   onStartAuction,
   onEditSettings,
   isStarting = false,
+  disabled = false,
 }) => {
   if (!isHost) {
     return (
@@ -31,7 +33,7 @@ export const HostControls: React.FC<HostControlsProps> = ({
           </span>
         </div>
         <p className="text-xs text-[#94a3b8]">
-          The host will initiate the live player auction once all teams are ready.
+          The host will initiate the live player auction when the required teams have joined.
         </p>
       </div>
     );
@@ -71,6 +73,7 @@ export const HostControls: React.FC<HostControlsProps> = ({
             size="lg"
             onClick={onStartAuction}
             isLoading={isStarting}
+            disabled={disabled}
             className="flex-1 sm:flex-initial px-7"
             leftIcon={<Play className="w-4 h-4 fill-current" />}
           >

@@ -8,6 +8,7 @@ import { TeamResultCard } from "@/components/results/TeamResultCard";
 import { TransferTable } from "@/components/results/TransferTable";
 import { AuctionHighlights } from "@/components/results/AuctionHighlights";
 import { Tabs } from "@/components/ui/Tabs";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Badge } from "@/components/ui/Badge";
 import { formatCr } from "@/lib/utils";
@@ -23,6 +24,7 @@ export default function ResultsPage({
   const [analytics, setAnalytics] = useState<AuctionAnalytics | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
   const [activeTab, setActiveTab] = useState("overview");
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export default function ResultsPage({
         setAnalytics(resultsData);
         setTeams(teamsData);
       } catch (err) {
-        console.error("Failed to load auction results:", err);
+        setLoadError(err instanceof Error ? err.message : "Unable to load data.");
       } finally {
         setIsLoading(false);
       }
@@ -43,6 +45,7 @@ export default function ResultsPage({
     loadResults();
   }, [roomCode]);
 
+  if (loadError) return <div className="p-12"><ErrorState message={loadError} onRetry={() => window.location.reload()} /></div>;
   if (isLoading || !analytics) {
     return (
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 space-y-6">

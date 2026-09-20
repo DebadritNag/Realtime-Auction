@@ -11,6 +11,10 @@ import { AuctionSettingsSummary } from "@/components/room/AuctionSettingsSummary
 import { HostControls } from "@/components/room/HostControls";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { useAuctionStore } from "@/stores/auction.store";
+import { useConnectionStore } from "@/stores/connection.store";
+import { webSocketService } from "@/services/websocket.service";
+import { ConnectionStatus } from "@/components/auction/ConnectionStatus";
 import { Users } from "lucide-react";
 
 export default function RoomLobbyPage({
@@ -25,41 +29,16 @@ export default function RoomLobbyPage({
   const { room, isHost, isLoading, error, fetchRoom } = useRoomStore();
   const { user } = useAuthStore();
 
+  const snapshot = useAuctionStore(s => s.snapshot);
+  const liveError = useAuctionStore(s => s.bidErrorNotice);
+  const status = useConnectionStore(s => s.status);
   useEffect(() => {
-    fetchRoom(roomCode, user?.id ?? undefined);
-  }, [roomCode, user, fetchRoom]);
+    if (snapshot?.status === 'RUNNING' || snapshot?.status === 'PAUSED') router.replace(`/auction/${roomCode}`);
+    if (snapshot?.status === 'COMPLETED') router.replace(`/results/${roomCode}`);
+  }, [snapshot?.status, roomCode, router]);
+  const handleStartAuction = () => { void useAuctionStore.getState().hostCommand('START_AUCTION').catch(() => {}); };
 
-  /**
-   * Start the auction via WebSocket START_AUCTION command.
-   * The backend broadcasts AUCTION_STARTED + ROOM_STATE to all subscribers.
-   * On receiving it we navigate everyone to the live auction page.
-   */
-  const handleStartAuction = () => {
-    // Connect WS so we're subscribed before issuing the command
-    webSocketService.connect(roomCode);
-
-    const unsub = webSocketService.subscribe((event) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const e = event as any;
-      const isStarted = e.type === "AUCTION_STARTED";
-      const isRunningState =
-        e.type === "ROOM_STATE" &&
-        (e.payload?.status === "RUNNING" || e.status === "LIVE");
-
-      if (isStarted || isRunningState) {
-        unsub();
-        webSocketService.disconnect();
-        router.push(`/auction/${roomCode}`);
-      }
-    });
-
-    // Small delay to let JOIN_ROOM complete before START_AUCTION
-    setTimeout(() => {
-      webSocketService.startAuction(roomCode);
-    }, 300);
-  };
-
-  if (isLoading) {
+  if (isLoading || (!room && !liveError)) {
     return (
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 space-y-6">
         <Skeleton className="h-24 w-full rounded-2xl" />
@@ -69,12 +48,12 @@ export default function RoomLobbyPage({
     );
   }
 
-  if (error || !room) {
+  if (error || liveError || !room) {
     return (
       <div className="mx-auto max-w-xl px-4 py-20">
         <ErrorState
           title="Room Not Found"
-          message={error || `Unable to connect to room "${roomCode}".`}
+          message={error || liveError || `Unable to connect to room "${roomCode}".`}
           onRetry={() => fetchRoom(roomCode, user?.id ?? undefined)}
         />
       </div>
@@ -87,7 +66,7 @@ export default function RoomLobbyPage({
         name={room.name}
         roomCode={room.roomCode}
         isHost={isHost}
-        connected={true}
+        connected={status === "SYNCED"}
       />
 
       <HostControls
@@ -95,6 +74,7 @@ export default function RoomLobbyPage({
         totalTeams={room.teams.length}
         expectedTeams={room.settings.numberOfTeams}
         onStartAuction={handleStartAuction}
+        disabled={status !== "SYNCED" || room.teams.length < (snapshot?.settings.minimumParticipants ?? 2)}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -114,7 +94,7 @@ export default function RoomLobbyPage({
                 key={team.id}
                 team={team}
                 isHost={isHost}
-                onRemove={() => {}}
+                onRemove={() => { void webSocketService.send({ type: "KICK_MEMBER", payload: { roomCode, targetTeamId: team.id } }).catch(e => useAuctionStore.setState({ bidErrorNotice: e.message })); }}
               />
             ))}
           </div>

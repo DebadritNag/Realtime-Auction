@@ -10,7 +10,7 @@ import { Edit2, Shield, User as UserIcon } from "lucide-react";
 
 export interface ProfileHeaderProps {
   user: User;
-  onUpdate?: (updated: Partial<User>) => void;
+  onUpdate?: (updated: Partial<User>) => Promise<void>;
 }
 
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
@@ -22,16 +22,19 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   const [teamName, setTeamName] = useState(user.defaultTeamName);
   const [teamLogo, setTeamLogo] = useState(user.defaultTeamLogo);
 
-  const handleSave = (e: React.FormEvent) => {
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    try {
     if (onUpdate) {
-      onUpdate({
+      await onUpdate({
         displayName,
         defaultTeamName: teamName,
         defaultTeamLogo: teamLogo,
       });
     }
     setIsEditOpen(false);
+    } catch (error) { setSaveError(error instanceof Error ? error.message : "Unable to save profile."); }
   };
 
   return (
@@ -85,6 +88,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         title="Edit Manager Profile"
         description="Update your public display name and default franchise crest"
       >
+        {saveError && <p role="alert" className="text-red-400 text-sm">{saveError}</p>}
         <form onSubmit={handleSave} className="space-y-4">
           <Input
             label="Display Name"
