@@ -22,14 +22,9 @@ export const ProfilePreview: React.FC<ProfilePreviewProps> = ({
         .toUpperCase()
     : "GC";
 
-  const winRate =
-    stats && stats.auctionsPlayed > 0
-      ? Math.round((stats.auctionsWon / stats.auctionsPlayed) * 100)
-      : 28;
-
-  const auctionsWon = stats?.auctionsWon ?? 4;
-  const auctionsPlayed = stats?.auctionsPlayed ?? 14;
-  const careerSpend = stats?.totalSpend ? stats.totalSpend.toFixed(1) : "1428.5";
+  const auctionsWon = stats?.auctionsWon ?? "—";
+  const auctionsPlayed = stats?.auctionsPlayed ?? "—";
+  const careerSpend = stats?.totalSpend.toFixed(1) ?? "—";
 
   return (
     <div className="h-full min-h-[290px] sm:min-h-[300px] rounded-2xl border border-[#122e42] bg-[#051521] p-5 sm:p-6 flex flex-col justify-between group transition-all hover:border-[#00F59B]/30">
@@ -45,11 +40,11 @@ export const ProfilePreview: React.FC<ProfilePreviewProps> = ({
                 Your Manager Profile
               </p>
               <h4 className="text-[17px] font-black text-white leading-tight">
-                {user.displayName || "Gourab Chakraborty"}
+                {user.displayName || user.username}
               </h4>
               <p className="text-[11.5px] text-[#00F59B] flex items-center space-x-1.5 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#00F59B] inline-block animate-pulse"></span>
-                <span>@{user.username || "gourab_tactician"}</span>
+                <span>@{user.username}</span>
               </p>
             </div>
           </div>
@@ -81,7 +76,7 @@ export const ProfilePreview: React.FC<ProfilePreviewProps> = ({
             <div className="flex items-center space-x-1.5 mt-1.5">
               <span className="text-sm">{user.defaultTeamLogo || "🛡️"}</span>
               <span className="text-[12px] font-bold text-white truncate">
-                {user.defaultTeamName || "Calcutta United"}
+                {user.defaultTeamName || "Not set"}
               </span>
             </div>
           </div>
@@ -121,27 +116,6 @@ export const ProfilePreview: React.FC<ProfilePreviewProps> = ({
           <p className="text-[11px] italic text-[#9BB1C4]">Same game. Smarter managers.</p>
         </div>
 
-        {/* Sparkline Graph */}
-        <div className="flex items-center space-x-3.5">
-          <svg className="w-18 h-7 text-[#00F59B]" fill="none" viewBox="0 0 60 20">
-            <path
-              d="M2 17L18 13L32 15L48 5L58 2"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2.2"
-            ></path>
-            <circle cx="58" cy="2" fill="currentColor" r="2.5"></circle>
-          </svg>
-          <div className="text-right">
-            <span className="text-[9.5px] text-[#71899c] block">Win Rate</span>
-            <span className="text-[13px] font-black text-[#00F59B]">{winRate}%</span>
-          </div>
-          <div className="text-right pl-2.5 border-l border-[#133144]">
-            <span className="text-[9.5px] text-[#71899c] block">Best Finish</span>
-            <span className="text-[13px] font-black text-white">1st</span>
-          </div>
-        </div>
       </div>
     </div>
   );

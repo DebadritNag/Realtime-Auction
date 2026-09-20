@@ -130,7 +130,7 @@ export const PlayerAuctionCard: React.FC<PlayerAuctionCardProps> = ({ player }) 
                 className={`text-sm font-bold font-mono tabular-nums ${
                   (stat.value ?? 0) >= 88
                     ? "text-[#00ff87]"
-                    : stat.value >= 80
+                    : (stat.value ?? 0) >= 80
                     ? "text-[#f8fafc]"
                     : "text-[#94a3b8]"
                 }`}

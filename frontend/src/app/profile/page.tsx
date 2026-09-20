@@ -46,7 +46,7 @@ export default function ProfilePage() {
   const activeUser = user;
 
   const handleProfileUpdate = async (updated: Partial<User>) => {
-    const newProfile = await authService.updateProfile(updated);
+    const newProfile = await profileService.updateProfile(updated);
     setUser(newProfile);
   };
 

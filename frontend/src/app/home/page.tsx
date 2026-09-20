@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth.store";
 import { profileService } from "@/services/profile.service";
-import { Achievement, UserCareerStats } from "@/types";
+import { Achievement, UserCareerStats, AuctionHistoryRecord } from "@/types";
 import { HeroSection } from "@/components/home/HeroSection";
 import { CreateRoomCard } from "@/components/home/CreateRoomCard";
 import { JoinRoomCard } from "@/components/home/JoinRoomCard";
@@ -15,6 +15,8 @@ import { RecentActivityCard } from "@/components/home/RecentActivityCard";
 export default function HomePage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
+  const [history, setHistory] = useState<AuctionHistoryRecord[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [stats, setStats] = useState<UserCareerStats | null>(null);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
@@ -22,14 +24,16 @@ export default function HomePage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [careerStats, achievementList] = await Promise.all([
+        const [careerStats, achievementList, recentHistory] = await Promise.all([
           profileService.getCareerStats(),
           profileService.getAchievements(),
+          profileService.getAuctionHistory(),
         ]);
         setStats(careerStats);
+        setHistory(recentHistory);
         setAchievements(achievementList);
       } catch (e) {
-        console.error("Failed to load home dashboard data:", e);
+        setLoadError(e instanceof Error ? e.message : "Unable to load your dashboard.");
       } finally {
         setDataLoading(false);
       }
@@ -54,6 +58,7 @@ export default function HomePage() {
       <div className="max-w-[1552px] w-full mx-auto px-4 sm:px-6 py-6 sm:py-7 flex-1 flex flex-col space-y-6 sm:space-y-7">
         {/* BEGIN: HeroSection */}
         <HeroSection user={displayUser} />
+        {loadError && <p role="alert" className="text-amber-300">{loadError}</p>}
         {/* END: HeroSection */}
 
         {/* BEGIN: PrimaryActionsGrid */}
@@ -110,7 +115,7 @@ export default function HomePage() {
                 <div className="h-11 bg-[#081f2f] rounded-xl"></div>
               </div>
             ) : (
-              <RecentActivityCard />
+              <RecentActivityCard history={history} />
             )}
           </div>
         </section>

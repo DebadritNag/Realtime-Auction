@@ -2,7 +2,6 @@
 
 import React, { useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { useRouter } from "next/navigation";
 import { useAuctionStore } from "@/stores/auction.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { useUIStore } from "@/stores/ui.store";
@@ -43,20 +42,12 @@ export default function LiveAuctionPage({
   const snapshot = useAuctionStore(s => s.snapshot);
 
   // Determine host status from auction store (authoritative from ROOM_STATE)
-  const hostUserId = useAuctionStore((state) => state.hostUserId);
+  const hostUserId = useAuctionStore((state) => state.snapshot?.host.userId);
   const isHost = !!user && user.id === hostUserId;
 
   // Navigate to results when auction completes
   const auctionStatus = useAuctionStore((state) => state.auctionStatus);
-  const router = useRouter();
-  React.useEffect(() => {
-    if (auctionStatus === "COMPLETED") {
-      setTimeout(() => {
-        router.push(`/results/${roomCode}`);
-      }, 2000);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auctionStatus]);
+
 
   // Auction Store selectors
   const activePlayer = useAuctionStore((state) => state.activePlayer);

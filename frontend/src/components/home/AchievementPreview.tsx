@@ -11,72 +11,12 @@ export interface AchievementPreviewProps {
 export const AchievementPreview: React.FC<AchievementPreviewProps> = ({
   achievements,
 }) => {
-  const total = achievements.length > 0 ? achievements.length : 8;
-  const unlocked = achievements.length > 0
-    ? achievements.filter((a) => a.unlocked).length
-    : 7;
-  const progressPercent = Math.round((unlocked / total) * 100);
-
-  // Default badges from HTML design with styles
-  const defaultBadges = [
-    {
-      id: "first_signing",
-      icon: "🏆",
-      title: "First Signing",
-      description: "Complete your first successful player purchase in any auction room.",
-      borderColor: "border-amber-500/30",
-      iconBg: "bg-amber-400/10",
-      textColor: "text-amber-300",
-      pillBg: "bg-amber-400/10 border-amber-400/30",
-      unlocked: true,
-    },
-    {
-      id: "auction_rookie",
-      icon: "🎖️",
-      title: "Auction Rookie",
-      description: "Successfully complete your first full auction room.",
-      borderColor: "border-sky-500/30",
-      iconBg: "bg-sky-400/10",
-      textColor: "text-sky-300",
-      pillBg: "bg-sky-400/10 border-sky-400/30",
-      unlocked: true,
-    },
-    {
-      id: "big_spender",
-      icon: "💰",
-      title: "Big Spender",
-      description: "Spend 100 Cr+ in a single auction session.",
-      borderColor: "border-emerald-500/30",
-      iconBg: "bg-emerald-400/10",
-      textColor: "text-[#00F59B]",
-      pillBg: "bg-[#00F59B]/10 border-[#00F59B]/30",
-      unlocked: true,
-    },
-    {
-      id: "bargain_hunter",
-      icon: "🎯",
-      title: "Bargain Hunter",
-      description: "Win a 87+ OVR world-class player for under 15 Cr.",
-      borderColor: "border-purple-500/30",
-      iconBg: "bg-purple-400/10",
-      textColor: "text-purple-300",
-      pillBg: "bg-purple-400/10 border-purple-400/30",
-      unlocked: true,
-    },
-  ];
-
-  // If real achievements exist, merge unlock state
-  const badgesToRender = defaultBadges.map((badge) => {
-    const found = achievements.find((a) => a.id === badge.id);
-    if (found) {
-      return {
-        ...badge,
-        unlocked: found.unlocked,
-      };
-    }
-    return badge;
-  });
-
+  const total = achievements.length;
+  const unlocked = achievements.filter(a => a.unlocked).length;
+  const progressPercent = total ? Math.round(unlocked / total * 100) : 0;
+  const badgesToRender = achievements.slice(0, 4).map(a => ({...a,
+    borderColor:'border-emerald-500/30', iconBg:'bg-emerald-400/10',
+    textColor:'text-[#00F59B]', pillBg:'bg-[#00F59B]/10 border-[#00F59B]/30'}));
   return (
     <div className="h-full min-h-[290px] sm:min-h-[300px] rounded-2xl border border-[#122e42] bg-[#051521] p-5 sm:p-6 flex flex-col justify-between group transition-all hover:border-[#00F59B]/30">
       <div>
@@ -112,6 +52,7 @@ export const AchievementPreview: React.FC<AchievementPreviewProps> = ({
 
         {/* 4 Achievement Cards Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4">
+          {!total && <p className="text-sm text-[#788e9f] col-span-4">No achievements available yet.</p>}
           {badgesToRender.map((badge) => (
             <div
               key={badge.id}

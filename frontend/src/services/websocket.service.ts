@@ -78,7 +78,7 @@ export class WebSocketService {
   const requestId=command.requestId??crypto.randomUUID();
   if(['REQUEST_STATE','PING','JOIN_ROOM','REJOIN_ROOM'].includes(command.type)){socket.send(JSON.stringify({...command,requestId}));return Promise.resolve();}
   return new Promise((resolve,reject)=>{
-   const timer=setTimeout(()=>{this.pending.delete(requestId);reject(new ApiError('Confirmation timed out. Refresh state before retrying.','COMMAND_TIMEOUT'));void this.send({type:'REQUEST_STATE',payload:{roomCode:this.room!}});},10000);
+   const timer=setTimeout(()=>{this.pending.delete(requestId);reject(new ApiError('Confirmation timed out. Refresh state before retrying.','COMMAND_TIMEOUT'));void this.send({type:'REQUEST_STATE',payload:{roomCode:this.room!}}).catch(()=>{});},10000);
    this.pending.set(requestId,{resolve,reject,timer});socket.send(JSON.stringify({...command,requestId}));
   });
  }

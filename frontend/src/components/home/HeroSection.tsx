@@ -129,14 +129,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ user }) => {
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00F59B]"></span>
                 </span>
                 <span className="text-[11px] font-bold tracking-wider text-[#00F59B] uppercase">
-                  Live Auction
+                  Your Next Auction
                 </span>
               </div>
               <span className="text-[11.5px] text-[#7A91A5] font-semibold">Season 2026</span>
             </div>
 
             <h2 className="text-2xl sm:text-[28px] font-black tracking-tight text-white mt-3 leading-tight drop-shadow-md">
-              PREM-2026 Derby
+              Build Your Football Squad
             </h2>
 
             {/* Chips */}
@@ -145,33 +145,33 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ user }) => {
                 <svg className="w-3.5 h-3.5 text-[#00F59B]" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
                 </svg>
-                <span>8 / 14 Managers</span>
+                <span>Invite your managers</span>
               </span>
               <span className="flex items-center space-x-1.5 bg-[#092230]/90 backdrop-blur-sm border border-[#14354b] px-3 py-1.5 rounded-full shadow-md">
                 <svg className="w-3.5 h-3.5 text-[#00F59B]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="9"></circle>
                   <path d="M12 6v6l4 2"></path>
                 </svg>
-                <span>Auction Live</span>
+                <span>Live multiplayer</span>
               </span>
               <Link
-                href="/room/PREM-2026"
+                href="/join"
                 className="flex items-center space-x-1.5 bg-[#092230]/90 hover:bg-[#0d2e42] backdrop-blur-sm border border-[#14354b] px-3 py-1.5 rounded-full transition-colors shadow-md"
               >
                 <svg className="w-3.5 h-3.5 text-[#00F59B]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                 </svg>
-                <span>Lobby Open</span>
+                <span>Join a room</span>
               </Link>
             </div>
           </div>
 
           {/* Enter Auction Button */}
           <Link
-            href="/auction/PREM-2026"
+            href="/create"
             className="mt-6 inline-flex items-center justify-center space-x-2.5 w-full max-w-[320px] h-11 rounded-lg bg-[#00F59B] hover:bg-[#02e08e] text-black font-extrabold text-[13.5px] tracking-wide transition transform hover:scale-[1.01] shadow-[0_0_20px_rgba(0,245,155,0.4)]"
           >
-            <span>Enter Auction</span>
+            <span>Create Auction</span>
             <svg
               className="w-4 h-4 text-black font-black"
               fill="none"

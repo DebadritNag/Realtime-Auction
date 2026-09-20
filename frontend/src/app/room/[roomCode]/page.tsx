@@ -4,7 +4,7 @@ import React, { useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { useRoomStore } from "@/stores/room.store";
 import { useAuthStore } from "@/stores/auth.store";
-import { webSocketService } from "@/services/websocket.service";
+
 import { RoomHeader } from "@/components/room/RoomHeader";
 import { TeamLobbyCard } from "@/components/room/TeamLobbyCard";
 import { AuctionSettingsSummary } from "@/components/room/AuctionSettingsSummary";
@@ -54,7 +54,7 @@ export default function RoomLobbyPage({
         <ErrorState
           title="Room Not Found"
           message={error || liveError || `Unable to connect to room "${roomCode}".`}
-          onRetry={() => fetchRoom(roomCode, user?.id ?? undefined)}
+          onRetry={() => { useAuctionStore.getState().leaveAuction(); useAuctionStore.getState().initAuction(roomCode); }}
         />
       </div>
     );

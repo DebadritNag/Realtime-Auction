@@ -38,14 +38,8 @@ export default function CreateRoomPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSourceSelect = (source: "default" | "csv" | "custom") => {
-    setFormData((prev) => ({ ...prev, playerPoolSource: source }));
-    if (source === "csv") {
-      setSourceNotice("Custom CSV roster upload ready. Default elite database will be used as baseline.");
-    } else if (source === "custom") {
-      setSourceNotice("Community pots selected. You can customize player tiers after entering the lobby.");
-    } else {
-      setSourceNotice(null);
-    }
+    if (source !== 'default') {setSourceNotice('Only the configured server player catalog is available.'); return;}
+    setFormData(prev => ({...prev, playerPoolSource: source})); setSourceNotice(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -688,7 +682,7 @@ export default function CreateRoomPage() {
 
               {/* Option 2: Upload CSV */}
               <div
-                onClick={() => handleSourceSelect("csv")}
+                aria-disabled="true" title="Not available yet" onClick={() => handleSourceSelect("csv")}
                 className={`rounded-lg p-3 relative cursor-pointer group flex flex-col justify-between transition-all ${
                   formData.playerPoolSource === "csv"
                     ? "border-[1.5px] border-[#22BDF6] bg-[linear-gradient(180deg,rgba(34,189,246,0.12)_0%,rgba(9,24,37,0.95)_100%)] shadow-[0_0_12px_rgba(34,189,246,0.2)]"
@@ -723,7 +717,7 @@ export default function CreateRoomPage() {
 
               {/* Option 3: Custom Player List */}
               <div
-                onClick={() => handleSourceSelect("custom")}
+                aria-disabled="true" title="Not available yet" onClick={() => handleSourceSelect("custom")}
                 className={`rounded-lg p-3 relative cursor-pointer group flex flex-col justify-between transition-all ${
                   formData.playerPoolSource === "custom"
                     ? "border-[1.5px] border-[#F3B928] bg-[linear-gradient(180deg,rgba(243,185,40,0.12)_0%,rgba(9,24,37,0.95)_100%)] shadow-[0_0_12px_rgba(243,185,40,0.2)]"

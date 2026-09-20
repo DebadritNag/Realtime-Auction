@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { PlayerAuctionCard } from "@/components/auction/PlayerAuctionCard";
-import { MOCK_PLAYERS } from "@/services/mock/mockData";
+
 import {
   Zap,
   Shield,
@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 export default function LandingPage() {
-  const showcasePlayer = MOCK_PLAYERS[0]; // Mbappe 92 ATT
+
 
   const steps = [
     {
@@ -145,7 +145,7 @@ export default function LandingPage() {
           {/* Hero Visual: Original Football Player Card & Live Auction Mockup */}
           <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
             <div className="w-full max-w-sm">
-              <PlayerAuctionCard player={showcasePlayer} />
+              <PlayerAuctionCard player={null} />
               
               {/* Floating Mini Bid Badge */}
               <div className="mt-4 p-3 rounded-2xl bg-[#0e121a]/95 border border-[#00ff87]/40 backdrop-blur-md shadow-2xl flex items-center justify-between animate-notice">
