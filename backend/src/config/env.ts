@@ -47,7 +47,7 @@ export function readEnvironment(input: NodeJS.ProcessEnv = process.env) {
   const origins = env.FRONTEND_ORIGIN.split(',').map((v) => v.trim());
   for (const origin of origins)
     if (new URL(origin).origin !== origin)
-      throw new Error('FRONTEND_ORIGIN must contain exact origins.');
+      throw new Error(`FRONTEND_ORIGIN must contain exact origins (no path, no trailing slash). Bad value: "${origin}"`);
 
   if (env.NODE_ENV === 'production' && env.JWT_JWKS_URL && !env.JWT_JWKS_URL.startsWith('https://'))
     throw new Error('Production JWKS requires HTTPS.');
