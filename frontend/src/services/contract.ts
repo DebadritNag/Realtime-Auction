@@ -1,21 +1,33 @@
 import type { Player,Team,AuctionRoom,RoomSettings,AISuggestion } from '@/types';
-import type { PlayerDTO,RoomStateDTO,SettingsDTO,RecommendationDTO } from '@/types/backend';
+import type { PlayerDTO,RoomStateDTO,SettingsDTO,RecommendationDTO,TeamDTO } from '@/types/backend';
 export function mapPlayer(p:PlayerDTO,s:RoomStateDTO):Player{
  const purchase=s.soldPlayers.find(sale=>sale.playerId===p.id);
  const stat=(short:string,long:string)=>p.stats[short]??p.stats[long]??null;
- return {id:p.id,name:p.name,ovr:p.ovr,position:p.position==='FWD'?'ATT':p.position,
+ return {id:p.id,name:p.name,ovr:p.ovr,
+ // position: broad category for filtering/squad logic (GK|DEF|MID|ATT)
+ position:p.position==='FWD'?'ATT':p.position,
+ // subPosition: specific football position (CB, LB, ST, CM, etc.) for display
+ subPosition:p.subPosition||undefined,
  club:p.club??'',nationality:p.nationality??'',flagEmoji:'',age:p.age??null,preferredFoot:p.preferredFoot??null,
  basePrice:p.basePriceCr,stats:{pac:stat('pac','pace'),sho:stat('sho','shooting'),pas:stat('pas','passing'),dri:stat('dri','dribbling'),def:stat('def','defending'),phy:stat('phy','physical')},
  pot:p.potId,photoUrl:p.photoUrl,status:({WAITING:'waiting',ACTIVE:'live',SOLD:'sold',UNSOLD:'unsold',SKIPPED:'skipped'} as const)[p.status],
  soldPrice:purchase?.priceCr,soldToTeamId:purchase?.teamId,soldToTeamName:s.teams.find(t=>t.id===purchase?.teamId)?.name};
 }
+// Resolve manager username: prefer backend-supplied username, fall back to neutral label
+function resolveUsername(t:TeamDTO & {managerUsername?:string},isCurrentUser:boolean,index:number):string {
+ if(t.managerUsername)return t.managerUsername;
+ // Backend may not have username for offline connections — use neutral fallback
+ return isCurrentUser?'you':'manager'+(index+1);
+}
 export function mapTeams(s:RoomStateDTO):Team[]{
  const players=s.players.map(p=>mapPlayer(p,s));
  return s.teams.map((t,i)=>{
   const squad=players.filter(p=>t.playerIds.includes(p.id));
+  const isCurrentUser=t.id===s.currentUserTeam.id;
+  const username=resolveUsername(t as TeamDTO & {managerUsername?:string},isCurrentUser,i);
   return {id:t.id,name:t.name,shortName:t.name.split(/\s+/).map(x=>x[0]).join('').slice(0,4).toUpperCase(),
    logo:t.logoEmoji??'⚽',accentColor:['#00ff87','#38bdf8','#f59e0b','#a78bfa'][i%4],managerId:t.userId,
-   managerUsername:t.userId===s.currentUserTeam.userId?'You':'Manager '+(i+1),isCurrentUser:t.id===s.currentUserTeam.id,
+   managerUsername:username,isCurrentUser,
    budgetTotal:t.startingBudgetCr,budgetSpent:t.spentCr,budgetRemaining:t.remainingBudgetCr,squadCount:t.playersOwned,squad,
    positions:{gk:squad.filter(p=>p.position==='GK').length,def:squad.filter(p=>p.position==='DEF').length,mid:squad.filter(p=>p.position==='MID').length,att:squad.filter(p=>p.position==='ATT').length,total:squad.length},
    ready:false,connected:s.connectedUsers.includes(t.userId)};

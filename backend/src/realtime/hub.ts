@@ -38,6 +38,14 @@ export class RealtimeHub {
   connectedUsers(code: string): string[] {
     return [...new Set([...this.connections.values()].filter(c => c.rooms.has(code)).map(c => c.auth.userId))];
   }
+  /** Map of userId → username for all connections subscribed to a room code. */
+  private usernames(code: string): Record<string, string> {
+    const map: Record<string, string> = {};
+    for (const c of this.connections.values()) {
+      if (c.rooms.has(code) && c.auth.username) map[c.auth.userId] = c.auth.username;
+    }
+    return map;
+  }
   private send(connection: Connection, event: ServerEvent): void {
     if (connection.socket.readyState !== 1) return;
     if (connection.socket.bufferedAmount > 1024 * 1024) { connection.socket.close(1013, 'Slow client; reconnect for state'); return; }
@@ -49,7 +57,7 @@ export class RealtimeHub {
   private sendState(connection: Connection, room: Room, requestId?: string): void {
     this.send(connection, { type: 'ROOM_STATE', roomId: room.id, sequence: room.sequence,
       serverTime: this.manager.clock.now(), requestId,
-      payload: roomState(room, connection.auth.userId, this.manager.clock.now(), this.connectedUsers(room.code)) });
+      payload: roomState(room, connection.auth.userId, this.manager.clock.now(), this.connectedUsers(room.code), this.usernames(room.code)) });
   }
   private broadcast(room: Room, events: ServerEvent[]): void {
     for (const connection of this.connections.values()) {

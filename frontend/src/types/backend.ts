@@ -11,10 +11,12 @@ export interface PlayerDTO {
  id:string;name:string;position:'GK'|'DEF'|'MID'|'FWD';ovr:number;stats:Record<string,number>;basePriceCr:number;potId:string;
  status:'WAITING'|'ACTIVE'|'SOLD'|'UNSOLD'|'SKIPPED';round:number;
  club?:string;nationality?:string;age?:number;preferredFoot?:string;photoUrl?:string;
+ subPosition?:string; // specific football position, e.g. CB, LB, ST, CM
 }
 export interface TeamDTO {
  id:string;userId:string;name:string;logoUrl?:string;logoEmoji?:string;startingBudgetCr:number;spentCr:number;
  remainingBudgetCr:number;playerIds:string[];playersOwned:number;maximumPermittedBidCr:number;minimumSquadMet:boolean;
+ managerUsername?:string; // real username when available from hub connections
 }
 export interface PurchaseDTO {id:string;playerId:string;teamId:string;priceCr:number;bidCount:number;at:number;durationMs:number}
 export interface BidDTO {id:string;roomId:string;playerId:string;teamId:string;amountCr:number;at:number;round:number}
