@@ -93,21 +93,23 @@ describe('authoritative auction', () => {
   it('late pause resolves an expired player rather than reviving it', async () => {
     const f = await fixture();
     await f.command('START_AUCTION');
+    const expiredId = (await f.state()).active!.playerId;
     f.clock.value += 11000;
     await f.command('PAUSE_AUCTION');
     expect((await f.state()).active).toBeNull();
-    expect((await f.state()).players[0]?.status).toBe('UNSOLD');
+    expect((await f.state()).players.find(p => p.id === expiredId)?.status).toBe('UNSOLD');
   });
   it('commits sold player, squad, purse and results exactly once', async () => {
     const f = await fixture();
     await f.command('START_AUCTION');
     await f.command('PLACE_BID', 'alice', { amountCr: 4 });
+    const soldId = (await f.state()).active!.playerId;
     const activation = (await f.state()).active!.activationId;
     await f.expire();
     await f.engine.onTimer(f.room.code, activation);
     const room = await f.state();
     expect(room.purchases).toHaveLength(1);
-    expect(room.teams.find(t => t.userId === 'alice')).toMatchObject({ spentUnits: 8, playerIds: ['demo-1'] });
+    expect(room.teams.find(t => t.userId === 'alice')).toMatchObject({ spentUnits: 8, playerIds: [soldId] });
     expect(calculateResults(room)).toMatchObject({ playersSold: 1, totalSpendCr: 4, averageSaleCr: 4 });
   });
   it('resolves unsold, recalls original price, then honors a bid on host end', async () => {

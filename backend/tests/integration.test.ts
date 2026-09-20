@@ -48,7 +48,9 @@ it('runs host + four users through realtime auction, late bid, sale, next player
   }
   const host = sockets.get('host')!, a = sockets.get('a')!, b = sockets.get('b')!;
   await send(host, 'START_AUCTION', { roomCode: code });
-  expect((await manager.loadRoom(code)).active?.playerId).toBe('demo-1');
+  const firstId = (await manager.loadRoom(code)).active!.playerId;
+  const nextId = (await manager.loadRoom(code)).players.find(p => p.id !== firstId)!.id;
+  expect(['demo-1', 'demo-2']).toContain(firstId);
   await send(a, 'PLACE_BID', { roomCode: code, amountCr: 1 });
   await send(b, 'PLACE_BID', { roomCode: code, amountCr: 1.5 });
   const active = (await manager.loadRoom(code)).active!;
@@ -63,11 +65,11 @@ it('runs host + four users through realtime auction, late bid, sale, next player
   clock.value += 1000;
   const next = event(a, 'PLAYER_STARTED');
   await engine.onTimer(code, null);
-  expect((await next).payload).toMatchObject({ player: { id: 'demo-2' } });
+  expect((await next).payload).toMatchObject({ player: { id: nextId } });
   b.terminate();
   const reconnected = await app.injectWS('/ws?token=b-token', { headers: { origin } });
   const snapshot = await send(reconnected, 'REJOIN_ROOM', { roomCode: code }, 'ROOM_STATE');
-  expect(snapshot.payload).toMatchObject({ activePlayerId: 'demo-2', currentUserTeam: { userId: 'b' }, teams: expect.any(Array) });
+  expect(snapshot.payload).toMatchObject({ activePlayerId: nextId, currentUserTeam: { userId: 'b' }, teams: expect.any(Array) });
   const second = (await manager.loadRoom(code)).active!;
   clock.value = second.endsAt;
   await engine.onTimer(code, second.activationId);
@@ -104,4 +106,38 @@ it('protects REST and WS boundaries, host commands, unknown fields and retries',
   expect(rejected.payload).toMatchObject({ reason: 'ALREADY_HIGHEST_BIDDER' });
   const outsider = await app.inject({ url: '/api/rooms/' + code + '/state', headers: { authorization: 'Bearer outsider-token' } });
   expect(outsider.statusCode).toBe(403);
+});
+
+it('broadcasts selected recall and authoritative snapshots to host, peer and reconnecting clients', async () => {
+  const { app, manager } = await buildApp({ authService: auth, logger: false, timersEnabled: false,
+    playerRepository: new CatalogPlayerRepository(demoPlayers.slice(0, 2)) });
+  cleanup.push(() => app.close()); await app.ready();
+  const room = await manager.create({ userId: 'host' }, { auctionName: 'Recall Cup', teamName: 'Host FC',
+    settings: { minimumParticipants: 1, autoAdvance: false } });
+  await app.inject({ method: 'POST', url: '/api/rooms/' + room.code + '/join', headers: { authorization: 'Bearer a-token' }, payload: { teamName: 'Peer FC' } });
+  const host = await app.injectWS('/ws?token=host-token', { headers: { origin } });
+  const peer = await app.injectWS('/ws?token=a-token', { headers: { origin } });
+  await send(host, 'JOIN_ROOM', { roomCode: room.code }, 'ROOM_STATE');
+  await send(peer, 'JOIN_ROOM', { roomCode: room.code }, 'ROOM_STATE');
+  await send(host, 'START_AUCTION', { roomCode: room.code });
+  const id = (await manager.loadRoom(room.code)).active!.playerId;
+  await send(host, 'MARK_UNSOLD', { roomCode: room.code });
+  await send(host, 'NEXT_PLAYER', { roomCode: room.code });
+  const before = await manager.loadRoom(room.code);
+  const payload = { roomCode: room.code, playerIds: [id] };
+  expect((await send(peer, 'RECALL_PLAYERS', payload, 'ERROR')).payload).toMatchObject({ reason: 'HOST_REQUIRED' });
+  const updates = [event(host, 'PLAYER_RECALLED'), event(peer, 'PLAYER_RECALLED')];
+  const snapshots = [event(host, 'ROOM_STATE'), event(peer, 'ROOM_STATE')];
+  await send(host, 'RECALL_PLAYERS', payload, 'COMMAND_ACK', 'recall-once');
+  for (const update of await Promise.all(updates)) expect(update.payload).toMatchObject({ playerId: id, status: 'WAITING' });
+  for (const snapshot of await Promise.all(snapshots)) expect(snapshot.payload).toMatchObject({
+    unsoldPlayers: [], activePlayerId: before.active!.playerId, endsAt: before.active!.endsAt,
+    players: expect.arrayContaining([expect.objectContaining({ id, status: 'WAITING' })]),
+  });
+  expect((await send(host, 'RECALL_PLAYERS', payload, 'COMMAND_ACK', 'recall-once')).payload).toMatchObject({ duplicate: true });
+  peer.terminate();
+  const reconnect = await app.injectWS('/ws?token=a-token', { headers: { origin } });
+  expect((await send(reconnect, 'REJOIN_ROOM', { roomCode: room.code }, 'ROOM_STATE')).payload).toMatchObject({
+    unsoldPlayers: [], players: expect.arrayContaining([expect.objectContaining({ id, status: 'WAITING' })]),
+  });
 });

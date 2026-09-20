@@ -46,6 +46,7 @@ export type ClientCommand =
  | {type:'JOIN_ROOM'|'REJOIN_ROOM'|'REQUEST_STATE';payload:{roomCode:string};requestId?:string}
  | {type:HostCommand;payload:RoomPayload;requestId?:string}
  | {type:'PLACE_BID';payload:RoomPayload & {amountCr:number;playerId?:string};requestId?:string}
+ | {type:'RECALL_PLAYERS';payload:RoomPayload & {playerIds:string[]};requestId?:string}
  | {type:'KICK_MEMBER';payload:RoomPayload & {targetTeamId:string};requestId?:string}
  | {type:'UPDATE_SETTINGS';payload:RoomPayload & {settings:Partial<SettingsDTO>};requestId?:string}
  | {type:'PING';payload?:Record<string,never>;requestId?:string};
@@ -60,6 +61,7 @@ interface Payloads {
  TIMER_EXTENDED:{playerId:string;endsAt:number};
  PLAYER_SOLD:{playerId:string;teamId:string;priceCr:number;remainingBudgetCr:number;teamPlayerCount:number};
  PLAYER_UNSOLD:{playerId:string};
+ PLAYER_RECALLED:{playerId:string;status:'WAITING';round:number};
  TEAM_UPDATED:{teamId:string};
  BUDGET_UPDATED:{teamId:string;spentCr:number;remainingBudgetCr:number};
  AUCTION_PAUSED:{remainingTimeMs:number|null};AUCTION_RESUMED:{endsAt:number|null};
@@ -73,7 +75,7 @@ export function parseServerEvent(raw:string):ServerEvent {
  const value:unknown=JSON.parse(raw);
  if(!value || typeof value!=='object') throw new Error('Invalid server event');
  const e=value as Record<string,unknown>;
- const names=['CONNECTED','ROOM_STATE','ROOM_UPDATED','MEMBER_JOINED','MEMBER_LEFT','PRESENCE_UPDATED','AUCTION_STARTED','PLAYER_STARTED','BID_UPDATED','TIMER_EXTENDED','PLAYER_SOLD','PLAYER_UNSOLD','TEAM_UPDATED','BUDGET_UPDATED','AUCTION_PAUSED','AUCTION_RESUMED','AUCTION_COMPLETED','COMMAND_ACK','BID_REJECTED','ERROR','PONG'];
+ const names=['CONNECTED','ROOM_STATE','ROOM_UPDATED','MEMBER_JOINED','MEMBER_LEFT','PRESENCE_UPDATED','AUCTION_STARTED','PLAYER_STARTED','BID_UPDATED','TIMER_EXTENDED','PLAYER_SOLD','PLAYER_UNSOLD','PLAYER_RECALLED','TEAM_UPDATED','BUDGET_UPDATED','AUCTION_PAUSED','AUCTION_RESUMED','AUCTION_COMPLETED','COMMAND_ACK','BID_REJECTED','ERROR','PONG'];
  if(typeof e.type!=='string'||!names.includes(e.type)||typeof e.sequence!=='number'||typeof e.serverTime!=='number'||!e.payload||typeof e.payload!=='object') throw new Error('Unsupported server event');
  if(e.type==='ROOM_STATE'){
   const p=e.payload as Record<string,unknown>;

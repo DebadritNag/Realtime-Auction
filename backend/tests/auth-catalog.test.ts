@@ -41,5 +41,5 @@ it('serves the bundled CSV catalog behind authentication and starts auction with
   const created=await app.inject({method:'POST',url:'/api/rooms',headers,payload:{auctionName:'Catalog Test',teamName:'Host FC',settings:{minimumParticipants:1,minSquadSize:1}}});
   const code=created.json().roomCode;
   await engine.execute(code,'host',{type:'START_AUCTION',payload:{roomCode:code}});
-  const state=await manager.loadRoom(code);expect(state.active?.playerId).toBe(players[0]?.id);
+  const state=await manager.loadRoom(code);expect(players.map(p => p.id)).toContain(state.active?.playerId);
 });

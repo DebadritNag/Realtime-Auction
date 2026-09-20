@@ -217,8 +217,9 @@ export default function LiveAuctionPage({
             hasActivePlayer={!!activePlayer}
             hasBid={!!highestBidder}
             synced={connectionStatus === "SYNCED"}
-            canRecall={!activePlayer && snapshot?.playerQueue.length === 0 && !!snapshot?.unsoldPlayers.length}
-            onRecall={() => { void useAuctionStore.getState().hostCommand("START_RECALL").catch(() => {}); }}
+            canRecall={snapshot?.status === "RUNNING" || snapshot?.status === "PAUSED"}
+            unsoldPlayers={snapshot?.unsoldPlayers ?? []}
+            roomCode={roomCode}
           />
         </div>
       )}

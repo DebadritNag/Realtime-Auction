@@ -88,6 +88,23 @@ export class AuctionEngine {
             requireThat(room.active.highestBidderTeamId === null, 'BIDS_EXIST', 'Cannot discard an accepted bid.');
             this.resolve(room, events);
             break;
+          case 'RECALL_PLAYERS': {
+            requireThat(room.status === 'RUNNING' || room.status === 'PAUSED', 'INVALID_STATE', 'Recall is only available during running or paused auctions.', 409);
+            const ids = command.payload.playerIds;
+            requireThat(new Set(ids).size === ids.length, 'DUPLICATE_PLAYER_IDS', 'Select each player only once.');
+            const selected = ids.map(id => room.players.find(p => p.id === id));
+            requireThat(selected.every(Boolean), 'PLAYER_NOT_FOUND', 'A selected player does not belong to this room.', 404);
+            requireThat(selected.every(p => p!.status === 'UNSOLD' && !room.playerQueue.includes(p!.id)),
+              'PLAYER_NOT_RECALLABLE', 'Selected players must be unsold and not already queued for recall.', 409);
+            for (const player of selected) {
+              transitionPlayer(player!, 'WAITING');
+              (room.playerHistory ??= []).push({ type: 'PLAYER_RECALLED', playerId: player!.id, round: player!.round, at: now, userId });
+              events.push({ type: 'PLAYER_RECALLED', payload: { playerId: player!.id, status: 'WAITING', round: player!.round } });
+            }
+            // Re-enter normal random selection without interrupting the current lot or pending transition.
+            if (!room.active && room.status === 'RUNNING' && room.nextPlayerAt === null) this.planNext(room);
+            break;
+          }
           case 'START_RECALL': {
             requireThat(room.status === 'RUNNING' && !room.active && room.playerQueue.length === 0 && !room.players.some(p => p.status === 'WAITING'),
               'INVALID_STATE', 'Recall requires a running auction between completed rounds.', 409);
@@ -227,6 +244,7 @@ export class AuctionEngine {
         { type: 'BUDGET_UPDATED', payload: { teamId: team.id, spentCr: toCr(team.spentUnits), remainingBudgetCr: toCr(remainingBudget(team)) } });
     } else {
       transitionPlayer(player, 'UNSOLD');
+      (room.playerHistory ??= []).push({ type: 'PLAYER_UNSOLD', playerId: player.id, round: player.round, at: this.manager.clock.now() });
       events.push({ type: 'PLAYER_UNSOLD', payload: { playerId: player.id } });
     }
     room.active = null;

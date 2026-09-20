@@ -47,12 +47,14 @@ it('fires real scheduled callbacks and auto advances using timestamps', async ()
   const unsubscribe = f.manager.subscribe(room => timers.schedule(room));
   try {
     await f.command('START_AUCTION');
+    const firstId = (await f.state()).active!.playerId;
+    const nextId = (await f.state()).players.find(p => p.id !== firstId)!.id;
     f.clock.value += 10_000;
     await vi.advanceTimersByTimeAsync(10_000);
-    expect((await f.state()).players[0]?.status).toBe('UNSOLD');
+    expect((await f.state()).players.find(p => p.id === firstId)?.status).toBe('UNSOLD');
     f.clock.value += 1000;
     await vi.advanceTimersByTimeAsync(1000);
-    expect((await f.state()).active?.playerId).toBe('demo-2');
+    expect((await f.state()).active?.playerId).toBe(nextId);
     expect(errors).toHaveLength(0);
   } finally { timers.close(); unsubscribe(); }
 });

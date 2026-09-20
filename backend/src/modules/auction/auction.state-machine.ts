@@ -9,7 +9,7 @@ export function transitionRoom(room: Room, next: RoomStatus): void {
   room.status = next;
 }
 export function transitionPlayer(player: AuctionPlayer, next: PlayerStatus): void {
-  const allowed: Record<PlayerStatus, PlayerStatus[]> = { WAITING: ['ACTIVE', 'SKIPPED'], ACTIVE: ['SOLD', 'UNSOLD'], SOLD: [], UNSOLD: ['ACTIVE'], SKIPPED: [] };
+  const allowed: Record<PlayerStatus, PlayerStatus[]> = { WAITING: ['ACTIVE', 'SKIPPED'], ACTIVE: ['SOLD', 'UNSOLD'], SOLD: [], UNSOLD: ['ACTIVE', 'WAITING'], SKIPPED: [] };
   requireThat(allowed[player.status].includes(next), 'INVALID_STATE', `Cannot transition player ${player.status} to ${next}.`, 409);
   player.status = next;
 }

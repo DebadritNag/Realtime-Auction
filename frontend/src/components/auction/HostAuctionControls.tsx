@@ -3,10 +3,12 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { Play, Pause, SkipForward, Ban, Flag, RotateCcw } from "lucide-react";
+import { RecallPlayersModal } from "./RecallPlayersModal";
+import type { PlayerDTO } from "@/types/backend";
+import { Play, Pause, SkipForward, Flag, RotateCcw } from "lucide-react";
 
 export interface HostAuctionControlsProps {
-  hasActivePlayer: boolean; hasBid: boolean; synced: boolean; canRecall: boolean; onRecall: () => void;
+  hasActivePlayer: boolean; hasBid: boolean; synced: boolean; canRecall: boolean; unsoldPlayers: PlayerDTO[]; roomCode: string;
   isPaused: boolean;
   onPause: () => void;
   onResume: () => void;
@@ -15,13 +17,14 @@ export interface HostAuctionControlsProps {
 }
 
 export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
-  hasActivePlayer, hasBid, synced, canRecall, onRecall,
+  hasActivePlayer, hasBid, synced, canRecall, unsoldPlayers, roomCode,
   isPaused,
   onPause,
   onResume,
   onSkip,
   onEnd,
 }) => {
+  const [recallOpen, setRecallOpen] = useState(false);
   const [confirmSkipOpen, setConfirmSkipOpen] = useState(false);
   const [confirmEndOpen, setConfirmEndOpen] = useState(false);
 
@@ -66,7 +69,11 @@ export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
           {hasActivePlayer ? "Mark Unsold" : "Next Player"}
         </Button>
 
-        {canRecall && <Button variant="secondary" size="sm" disabled={!synced || isPaused} onClick={onRecall}>Recall Unsold</Button>}
+        <Button variant="secondary" size="sm" disabled={!synced || !canRecall || !unsoldPlayers.length}
+          title={unsoldPlayers.length ? "Recall unsold players to the waiting pool" : "No unsold players available"}
+          leftIcon={<RotateCcw className="w-3.5 h-3.5" />} onClick={() => setRecallOpen(true)}>
+          Recall Player ({unsoldPlayers.length})
+        </Button>
         <Button
           variant="danger"
           size="sm"
@@ -78,6 +85,8 @@ export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
         </Button>
       </div>
 
+      {recallOpen && <RecallPlayersModal players={unsoldPlayers} roomCode={roomCode}
+        enabled={synced && canRecall} onClose={() => setRecallOpen(false)} />}
       {/* Confirmation Dialog for Skipping */}
       <ConfirmDialog
         isOpen={confirmSkipOpen}
