@@ -38,9 +38,6 @@ export function readEnvironment(input: NodeJS.ProcessEnv = process.env) {
   if (env.AUTH_MODE === 'development' && env.NODE_ENV === 'production')
     throw new Error('Development authentication is forbidden in production.');
 
-  if (env.NODE_ENV === 'production' && !env.PLAYER_CATALOG_PATH)
-    throw new Error('Set PLAYER_CATALOG_PATH in production.');
-
   if (env.NODE_ENV === 'production' && !env.SUPABASE_SERVICE_ROLE_KEY)
     throw new Error('SUPABASE_SERVICE_ROLE_KEY is required in production.');
 
