@@ -104,3 +104,20 @@ Auction/bid reasons include AUCTION_NOT_RUNNING, AUCTION_PAUSED, NO_ACTIVE_PLAYE
 Malformed JSON, unknown commands or unexpected fields receive ERROR / INVALID_MESSAGE. Such invalid envelopes may have no echoed requestId. No bid rejection is broadcast to other users.
 
 Heartbeat uses native ping/pong every 30 seconds, which browsers answer automatically. Optional application PING estimates clock skew. Close 4001 means authentication/heartbeat expiry; 1013 means overload/slow consumer. Reconnect with backoff and request state. Maximum inbound payload 16 KiB, 30 commands/user/second across sockets, 32 queued commands/socket, 1 MiB outbound backlog. Rejected attempts count toward the throttle but do not otherwise block the next valid bid.
+
+
+## Selected unsold-player recall
+
+Host command (RUNNING or PAUSED only):
+
+```json
+{"type":"RECALL_PLAYERS","requestId":"unique-retry-id","payload":{"roomCode":"ABC234","playerIds":["player-id"]}}
+```
+
+Accepts 1–2000 distinct IDs belonging to the room, all currently UNSOLD and not already in the legacy recall queue. Validation is atomic under the room mutation lock. Unknown IDs return PLAYER_NOT_FOUND; duplicate IDs return DUPLICATE_PLAYER_IDS; unavailable/queued players return PLAYER_NOT_RECALLABLE. Existing membership, HOST_REQUIRED and INVALID_STATE checks apply. Reusing an accepted requestId with the same command returns COMMAND_ACK with duplicate=true; retrying with a new ID after recall is rejected without mutation.
+
+Transitions UNSOLD → WAITING. The existing random category/player selector later activates recalled players with their preserved base price and incremented round. No priority queue entry is added; the active player, timer, budgets and anti-streak counters remain unchanged. When running idle with autoAdvance enabled, the normal transition delay is scheduled. Paused rooms wait for resume or the host's next-player action.
+
+Each selected player emits PLAYER_RECALLED with payload {playerId,status:"WAITING",round}. The hub then sends each member an authoritative ROOM_STATE at the same new sequence and acknowledges the command. Persistence succeeds before broadcasts. Optional playerHistory in the room snapshot appends PLAYER_UNSOLD and PLAYER_RECALLED audit entries; existing snapshots remain compatible. Historical bids/purchases are untouched. Older snapshots cannot retroactively recover previously unrecorded unsold events.
+
+The legacy START_RECALL whole-round command remains supported. The new UI uses RECALL_PLAYERS only.

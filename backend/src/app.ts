@@ -10,7 +10,7 @@ import { DomainError, requireThat } from './domain/errors.js';
 import type { AuthService } from './modules/auth-context/auth.service.js';
 import type { PlayerRepository, RoomRepository } from './repositories/interfaces.js';
 import { MemoryRoomRepository } from './repositories/memory.js';
-import { CatalogPlayerRepository, demoPlayers } from './modules/players/player.service.js';
+import { CatalogPlayerRepository } from './modules/players/player.service.js';
 import { RoomManager } from './modules/rooms/room.manager.js';
 import { AuctionEngine } from './modules/auction/auction.engine.js';
 import { TimerService, systemClock, type Clock } from './modules/auction/timer.service.js';
@@ -38,7 +38,7 @@ export async function buildApp(options: AppOptions) {
   await app.register(websocket, { options: { maxPayload: 16 * 1024, perMessageDeflate: false } });
   const clock = options.clock ?? systemClock;
   const manager = new RoomManager(options.repository ?? new MemoryRoomRepository(),
-    options.playerRepository ?? new CatalogPlayerRepository(demoPlayers), clock);
+    options.playerRepository ?? await CatalogPlayerRepository.fromDefaultPool(), clock);
   const engine = new AuctionEngine(manager);
   const timers = new TimerService(clock, (code, id) => engine.onTimer(code, id),
     (_error, roomCode) => app.log.error({ roomCode, eventType: 'TIMER_RETRY' }, 'Timer transition failed; retrying'));

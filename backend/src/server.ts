@@ -37,10 +37,7 @@ const { app } = await buildApp({
     env.STORAGE === 'file'
       ? new FileRoomRepository(env.DATA_DIR)
       : new MemoryRoomRepository(),
-  playerRepository:
-    env.PLAYER_CATALOG_PATH
-      ? await CatalogPlayerRepository.fromFile(env.PLAYER_CATALOG_PATH)
-      : await CatalogPlayerRepository.fromDefaultPool(),
+  playerRepository: await CatalogPlayerRepository.fromDefaultPool(),
 });
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const)

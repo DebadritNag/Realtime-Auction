@@ -1,97 +1,97 @@
-player_id,name,overall,position,secondary_positions,age,nationality,club,league,preferred_foot,pace,shooting,passing,dribbling,defending,physical,image_url,auction_group,rating_tier,base_price_cr
-239085,E. Haaland,91,ST,,22,Norway,Manchester City,Premier League,Left,89,93,66,80,45,88,,ATT,ELITE,5
-231747,K. Mbappé,91,ST,LW,24,France,Paris Saint Germain,Ligue 1,Right,97,90,80,92,36,78,,ATT,ELITE,5
-202126,H. Kane,90,ST,,29,England,FC Bayern München,Bundesliga,Right,69,93,84,83,49,83,,ATT,ELITE,5
-165153,K. Benzema,90,CF,ST,35,France,Al Ittihad,Pro League,Right,79,88,83,87,39,78,,ATT,ELITE,5
-158023,L. Messi,90,CF,CAM,36,Argentina,Inter Miami,Major League Soccer,Left,80,87,90,94,33,64,,ATT,ELITE,5
-188545,R. Lewandowski,90,ST,,34,Poland,FC Barcelona,La Liga,Right,75,91,80,87,44,84,,ATT,ELITE,5
-209331,M. Salah,89,RW,,31,Egypt,Liverpool,Premier League,Left,89,87,81,88,45,76,,ATT,PREMIUM,4
-190871,Neymar Jr,89,LW,,31,Brazil,Al Hilal,Pro League,Right,86,83,85,93,37,61,,ATT,PREMIUM,4
-238794,Vini Jr.,89,LW,,22,Brazil,Real Madrid,La Liga,Right,95,82,78,90,29,68,,ATT,PREMIUM,4
-194765,A. Griezmann,88,ST,CF,32,France,Atlético Madrid,La Liga,Left,80,88,87,88,58,75,,ATT,PREMIUM,4
-232293,V. Osimhen,88,ST,,24,Nigeria,Napoli,Serie A,Right,90,86,66,83,42,82,,ATT,PREMIUM,4
-200104,H. Son,87,LW,,30,Korea Republic,Tottenham Hotspur,Premier League,Right,87,88,80,84,42,70,,ATT,PREMIUM,4
-231478,L. Martínez,87,ST,,25,Argentina,Inter,Serie A,Right,80,86,71,85,48,85,,ATT,PREMIUM,4
-246669,B. Saka,86,RW,RM,21,England,Arsenal,Premier League,Left,85,81,79,87,60,70,,ATT,STRONG,3
-232411,C. Nkunku,86,CF,"CAM, ST",25,France,Chelsea,Premier League,Right,82,81,83,88,62,67,,ATT,STRONG,3
-20801,Cristiano Ronaldo,86,ST,,38,Portugal,Al Nassr,Pro League,Right,77,88,75,80,34,74,,ATT,STRONG,3
-247635,K. Kvaratskhelia,86,LW,RW,22,Georgia,Napoli,Serie A,Right,84,80,81,87,41,71,,ATT,STRONG,3
-231443,O. Dembélé,86,RW,LW,26,France,Paris Saint Germain,Ligue 1,Left,93,77,81,87,36,57,,ATT,STRONG,3
-211110,P. Dybala,86,CF,CAM,29,Argentina,Roma,Serie A,Left,80,85,85,90,40,60,,ATT,STRONG,3
-241721,Rafael Leão,86,LW,"CF, ST",24,Portugal,Milan,Serie A,Right,93,80,75,87,27,76,,ATT,STRONG,3
-208722,S. Mané,86,CF,"LM, ST",31,Senegal,Al Nassr,Pro League,Right,85,83,79,87,44,74,,ATT,STRONG,3
-192387,C. Immobile,85,ST,,33,Italy,Lazio,Serie A,Right,85,87,68,78,39,74,,ATT,STRONG,3
-210935,D. Berardi,85,RW,RM,28,Italy,Sassuolo,Serie A,Left,82,83,81,87,36,72,,ATT,STRONG,3
-224458,Diogo Jota,85,CF,LW,26,Portugal,Liverpool,Premier League,Right,82,82,75,85,57,77,,ATT,STRONG,3
-192629,Iago Aspas,85,ST,,35,Spain,Celta de Vigo,La Liga,Left,81,85,79,86,35,64,,ATT,STRONG,3
-206517,J. Grealish,85,LW,LM,27,England,Manchester City,Premier League,Right,76,76,84,88,53,73,,ATT,STRONG,3
-231677,M. Rashford,85,LW,"LM, ST",25,England,Manchester United,Premier League,Right,90,86,78,84,42,74,,ATT,STRONG,3
-237692,P. Foden,85,LW,RW,23,England,Manchester City,Premier League,Left,81,79,82,88,57,60,,ATT,STRONG,3
-243812,Rodrygo,85,RW,"LW, ST",22,Brazil,Real Madrid,La Liga,Right,88,81,79,86,31,62,,ATT,STRONG,3
-230666,Gabriel Jesus,84,ST,RW,26,Brazil,Arsenal,Premier League,Right,83,82,75,88,40,77,,ATT,STRONG,3
-251566,Gabriel Martinelli,84,LW,LM,22,Brazil,Arsenal,Premier League,Right,89,78,76,86,46,72,,ATT,STRONG,3
-241084,L. Díaz,84,LW,LM,26,Colombia,Liverpool,Premier League,Right,91,81,75,87,34,74,,ATT,STRONG,3
-202556,M. Depay,84,CF,"LW, ST",29,Netherlands,Atlético Madrid,La Liga,Right,82,82,81,85,30,80,,ATT,STRONG,3
-237679,R. Kolo Muani,84,ST,RM,24,France,Paris Saint Germain,Ligue 1,Right,91,78,73,86,38,67,,ATT,STRONG,3
-192505,R. Lukaku,84,ST,,30,Belgium,Roma,Serie A,Left,80,84,74,77,38,82,,ATT,STRONG,3
-233419,Raphinha,84,RW,,26,Brazil,FC Barcelona,La Liga,Left,91,79,78,86,53,73,,ATT,STRONG,3
-208418,Y. Carrasco,84,LW,LWB,29,Belgium,Al Shabab,Pro League,Right,88,81,80,85,59,66,,ATT,STRONG,3
-193301,A. Lacazette,83,ST,,32,France,Olympique Lyonnais,Ligue 1,Right,72,84,77,83,44,77,,ATT,GOOD,2
-224179,Borja Iglesias,83,ST,,30,Spain,Real Betis,La Liga,Right,69,84,66,76,40,82,,ATT,GOOD,2
-242516,C. Gakpo,83,CF,LW,24,Netherlands,Liverpool,Premier League,Right,85,82,78,84,42,73,,ATT,GOOD,2
-246430,D. Vlahović,83,ST,,23,Serbia,Juventus,Serie A,Left,80,85,66,79,29,82,,ATT,GOOD,2
-180930,E. Džeko,83,ST,,37,Bosnia and Herzegovina,Fenerbahçe,Super Lig,Right,59,84,72,77,45,76,,ATT,GOOD,2
-208093,Gerard Moreno,83,ST,RM,31,Spain,Villarreal,La Liga,Left,77,85,77,81,46,72,,ATT,GOOD,2
-220834,Marco Asensio,83,RW,,27,Spain,Paris Saint Germain,Ligue 1,Left,81,81,81,83,43,63,,ATT,GOOD,2
-201153,Morata,83,ST,,30,Spain,Atlético Madrid,La Liga,Right,82,82,72,79,31,79,,ATT,GOOD,2
-234236,P. Schick,83,ST,,27,Czech Republic,Bayer 04 Leverkusen,Bundesliga,Left,79,80,71,81,37,76,,ATT,GOOD,2
-202652,R. Sterling,83,LW,"RW, ST",28,England,Chelsea,Premier League,Right,85,78,76,85,45,67,,ATT,GOOD,2
-205693,S. Haller,83,ST,,29,Côte d'Ivoire,Borussia Dortmund,Bundesliga,Right,62,81,63,76,52,81,,ATT,GOOD,2
-199451,W. Ben Yedder,83,ST,,32,France,Monaco,Ligue 1,Right,80,84,78,87,39,68,,ATT,GOOD,2
-246242,B. Dia,82,ST,"LW, CF",26,Senegal,Salernitana,Serie A,Right,82,81,62,81,27,77,,ATT,GOOD,2
-196978,C. Wilson,82,ST,,31,England,Newcastle United,Premier League,Right,80,82,67,79,42,76,,ATT,GOOD,2
-253072,D. Núñez,82,ST,LW,24,Uruguay,Liverpool,Premier League,Right,90,81,71,76,43,85,,ATT,GOOD,2
-199434,D. Tadić,82,LW,"CF, RW",34,Serbia,Fenerbahçe,Super Lig,Left,64,80,85,83,43,76,,ATT,GOOD,2
-223197,E. Ünal,82,ST,,26,Turkey,Getafe,La Liga,Right,72,84,70,82,40,80,,ATT,GOOD,2
-241461,Ferran Torres,82,LW,"RW, ST",23,Spain,FC Barcelona,La Liga,Right,83,79,78,83,35,68,,ATT,GOOD,2
-233049,J. Sancho,82,LW,LM,23,England,Manchester United,Premier League,Right,78,70,80,87,33,47,,ATT,GOOD,2
-173608,Joselu,82,ST,,33,Spain,Real Madrid,La Liga,Right,63,84,69,74,33,77,,ATT,GOOD,2
-243580,L. Openda,82,ST,,23,Belgium,RB Leipzig,Bundesliga,Right,93,79,68,80,31,78,,ATT,GOOD,2
-241788,M. Taremi,82,ST,CF,30,Iran,Porto,Liga Portugal,Right,78,81,76,81,38,74,,ATT,GOOD,2
-220502,M. Zaccagni,82,LW,,28,Italy,Lazio,Serie A,Right,87,77,74,88,57,67,,ATT,GOOD,2
-178509,O. Giroud,82,ST,,36,France,Milan,Serie A,Left,43,83,74,74,42,80,,ATT,GOOD,2
-240950,Pedro Gonçalves,82,LW,"RW, CM",25,Portugal,Sporting CP,Liga Portugal,Right,76,82,81,84,58,66,,ATT,GOOD,2
-212188,T. Werner,82,ST,,27,Germany,RB Leipzig,Bundesliga,Right,91,80,70,82,35,69,,ATT,GOOD,2
-235410,Y. En-Nesyri,82,ST,,26,Morocco,Sevilla,La Liga,Left,81,82,63,76,36,79,,ATT,GOOD,2
-214997,Á. Correa,82,ST,RM,28,Argentina,Atlético Madrid,La Liga,Right,85,84,77,86,50,75,,ATT,GOOD,2
-236276,A. Danjuma,81,ST,LM,26,Netherlands,Everton,Premier League,Right,86,81,76,83,44,67,,ATT,GOOD,2
-233731,A. Isak,81,ST,LW,23,Sweden,Newcastle United,Premier League,Right,83,81,72,84,39,72,,ATT,GOOD,2
-230899,A. Lookman,81,ST,"RM, RW",25,Nigeria,Atalanta,Serie A,Right,86,81,69,85,30,67,,ATT,GOOD,2
-205175,A. Milik,81,ST,,29,Poland,Juventus,Serie A,Left,59,83,72,78,40,74,,ATT,GOOD,2
-184941,A. Sánchez,81,ST,,34,Chile,Inter,Serie A,Right,71,83,80,85,48,66,,ATT,GOOD,2
-230294,Adriano Bisesi,81,ST,CF,31,Brazil,Bragantino,Serie A,Right,78,84,62,72,33,72,,ATT,GOOD,2
-255475,Antony,81,RW,RM,23,Brazil,Manchester United,Premier League,Left,83,76,74,87,46,73,,ATT,GOOD,2
-251892,Beto,81,ST,,25,Portugal,Everton,Premier League,Right,86,79,59,75,25,84,,ATT,GOOD,2
-247394,D. Kulusevski,81,RW,,23,Sweden,Tottenham Hotspur,Premier League,Left,76,77,80,84,56,75,,ATT,GOOD,2
-215333,D. Zapata,81,ST,,32,Colombia,Torino,Serie A,Right,75,80,63,77,35,85,,ATT,GOOD,2
-201995,Felipe Anderson,81,RW,ST,30,Brazil,Lazio,Serie A,Right,87,78,77,85,63,73,,ATT,GOOD,2
-209519,G. Laborde,81,ST,,29,France,Nice,Ligue 1,Left,72,81,76,79,40,79,,ATT,GOOD,2
-221992,H. Lozano,81,RW,,27,Mexico,PSV,Eredivisie,Right,93,76,72,82,41,61,,ATT,GOOD,2
-243630,J. David,81,ST,,23,Canada,Lille,Ligue 1,Right,82,81,71,78,34,75,,ATT,GOOD,2
-198219,L. Insigne,81,LW,"CF, LM",32,Italy,Toronto,Major League Soccer,Right,80,78,81,86,36,44,,ATT,GOOD,2
-230977,M. Almirón,81,RW,RM,29,Paraguay,Newcastle United,Premier League,Left,87,77,75,81,56,64,,ATT,GOOD,2
-216409,M. Politano,81,RW,RM,29,Italy,Napoli,Serie A,Left,83,77,78,84,42,55,,ATT,GOOD,2
-240690,N. González,81,RW,LW,25,Argentina,Fiorentina,Serie A,Left,87,76,73,83,45,64,,ATT,GOOD,2
-230430,Oswaldinato,81,ST,,31,Brazil,Flamengo,Serie A,Right,76,81,67,77,20,79,,ATT,GOOD,2
-246172,S. Chukwueze,81,RW,RM,24,Nigeria,Milan,Serie A,Left,89,75,74,84,36,63,,ATT,GOOD,2
-198717,W. Zaha,81,LW,"CF, LM",30,Côte d'Ivoire,Galatasaray,Super Lig,Right,90,78,72,85,37,76,,ATT,GOOD,2
-243593,A. Laurienté,80,LW,"RW, ST",24,France,Sassuolo,Serie A,Right,84,76,75,82,35,47,,ATT,VALUE,1
-211300,A. Martial,80,ST,,27,France,Manchester United,Premier League,Right,80,78,73,84,35,66,,ATT,VALUE,1
-228941,André Silva,80,ST,,27,Portugal,Real Sociedad,La Liga,Right,74,80,70,81,46,77,,ATT,VALUE,1
-246186,Arthur Cabral,80,ST,,25,Brazil,Benfica,Liga Portugal,Right,74,79,64,76,32,80,,ATT,VALUE,1
-169416,C. Vela,80,RW,"LW, ST",34,Mexico,Los Angeles FC,Major League Soccer,Left,77,79,77,82,29,63,,ATT,VALUE,1
-170368,E. Lamela,80,RW,CAM,31,Argentina,Sevilla,La Liga,Left,79,77,78,83,54,69,,ATT,VALUE,1
-228520,E. Ávila,80,ST,"RM, LM",29,Argentina,Osasuna,La Liga,Right,78,81,65,78,45,85,,ATT,VALUE,1
-208670,H. Ziyech,80,RW,CAM,30,Morocco,Galatasaray,Super Lig,Left,74,75,83,81,50,64,,ATT,VALUE,1
-193165,J. Corona,80,RW,LW,30,Mexico,,,Right,81,65,79,86,73,67,,ATT,VALUE,1
-205632,L. Ocampos,80,RW,LW,28,Argentina,Sevilla,La Liga,Right,79,80,77,81,62,83,,ATT,VALUE,1
+source_fifa_version,source_record_kind,player_id,name,overall,position,secondary_positions,age,nationality,club,league,preferred_foot,pace,shooting,passing,dribbling,defending,physical,image_url,auction_group,rating_tier,base_price_cr
+24,REGULAR_CAREER,239085,E. Haaland,91,ST,,22,Norway,Manchester City,Premier League,Left,89,93,66,80,45,88,,ATT,ELITE,9
+24,REGULAR_CAREER,231747,K. Mbappé,91,ST,LW,24,France,Paris Saint Germain,Ligue 1,Right,97,90,80,92,36,78,,ATT,ELITE,9
+24,REGULAR_CAREER,202126,H. Kane,90,ST,,29,England,FC Bayern München,Bundesliga,Right,69,93,84,83,49,83,,ATT,ELITE,9
+24,REGULAR_CAREER,165153,K. Benzema,90,CF,ST,35,France,Al Ittihad,Pro League,Right,79,88,83,87,39,78,,ATT,ELITE,9
+24,REGULAR_CAREER,158023,L. Messi,90,CF,CAM,36,Argentina,Inter Miami,Major League Soccer,Left,80,87,90,94,33,64,,ATT,ELITE,9
+24,REGULAR_CAREER,188545,R. Lewandowski,90,ST,,34,Poland,FC Barcelona,La Liga,Right,75,91,80,87,44,84,,ATT,ELITE,9
+24,REGULAR_CAREER,209331,M. Salah,89,RW,,31,Egypt,Liverpool,Premier League,Left,89,87,81,88,45,76,,ATT,PREMIUM,7
+24,REGULAR_CAREER,190871,Neymar Jr,89,LW,,31,Brazil,Al Hilal,Pro League,Right,86,83,85,93,37,61,,ATT,PREMIUM,7
+24,REGULAR_CAREER,238794,Vini Jr.,89,LW,,22,Brazil,Real Madrid,La Liga,Right,95,82,78,90,29,68,,ATT,PREMIUM,7
+24,REGULAR_CAREER,194765,A. Griezmann,88,ST,CF,32,France,Atlético Madrid,La Liga,Left,80,88,87,88,58,75,,ATT,PREMIUM,7
+24,REGULAR_CAREER,232293,V. Osimhen,88,ST,,24,Nigeria,Napoli,Serie A,Right,90,86,66,83,42,82,,ATT,PREMIUM,7
+24,REGULAR_CAREER,200104,H. Son,87,LW,,30,Korea Republic,Tottenham Hotspur,Premier League,Right,87,88,80,84,42,70,,ATT,PREMIUM,7
+24,REGULAR_CAREER,231478,L. Martínez,87,ST,,25,Argentina,Inter,Serie A,Right,80,86,71,85,48,85,,ATT,PREMIUM,7
+24,REGULAR_CAREER,246669,B. Saka,86,RW,RM,21,England,Arsenal,Premier League,Left,85,81,79,87,60,70,,ATT,STRONG,5
+24,REGULAR_CAREER,232411,C. Nkunku,86,CF,"CAM, ST",25,France,Chelsea,Premier League,Right,82,81,83,88,62,67,,ATT,STRONG,5
+24,REGULAR_CAREER,20801,Cristiano Ronaldo,86,ST,,38,Portugal,Al Nassr,Pro League,Right,77,88,75,80,34,74,,ATT,STRONG,5
+24,REGULAR_CAREER,247635,K. Kvaratskhelia,86,LW,RW,22,Georgia,Napoli,Serie A,Right,84,80,81,87,41,71,,ATT,STRONG,5
+24,REGULAR_CAREER,231443,O. Dembélé,86,RW,LW,26,France,Paris Saint Germain,Ligue 1,Left,93,77,81,87,36,57,,ATT,STRONG,5
+24,REGULAR_CAREER,211110,P. Dybala,86,CF,CAM,29,Argentina,Roma,Serie A,Left,80,85,85,90,40,60,,ATT,STRONG,5
+24,REGULAR_CAREER,241721,Rafael Leão,86,LW,"CF, ST",24,Portugal,Milan,Serie A,Right,93,80,75,87,27,76,,ATT,STRONG,5
+24,REGULAR_CAREER,208722,S. Mané,86,CF,"LM, ST",31,Senegal,Al Nassr,Pro League,Right,85,83,79,87,44,74,,ATT,STRONG,5
+24,REGULAR_CAREER,192387,C. Immobile,85,ST,,33,Italy,Lazio,Serie A,Right,85,87,68,78,39,74,,ATT,STRONG,5
+24,REGULAR_CAREER,210935,D. Berardi,85,RW,RM,28,Italy,Sassuolo,Serie A,Left,82,83,81,87,36,72,,ATT,STRONG,5
+24,REGULAR_CAREER,224458,Diogo Jota,85,CF,LW,26,Portugal,Liverpool,Premier League,Right,82,82,75,85,57,77,,ATT,STRONG,5
+24,REGULAR_CAREER,192629,Iago Aspas,85,ST,,35,Spain,Celta de Vigo,La Liga,Left,81,85,79,86,35,64,,ATT,STRONG,5
+24,REGULAR_CAREER,206517,J. Grealish,85,LW,LM,27,England,Manchester City,Premier League,Right,76,76,84,88,53,73,,ATT,STRONG,5
+24,REGULAR_CAREER,231677,M. Rashford,85,LW,"LM, ST",25,England,Manchester United,Premier League,Right,90,86,78,84,42,74,,ATT,STRONG,5
+24,REGULAR_CAREER,237692,P. Foden,85,LW,RW,23,England,Manchester City,Premier League,Left,81,79,82,88,57,60,,ATT,STRONG,5
+24,REGULAR_CAREER,243812,Rodrygo,85,RW,"LW, ST",22,Brazil,Real Madrid,La Liga,Right,88,81,79,86,31,62,,ATT,STRONG,5
+24,REGULAR_CAREER,230666,Gabriel Jesus,84,ST,RW,26,Brazil,Arsenal,Premier League,Right,83,82,75,88,40,77,,ATT,STRONG,5
+24,REGULAR_CAREER,251566,Gabriel Martinelli,84,LW,LM,22,Brazil,Arsenal,Premier League,Right,89,78,76,86,46,72,,ATT,STRONG,5
+24,REGULAR_CAREER,241084,L. Díaz,84,LW,LM,26,Colombia,Liverpool,Premier League,Right,91,81,75,87,34,74,,ATT,STRONG,5
+24,REGULAR_CAREER,202556,M. Depay,84,CF,"LW, ST",29,Netherlands,Atlético Madrid,La Liga,Right,82,82,81,85,30,80,,ATT,STRONG,5
+24,REGULAR_CAREER,237679,R. Kolo Muani,84,ST,RM,24,France,Paris Saint Germain,Ligue 1,Right,91,78,73,86,38,67,,ATT,STRONG,5
+24,REGULAR_CAREER,192505,R. Lukaku,84,ST,,30,Belgium,Roma,Serie A,Left,80,84,74,77,38,82,,ATT,STRONG,5
+24,REGULAR_CAREER,233419,Raphinha,84,RW,,26,Brazil,FC Barcelona,La Liga,Left,91,79,78,86,53,73,,ATT,STRONG,5
+24,REGULAR_CAREER,208418,Y. Carrasco,84,LW,LWB,29,Belgium,Al Shabab,Pro League,Right,88,81,80,85,59,66,,ATT,STRONG,5
+24,REGULAR_CAREER,193301,A. Lacazette,83,ST,,32,France,Olympique Lyonnais,Ligue 1,Right,72,84,77,83,44,77,,ATT,GOOD,2
+24,REGULAR_CAREER,224179,Borja Iglesias,83,ST,,30,Spain,Real Betis,La Liga,Right,69,84,66,76,40,82,,ATT,GOOD,2
+24,REGULAR_CAREER,242516,C. Gakpo,83,CF,LW,24,Netherlands,Liverpool,Premier League,Right,85,82,78,84,42,73,,ATT,GOOD,2
+24,REGULAR_CAREER,246430,D. Vlahović,83,ST,,23,Serbia,Juventus,Serie A,Left,80,85,66,79,29,82,,ATT,GOOD,2
+24,REGULAR_CAREER,180930,E. Džeko,83,ST,,37,Bosnia and Herzegovina,Fenerbahçe,Super Lig,Right,59,84,72,77,45,76,,ATT,GOOD,2
+24,REGULAR_CAREER,208093,Gerard Moreno,83,ST,RM,31,Spain,Villarreal,La Liga,Left,77,85,77,81,46,72,,ATT,GOOD,2
+24,REGULAR_CAREER,220834,Marco Asensio,83,RW,,27,Spain,Paris Saint Germain,Ligue 1,Left,81,81,81,83,43,63,,ATT,GOOD,2
+24,REGULAR_CAREER,201153,Morata,83,ST,,30,Spain,Atlético Madrid,La Liga,Right,82,82,72,79,31,79,,ATT,GOOD,2
+24,REGULAR_CAREER,234236,P. Schick,83,ST,,27,Czech Republic,Bayer 04 Leverkusen,Bundesliga,Left,79,80,71,81,37,76,,ATT,GOOD,2
+24,REGULAR_CAREER,202652,R. Sterling,83,LW,"RW, ST",28,England,Chelsea,Premier League,Right,85,78,76,85,45,67,,ATT,GOOD,2
+24,REGULAR_CAREER,205693,S. Haller,83,ST,,29,Côte d'Ivoire,Borussia Dortmund,Bundesliga,Right,62,81,63,76,52,81,,ATT,GOOD,2
+24,REGULAR_CAREER,199451,W. Ben Yedder,83,ST,,32,France,Monaco,Ligue 1,Right,80,84,78,87,39,68,,ATT,GOOD,2
+24,REGULAR_CAREER,246242,B. Dia,82,ST,"LW, CF",26,Senegal,Salernitana,Serie A,Right,82,81,62,81,27,77,,ATT,GOOD,2
+24,REGULAR_CAREER,196978,C. Wilson,82,ST,,31,England,Newcastle United,Premier League,Right,80,82,67,79,42,76,,ATT,GOOD,2
+24,REGULAR_CAREER,253072,D. Núñez,82,ST,LW,24,Uruguay,Liverpool,Premier League,Right,90,81,71,76,43,85,,ATT,GOOD,2
+24,REGULAR_CAREER,199434,D. Tadić,82,LW,"CF, RW",34,Serbia,Fenerbahçe,Super Lig,Left,64,80,85,83,43,76,,ATT,GOOD,2
+24,REGULAR_CAREER,223197,E. Ünal,82,ST,,26,Turkey,Getafe,La Liga,Right,72,84,70,82,40,80,,ATT,GOOD,2
+24,REGULAR_CAREER,241461,Ferran Torres,82,LW,"RW, ST",23,Spain,FC Barcelona,La Liga,Right,83,79,78,83,35,68,,ATT,GOOD,2
+24,REGULAR_CAREER,233049,J. Sancho,82,LW,LM,23,England,Manchester United,Premier League,Right,78,70,80,87,33,47,,ATT,GOOD,2
+24,REGULAR_CAREER,173608,Joselu,82,ST,,33,Spain,Real Madrid,La Liga,Right,63,84,69,74,33,77,,ATT,GOOD,2
+24,REGULAR_CAREER,243580,L. Openda,82,ST,,23,Belgium,RB Leipzig,Bundesliga,Right,93,79,68,80,31,78,,ATT,GOOD,2
+24,REGULAR_CAREER,241788,M. Taremi,82,ST,CF,30,Iran,Porto,Liga Portugal,Right,78,81,76,81,38,74,,ATT,GOOD,2
+24,REGULAR_CAREER,220502,M. Zaccagni,82,LW,,28,Italy,Lazio,Serie A,Right,87,77,74,88,57,67,,ATT,GOOD,2
+24,REGULAR_CAREER,178509,O. Giroud,82,ST,,36,France,Milan,Serie A,Left,43,83,74,74,42,80,,ATT,GOOD,2
+24,REGULAR_CAREER,240950,Pedro Gonçalves,82,LW,"RW, CM",25,Portugal,Sporting CP,Liga Portugal,Right,76,82,81,84,58,66,,ATT,GOOD,2
+24,REGULAR_CAREER,212188,T. Werner,82,ST,,27,Germany,RB Leipzig,Bundesliga,Right,91,80,70,82,35,69,,ATT,GOOD,2
+24,REGULAR_CAREER,235410,Y. En-Nesyri,82,ST,,26,Morocco,Sevilla,La Liga,Left,81,82,63,76,36,79,,ATT,GOOD,2
+24,REGULAR_CAREER,214997,Á. Correa,82,ST,RM,28,Argentina,Atlético Madrid,La Liga,Right,85,84,77,86,50,75,,ATT,GOOD,2
+24,REGULAR_CAREER,236276,A. Danjuma,81,ST,LM,26,Netherlands,Everton,Premier League,Right,86,81,76,83,44,67,,ATT,GOOD,2
+24,REGULAR_CAREER,233731,A. Isak,81,ST,LW,23,Sweden,Newcastle United,Premier League,Right,83,81,72,84,39,72,,ATT,GOOD,2
+24,REGULAR_CAREER,230899,A. Lookman,81,ST,"RM, RW",25,Nigeria,Atalanta,Serie A,Right,86,81,69,85,30,67,,ATT,GOOD,2
+24,REGULAR_CAREER,205175,A. Milik,81,ST,,29,Poland,Juventus,Serie A,Left,59,83,72,78,40,74,,ATT,GOOD,2
+24,REGULAR_CAREER,184941,A. Sánchez,81,ST,,34,Chile,Inter,Serie A,Right,71,83,80,85,48,66,,ATT,GOOD,2
+24,REGULAR_CAREER,230294,Adriano Bisesi,81,ST,CF,31,Brazil,Bragantino,Serie A,Right,78,84,62,72,33,72,,ATT,GOOD,2
+24,REGULAR_CAREER,255475,Antony,81,RW,RM,23,Brazil,Manchester United,Premier League,Left,83,76,74,87,46,73,,ATT,GOOD,2
+24,REGULAR_CAREER,251892,Beto,81,ST,,25,Portugal,Everton,Premier League,Right,86,79,59,75,25,84,,ATT,GOOD,2
+24,REGULAR_CAREER,247394,D. Kulusevski,81,RW,,23,Sweden,Tottenham Hotspur,Premier League,Left,76,77,80,84,56,75,,ATT,GOOD,2
+24,REGULAR_CAREER,215333,D. Zapata,81,ST,,32,Colombia,Torino,Serie A,Right,75,80,63,77,35,85,,ATT,GOOD,2
+24,REGULAR_CAREER,201995,Felipe Anderson,81,RW,ST,30,Brazil,Lazio,Serie A,Right,87,78,77,85,63,73,,ATT,GOOD,2
+24,REGULAR_CAREER,209519,G. Laborde,81,ST,,29,France,Nice,Ligue 1,Left,72,81,76,79,40,79,,ATT,GOOD,2
+24,REGULAR_CAREER,221992,H. Lozano,81,RW,,27,Mexico,PSV,Eredivisie,Right,93,76,72,82,41,61,,ATT,GOOD,2
+24,REGULAR_CAREER,243630,J. David,81,ST,,23,Canada,Lille,Ligue 1,Right,82,81,71,78,34,75,,ATT,GOOD,2
+24,REGULAR_CAREER,198219,L. Insigne,81,LW,"CF, LM",32,Italy,Toronto,Major League Soccer,Right,80,78,81,86,36,44,,ATT,GOOD,2
+24,REGULAR_CAREER,230977,M. Almirón,81,RW,RM,29,Paraguay,Newcastle United,Premier League,Left,87,77,75,81,56,64,,ATT,GOOD,2
+24,REGULAR_CAREER,216409,M. Politano,81,RW,RM,29,Italy,Napoli,Serie A,Left,83,77,78,84,42,55,,ATT,GOOD,2
+24,REGULAR_CAREER,240690,N. González,81,RW,LW,25,Argentina,Fiorentina,Serie A,Left,87,76,73,83,45,64,,ATT,GOOD,2
+24,REGULAR_CAREER,230430,Oswaldinato,81,ST,,31,Brazil,Flamengo,Serie A,Right,76,81,67,77,20,79,,ATT,GOOD,2
+24,REGULAR_CAREER,246172,S. Chukwueze,81,RW,RM,24,Nigeria,Milan,Serie A,Left,89,75,74,84,36,63,,ATT,GOOD,2
+24,REGULAR_CAREER,198717,W. Zaha,81,LW,"CF, LM",30,Côte d'Ivoire,Galatasaray,Super Lig,Right,90,78,72,85,37,76,,ATT,GOOD,2
+24,REGULAR_CAREER,243593,A. Laurienté,80,LW,"RW, ST",24,France,Sassuolo,Serie A,Right,84,76,75,82,35,47,,ATT,VALUE,1
+24,REGULAR_CAREER,211300,A. Martial,80,ST,,27,France,Manchester United,Premier League,Right,80,78,73,84,35,66,,ATT,VALUE,1
+24,REGULAR_CAREER,228941,André Silva,80,ST,,27,Portugal,Real Sociedad,La Liga,Right,74,80,70,81,46,77,,ATT,VALUE,1
+24,REGULAR_CAREER,246186,Arthur Cabral,80,ST,,25,Brazil,Benfica,Liga Portugal,Right,74,79,64,76,32,80,,ATT,VALUE,1
+24,REGULAR_CAREER,169416,C. Vela,80,RW,"LW, ST",34,Mexico,Los Angeles FC,Major League Soccer,Left,77,79,77,82,29,63,,ATT,VALUE,1
+24,REGULAR_CAREER,170368,E. Lamela,80,RW,CAM,31,Argentina,Sevilla,La Liga,Left,79,77,78,83,54,69,,ATT,VALUE,1
+24,REGULAR_CAREER,228520,E. Ávila,80,ST,"RM, LM",29,Argentina,Osasuna,La Liga,Right,78,81,65,78,45,85,,ATT,VALUE,1
+24,REGULAR_CAREER,208670,H. Ziyech,80,RW,CAM,30,Morocco,Galatasaray,Super Lig,Left,74,75,83,81,50,64,,ATT,VALUE,1
+24,REGULAR_CAREER,205632,L. Ocampos,80,RW,LW,28,Argentina,Sevilla,La Liga,Right,79,80,77,81,62,83,,ATT,VALUE,1
+24,REGULAR_CAREER,235619,M. Edwards,80,RW,"LW, ST",24,England,Sporting CP,Liga Portugal,Left,85,73,71,86,33,48,,ATT,VALUE,1

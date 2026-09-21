@@ -14,3 +14,6 @@ frontend/male_players.csv
 dist/
 .next/
 *.log
+
+# Python generator cache
+__pycache__/

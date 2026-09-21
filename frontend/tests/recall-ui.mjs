@@ -16,10 +16,10 @@ window.removePlayer=id=>setPlayers(p=>p.filter(x=>x.id!==id));
 return <HostAuctionControls hasActivePlayer hasBid={false} synced canRecall unsoldPlayers={players} roomCode="ABC234"
 isPaused={paused} onPause={()=>setPaused(true)} onResume={()=>setPaused(false)} onSkip={()=>{}} onEnd={()=>{}}/>;}
 window.commands=[];createRoot(document.getElementById('root')).render(<Harness/>);
-`,resolveDir:root,loader:'tsx'},bundle:true,write:false,platform:'browser',jsx:'automatic',alias:{'@':root+'src'},define:{'process.env.NODE_ENV':'"test"'}});
+`,resolveDir:root,loader:'tsx'},bundle:true,write:false,platform:'browser',jsx:'automatic',alias:{'@':root+'src'},define:{'process.env.NODE_ENV':'"test"','process.env':'{}'}});
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try {
- const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const page=await browser.newPage();const errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error(e.message)});
  await page.route('http://recall.test/',r=>r.fulfill({contentType:'text/html',body:'<div id="root"></div><script src="/test.js"></script>'}));
  await page.route('http://recall.test/test.js',r=>r.fulfill({contentType:'application/javascript',body:compiled.outputFiles[0].text}));
  await page.goto('http://recall.test/');

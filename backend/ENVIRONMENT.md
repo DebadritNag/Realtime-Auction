@@ -17,7 +17,7 @@ Copy .env.example to .env for a local demo. Never commit secrets. Node's built-i
 | JWT_JWKS_URL | Remote RS256/ES256 JWKS; derived from SUPABASE_URL when omitted. HTTPS required in production |
 | JWT_ISSUER | Exact issuer; defaults to SUPABASE_URL + /auth/v1 |
 | JWT_AUDIENCE | Defaults to authenticated |
-| PLAYER_CATALOG_PATH | Optional CSV or JSON path; defaults to bundled data/default-pool/default-player-pool.csv |
+The production default catalogue always loads the verified bundled `data/default-pool/default-player-pool.csv`. `PLAYER_CATALOG_PATH` is retired and ignored; no JSON, demo or category-file fallback is used.
 | DATABASE_URL | Reserved placeholder for future adapter; unused |
 | SUPABASE_URL | Supabase project URL; supplies the trusted issuer and public signing-key endpoint |
 

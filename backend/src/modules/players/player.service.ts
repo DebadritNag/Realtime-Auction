@@ -92,7 +92,7 @@ export function csvRowToPlayer(row: Record<string, string>): Player {
     auctionGroup === 'GK' || auctionGroup === 'DEF' || auctionGroup === 'MID' ? auctionGroup : 'FWD';
 
   const ovr = parseInt(row.overall ?? '', 10) || 75;
-  const basePriceCr = parseFloat(row.base_price_cr ?? '') || (ovr >= 90 ? 5 : ovr >= 87 ? 4 : ovr >= 84 ? 3 : ovr >= 81 ? 2 : 1);
+  const basePriceCr = parseFloat(row.base_price_cr ?? '') || (ovr >= 90 ? 9 : ovr >= 87 ? 7 : ovr >= 84 ? 5 : ovr >= 81 ? 2 : 1);
   const basePriceUnits = toUnits(basePriceCr);
 
   const stats: Record<string, number> = {};
@@ -160,19 +160,24 @@ export class CatalogPlayerRepository implements PlayerRepository {
     const poolDir = dirPath ?? fileURLToPath(new URL('../../../data/default-pool', import.meta.url));
     const combinedPath = join(poolDir, 'default-player-pool.csv');
 
-    try {
-      return await CatalogPlayerRepository.fromCsvFile(combinedPath);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-      // Alternative fallback: load individual category CSVs
-      const files = ['gk.csv', 'def.csv', 'mid.csv', 'att.csv'];
-      const players: Player[] = [];
-      for (const f of files) {
-        const content = await readFile(join(poolDir, f), 'utf8');
-        players.push(...parseCsv(content).map(csvRowToPlayer));
+    // Fail closed: never fall back to stale category files or demo data.
+    const records = parseCsv(await readFile(combinedPath, 'utf8'));
+    const tiers = { VALUE: 1, GOOD: 2, STRONG: 5, PREMIUM: 7, ELITE: 9 };
+    const counts: Record<string, number> = { GK: 0, DEF: 0, MID: 0, ATT: 0 };
+    for (const row of records) {
+      const ovr = Number(row.overall);
+      const tier = ovr >= 90 ? 'ELITE' : ovr >= 87 ? 'PREMIUM' : ovr >= 84 ? 'STRONG' : ovr >= 81 ? 'GOOD' : 'VALUE';
+      if (row.source_fifa_version !== '24' || row.source_record_kind !== 'REGULAR_CAREER' ||
+          !row.club || !row.league || !Object.hasOwn(counts, row.auction_group!) ||
+          row.rating_tier !== tier || Number(row.base_price_cr) !== tiers[tier]) {
+        throw new Error('Default catalog is unverified or stale. Regenerate with scripts/build-default-pool.py.');
       }
-      return new CatalogPlayerRepository(players);
+      counts[row.auction_group!]!++;
     }
+    if (records.length !== 288 || counts.GK !== 24 || counts.DEF !== 84 || counts.MID !== 84 || counts.ATT !== 96) {
+      throw new Error('Default catalog must contain the verified 288-player pool.');
+    }
+    return new CatalogPlayerRepository(records.map(csvRowToPlayer));
   }
 
   async getPlayer(id: string): Promise<Player | null> {
@@ -214,7 +219,7 @@ export class CatalogPlayerRepository implements PlayerRepository {
   }
 }
 
-/** Fictional demo catalog fallback if neither default-pool nor PLAYER_CATALOG_PATH are present. */
+/** Fictional test fixtures; never loaded by the default production catalog path. */
 export const demoPlayers: Player[] = Array.from({ length: 80 }, (_, i) => ({
   id: `demo-${i + 1}`,
   name: `Demo Footballer ${i + 1}`,

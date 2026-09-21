@@ -11,9 +11,13 @@ Outputs:
   - backend/data/default-pool/default-player-pool.csv
 """
 
+from pathlib import Path
 import csv
 import os
 import sys
+import json
+import hashlib
+from player_catalog import clean_records
 from collections import Counter, defaultdict
 
 # Ensure UTF-8 output
@@ -41,11 +45,11 @@ def get_tier(ovr: int) -> str:
 
 def get_base_price_cr(ovr: int) -> int:
     if ovr >= 90:
-        return 5
+        return 9
     if ovr >= 87:
-        return 4
+        return 7
     if ovr >= 84:
-        return 3
+        return 5
     if ovr >= 81:
         return 2
     return 1
@@ -68,83 +72,83 @@ def build_pool():
     rejected_rows = []
     valid_players = []
 
-    with open(SOURCE_CSV, mode="r", encoding="utf-8", errors="replace") as f:
+    with open(SOURCE_CSV, mode="r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
-        for row_idx, row in enumerate(reader, start=2):
-            total_source_rows += 1
-            fifa_version = row.get("fifa_version", "").strip()
-            if fifa_version != "24.0":
-                # Legacy FIFA versions (15 - 23)
-                continue
-            fc24_rows += 1
+        source_columns = reader.fieldnames
+        source_rows = list(reader)
+    cleaned, report, removed, suspicious = clean_records(source_rows)
+    total_source_rows = len(source_rows)
+    fc24_rows = report["fc24_records"]
+    for row_idx, row in enumerate(cleaned, start=2):
+        pid = row.get("player_id", "").strip()
+        name = row.get("short_name", "").strip()
+        ovr_str = row.get("overall", "").strip()
+        pos_str = row.get("player_positions", "").strip()
 
-            pid = row.get("player_id", "").strip()
-            name = row.get("short_name", "").strip()
-            ovr_str = row.get("overall", "").strip()
-            pos_str = row.get("player_positions", "").strip()
+        if not pid:
+            rejected_rows.append((row_idx, "missing player_id", name))
+            continue
+        if not name:
+            rejected_rows.append((row_idx, "missing short_name", pid))
+            continue
+        if not ovr_str or not ovr_str.isdigit():
+            rejected_rows.append((row_idx, "invalid overall rating", pid))
+            continue
+        if not pos_str:
+            rejected_rows.append((row_idx, "missing player_positions", pid))
+            continue
 
-            if not pid:
-                rejected_rows.append((row_idx, "missing player_id", name))
-                continue
-            if not name:
-                rejected_rows.append((row_idx, "missing short_name", pid))
-                continue
-            if not ovr_str or not ovr_str.isdigit():
-                rejected_rows.append((row_idx, "invalid overall rating", pid))
-                continue
-            if not pos_str:
-                rejected_rows.append((row_idx, "missing player_positions", pid))
-                continue
+        ovr = int(ovr_str)
+        if ovr < 1 or ovr > 99:
+            rejected_rows.append((row_idx, f"out of range overall rating {ovr}", pid))
+            continue
 
-            ovr = int(ovr_str)
-            if ovr < 1 or ovr > 99:
-                rejected_rows.append((row_idx, f"out of range overall rating {ovr}", pid))
-                continue
+        pos_list = [p.strip().upper() for p in pos_str.split(",") if p.strip()]
+        if not pos_list:
+            rejected_rows.append((row_idx, "empty positions list", pid))
+            continue
 
-            pos_list = [p.strip().upper() for p in pos_str.split(",") if p.strip()]
-            if not pos_list:
-                rejected_rows.append((row_idx, "empty positions list", pid))
-                continue
+        primary_pos = pos_list[0]
+        if primary_pos == "GK":
+            group = "GK"
+        elif primary_pos in ["CB", "LB", "RB", "LWB", "RWB"]:
+            group = "DEF"
+        elif primary_pos in ["CDM", "CM", "CAM", "LM", "RM"]:
+            group = "MID"
+        elif primary_pos in ["ST", "CF", "LW", "RW"]:
+            group = "ATT"
+        else:
+            rejected_rows.append((row_idx, f"unknown position {primary_pos}", pid))
+            continue
 
-            primary_pos = pos_list[0]
-            if primary_pos == "GK":
-                group = "GK"
-            elif primary_pos in ["CB", "LB", "RB", "LWB", "RWB"]:
-                group = "DEF"
-            elif primary_pos in ["CDM", "CM", "CAM", "LM", "RM"]:
-                group = "MID"
-            elif primary_pos in ["ST", "CF", "LW", "RW"]:
-                group = "ATT"
-            else:
-                rejected_rows.append((row_idx, f"unknown position {primary_pos}", pid))
-                continue
+        sec_pos = ", ".join(pos_list[1:]) if len(pos_list) > 1 else ""
 
-            sec_pos = ", ".join(pos_list[1:]) if len(pos_list) > 1 else ""
-
-            valid_players.append(
-                {
-                    "player_id": pid,
-                    "name": name,
-                    "overall": ovr,
-                    "position": primary_pos,
-                    "secondary_positions": sec_pos,
-                    "age": parse_stat(row.get("age")),
-                    "nationality": row.get("nationality_name", "").strip(),
-                    "club": row.get("club_name", "").strip(),
-                    "league": row.get("league_name", "").strip(),
-                    "preferred_foot": row.get("preferred_foot", "").strip(),
-                    "pace": parse_stat(row.get("pace")),
-                    "shooting": parse_stat(row.get("shooting")),
-                    "passing": parse_stat(row.get("passing")),
-                    "dribbling": parse_stat(row.get("dribbling")),
-                    "defending": parse_stat(row.get("defending")),
-                    "physical": parse_stat(row.get("physic")),
-                    "image_url": "",
-                    "auction_group": group,
-                    "rating_tier": get_tier(ovr),
-                    "base_price_cr": get_base_price_cr(ovr),
-                }
-            )
+        valid_players.append(
+            {
+                "source_fifa_version": "24",
+                "source_record_kind": "REGULAR_CAREER",
+                "player_id": pid,
+                "name": name,
+                "overall": ovr,
+                "position": primary_pos,
+                "secondary_positions": sec_pos,
+                "age": parse_stat(row.get("age")),
+                "nationality": row.get("nationality_name", "").strip(),
+                "club": row.get("club_name", "").strip(),
+                "league": row.get("league_name", "").strip(),
+                "preferred_foot": row.get("preferred_foot", "").strip(),
+                "pace": parse_stat(row.get("pace")),
+                "shooting": parse_stat(row.get("shooting")),
+                "passing": parse_stat(row.get("passing")),
+                "dribbling": parse_stat(row.get("dribbling")),
+                "defending": parse_stat(row.get("defending")),
+                "physical": parse_stat(row.get("physic")),
+                "image_url": "",
+                "auction_group": group,
+                "rating_tier": get_tier(ovr),
+                "base_price_cr": get_base_price_cr(ovr),
+            }
+        )
 
     print(f"Total source rows in CSV: {total_source_rows}")
     print(f"Total FC24 player rows: {fc24_rows}")
@@ -213,6 +217,7 @@ def build_pool():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     fieldnames = [
+        "source_fifa_version", "source_record_kind",
         "player_id",
         "name",
         "overall",
@@ -251,6 +256,21 @@ def build_pool():
             for p in player_list:
                 writer.writerow(p)
         print(f"Wrote {len(player_list)} rows to: {filepath}")
+
+    audit_fields = ["player_id", "name", "overall", "position", "club", "rarity", "version", "reason"]
+    for filename, rows in [("removed-special-players.csv", removed), ("suspicious-players.csv", suspicious)]:
+        with open(os.path.join(OUTPUT_DIR, filename), "w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=audit_fields)
+            writer.writeheader()
+            writer.writerows(rows)
+    report.update({"source_columns": source_columns,
+        "source_sha256": hashlib.sha256(Path(SOURCE_CSV).read_bytes()).hexdigest(),
+        "final_players_selected": len(all_selected), "final_counts": dict(Counter(p["auction_group"] for p in all_selected)),
+        "invalid_export_records": rejected_rows,
+        "classification_note": "Source has no FUT card-type/rarity flags. FC24 edition, career player URL and normal club/league establish eligibility; explicit classification fields are checked when supplied.",
+        "source": "frontend/male_players.csv"})
+    with open(os.path.join(OUTPUT_DIR, "validation-report.json"), "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2, ensure_ascii=False)
 
     print("\n================== DEFAULT POOL STATISTICS ==================")
     for grp, p_list in [

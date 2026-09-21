@@ -98,8 +98,9 @@ it('protects REST and WS boundaries, host commands, unknown fields and retries',
   socket.send(JSON.stringify({ type: 'PLACE_BID', payload: { roomCode: code, amountCr: 1, userId: 'a' } }));
   expect((await spoofed).payload).toMatchObject({ reason: 'INVALID_MESSAGE' });
   await send(socket, 'START_AUCTION', { roomCode: code });
-  await send(socket, 'PLACE_BID', { roomCode: code, amountCr: 1 }, 'COMMAND_ACK', 'retry-id');
-  const retry = await send(socket, 'PLACE_BID', { roomCode: code, amountCr: 1 }, 'COMMAND_ACK', 'retry-id');
+  const openingAsk = (await manager.loadRoom(code)).active!.currentBidUnits / 2;
+  await send(socket, 'PLACE_BID', { roomCode: code, amountCr: openingAsk }, 'COMMAND_ACK', 'retry-id');
+  const retry = await send(socket, 'PLACE_BID', { roomCode: code, amountCr: openingAsk }, 'COMMAND_ACK', 'retry-id');
   expect(retry.payload).toMatchObject({ duplicate: true });
   expect((await manager.loadRoom(code)).bids).toHaveLength(1);
   const rejected = await send(socket, 'PLACE_BID', { roomCode: code, amountCr: 1.5 }, 'BID_REJECTED');

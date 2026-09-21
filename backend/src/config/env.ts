@@ -26,8 +26,6 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   DATABASE_URL:              z.string().optional(),
 
-  // ---- Player catalog
-  PLAYER_CATALOG_PATH: z.string().optional(),
 });
 
 export type Env = ReturnType<typeof readEnvironment>;

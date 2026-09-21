@@ -1,7 +1,8 @@
+import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readFile } from 'node:fs/promises';
+import { readFile, mkdtemp, writeFile, rm } from 'node:fs/promises';
 import {
   CatalogPlayerRepository,
   parseCsv,
@@ -11,7 +12,7 @@ import { toCr } from '../src/domain/money.js';
 
 const defaultPoolDir = fileURLToPath(new URL('../data/default-pool', import.meta.url));
 
-describe('Bundled player catalog and legacy category pools', () => {
+describe('Cleaned FC24 default catalog', () => {
   it('has all required CSV files with exact player quotas', async () => {
     const files = [
       { name: 'gk.csv', expectedCount: 24, expectedGroup: 'GK' },
@@ -36,10 +37,10 @@ describe('Bundled player catalog and legacy category pools', () => {
       }
     }
 
-    // The combined catalog was expanded; category files remain a smaller fallback.
+    // Combined and category exports come from the same curated selection.
     const combinedContent = await readFile(join(defaultPoolDir, 'default-player-pool.csv'), 'utf8');
     const combinedRows = parseCsv(combinedContent);
-    expect(combinedRows).toHaveLength(760);
+    expect(combinedRows).toHaveLength(288);
     expect(new Set(combinedRows.map(r => r.player_id)).size).toBe(combinedRows.length);
   });
 
@@ -107,7 +108,7 @@ describe('Bundled player catalog and legacy category pools', () => {
   it('loads into CatalogPlayerRepository and maps to domain Player models', async () => {
     const repo = await CatalogPlayerRepository.fromDefaultPool(defaultPoolDir);
     const pool = await repo.listPlayerPool({});
-    expect(pool).toHaveLength(760);
+    expect(pool).toHaveLength(288);
 
     const mbappe = await repo.getPlayer('231747');
     expect(mbappe).not.toBeNull();
@@ -115,7 +116,7 @@ describe('Bundled player catalog and legacy category pools', () => {
     expect(mbappe?.ovr).toBe(91);
     expect(mbappe?.position).toBe('FWD');
     expect(mbappe?.potId).toBe('ATT');
-    expect(toCr(mbappe!.basePriceUnits)).toBe(15);
+    expect(toCr(mbappe!.basePriceUnits)).toBe(9);
     expect(mbappe?.stats.pac).toBe(97);
     expect(mbappe?.stats.sho).toBe(90);
 
@@ -125,7 +126,7 @@ describe('Bundled player catalog and legacy category pools', () => {
     expect(courtois?.ovr).toBe(90);
     expect(courtois?.position).toBe('GK');
     expect(courtois?.potId).toBe('GK');
-    expect(toCr(courtois!.basePriceUnits)).toBe(15);
+    expect(toCr(courtois!.basePriceUnits)).toBe(9);
   });
 
   it('scales player pool intelligently based on team count with ~20% buffer', async () => {
@@ -150,8 +151,30 @@ describe('Bundled player catalog and legacy category pools', () => {
     expect(mid6).toHaveLength(51);
     expect(att6).toHaveLength(58);
 
-    // 10 Teams: returns the complete expanded catalog
+    // 10 Teams: returns the complete curated catalog
     const pool10 = await repo.listPlayerPool({}, 10);
-    expect(pool10).toHaveLength(760);
+    expect(pool10).toHaveLength(288);
   });
 });
+
+ it('has one identical canonical pool across all exports and excludes historical records', async () => {
+   const combined = parseCsv(await readFile(join(defaultPoolDir, 'default-player-pool.csv'), 'utf8'));
+   const categories = (await Promise.all(['gk.csv','def.csv','mid.csv','att.csv'].map(async name => parseCsv(await readFile(join(defaultPoolDir, name), 'utf8'))))).flat();
+   const byId = (rows: typeof combined) => [...rows].sort((a,b) => a.player_id!.localeCompare(b.player_id!));
+   expect(byId(combined)).toEqual(byId(categories));
+   expect(combined.every(r => r.source_fifa_version === '24' && r.source_record_kind === 'REGULAR_CAREER')).toBe(true);
+   expect(combined.some(r => r.player_id === '121939')).toBe(false);
+   expect(combined.find(r => r.player_id === '205632')).toMatchObject({ name: 'L. Ocampos', overall: '80', club: 'Sevilla' });
+   const prices: Record<string, number> = { VALUE: 1, GOOD: 2, STRONG: 5, PREMIUM: 7, ELITE: 9 };
+   for (const row of combined) expect(Number(row.base_price_cr)).toBe(prices[row.rating_tier!]);
+ });
+ it('fails closed for absent or stale default pool instead of using legacy categories', async () => {
+   const dir = await mkdtemp(join(tmpdir(), 'catalog-test-'));
+   try {
+     await writeFile(join(dir,'gk.csv'), await readFile(join(defaultPoolDir,'gk.csv')));
+     await expect(CatalogPlayerRepository.fromDefaultPool(dir)).rejects.toThrow();
+     const stale = (await readFile(join(defaultPoolDir,'default-player-pool.csv'),'utf8')).replaceAll('REGULAR_CAREER','LEGACY');
+     await writeFile(join(dir,'default-player-pool.csv'),stale);
+     await expect(CatalogPlayerRepository.fromDefaultPool(dir)).rejects.toThrow('unverified or stale');
+   } finally { await rm(dir,{recursive:true,force:true}); }
+ });

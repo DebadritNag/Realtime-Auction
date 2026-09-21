@@ -1,85 +1,85 @@
-player_id,name,overall,position,secondary_positions,age,nationality,club,league,preferred_foot,pace,shooting,passing,dribbling,defending,physical,image_url,auction_group,rating_tier,base_price_cr
-192985,K. De Bruyne,91,CM,CAM,32,Belgium,Manchester City,Premier League,Right,72,88,94,87,65,78,,MID,ELITE,5
-200145,Casemiro,89,CDM,,31,Brazil,Manchester United,Premier League,Right,63,75,79,73,89,88,,MID,PREMIUM,4
-231866,Rodri,89,CDM,CM,27,Spain,Manchester City,Premier League,Right,58,73,80,80,85,84,,MID,PREMIUM,4
-218667,Bernardo Silva,88,CM,RW,28,Portugal,Manchester City,Premier League,Left,69,78,86,92,70,69,,MID,PREMIUM,4
-212198,Bruno Fernandes,88,CAM,CM,28,Portugal,Manchester United,Premier League,Right,71,86,90,83,69,77,,MID,PREMIUM,4
-239053,F. Valverde,88,CM,RW,24,Uruguay,Real Madrid,La Liga,Right,88,82,84,84,80,82,,MID,PREMIUM,4
-212622,J. Kimmich,88,CDM,"RB, CM",28,Germany,FC Bayern München,Bundesliga,Right,70,74,88,84,82,79,,MID,PREMIUM,4
-228702,F. de Jong,87,CM,CDM,26,Netherlands,FC Barcelona,La Liga,Right,82,69,86,87,77,78,,MID,PREMIUM,4
-177003,L. Modrić,87,CM,,37,Croatia,Real Madrid,La Liga,Right,72,76,89,87,72,66,,MID,PREMIUM,4
-222665,M. Ødegaard,87,CAM,CM,24,Norway,Arsenal,Premier League,Left,72,81,88,87,61,64,,MID,PREMIUM,4
-252371,J. Bellingham,86,CM,CAM,20,England,Real Madrid,La Liga,Right,76,78,80,85,78,82,,MID,STRONG,3
-256790,J. Musiala,86,CAM,"CM, LM",20,Germany,FC Bayern München,Bundesliga,Right,85,75,76,91,63,61,,MID,STRONG,3
-224232,N. Barella,86,CM,,26,Italy,Inter,Serie A,Right,78,78,82,85,78,80,,MID,STRONG,3
-215914,N. Kanté,86,CDM,CM,32,France,Al Ittihad,Pro League,Right,69,65,73,80,85,77,,MID,STRONG,3
-189513,Parejo,86,CM,CDM,34,Spain,Villarreal,La Liga,Right,49,83,90,80,73,69,,MID,STRONG,3
-251854,Pedri,86,CM,,20,Spain,FC Barcelona,La Liga,Right,78,69,82,88,70,74,,MID,STRONG,3
-204485,R. Mahrez,86,RM,RW,32,Algeria,Al Ahli Jeddah,Pro League,Left,79,81,81,89,38,60,,MID,STRONG,3
-223848,S. Milinković-Savić,86,CM,,28,Serbia,Al Hilal,Pro League,Right,68,80,82,82,79,86,,MID,STRONG,3
-241096,S. Tonali,86,CDM,CM,23,Italy,Newcastle United,Premier League,Right,84,74,81,81,82,84,,MID,STRONG,3
-182521,T. Kroos,86,CM,CDM,33,Germany,Real Madrid,La Liga,Right,51,80,90,81,70,71,,MID,STRONG,3
-186942,İ. Gündoğan,86,CM,CDM,32,Germany,FC Barcelona,La Liga,Right,62,81,84,86,72,73,,MID,STRONG,3
-234378,D. Rice,85,CDM,CM,24,England,Arsenal,Premier League,Right,71,65,75,77,83,83,,MID,STRONG,3
-256630,F. Wirtz,85,CAM,CM,20,Germany,Bayer 04 Leverkusen,Bundesliga,Right,74,76,83,87,52,63,,MID,STRONG,3
-208128,H. Çalhanoğlu,85,CM,CDM,29,Turkey,Inter,Serie A,Right,67,80,86,85,70,66,,MID,STRONG,3
-213345,K. Coman,85,LM,RM,27,France,FC Bayern München,Bundesliga,Right,89,76,79,87,30,62,,MID,STRONG,3
-209658,L. Goretzka,85,CM,CDM,28,Germany,FC Bayern München,Bundesliga,Right,78,81,81,83,80,86,,MID,STRONG,3
-209989,T. Partey,85,CDM,CM,30,Ghana,Arsenal,Premier League,Right,68,71,82,80,81,82,,MID,STRONG,3
-210008,A. Rabiot,84,CM,LM,28,France,Juventus,Serie A,Left,78,76,80,80,82,84,,MID,STRONG,3
-241637,A. Tchouaméni,84,CDM,CM,23,France,Real Madrid,La Liga,Right,73,69,79,78,81,81,,MID,STRONG,3
-247851,Bruno Guimarães,84,CM,CDM,25,Brazil,Newcastle United,Premier League,Right,71,74,81,84,80,81,,MID,STRONG,3
-235805,F. Chiesa,84,LM,"LW, RW",25,Italy,Juventus,Serie A,Right,91,82,76,86,53,75,,MID,STRONG,3
-209499,Fabinho,84,CDM,,29,Brazil,Al Ittihad,Pro League,Right,59,69,78,77,82,82,,MID,STRONG,3
-226754,I. Bennacer,84,CDM,"CM, CAM",25,Algeria,Milan,Serie A,Left,80,72,81,86,79,78,,MID,STRONG,3
-212194,J. Brandt,84,CAM,"RM, CM",27,Germany,Borussia Dortmund,Bundesliga,Right,71,80,84,86,51,70,,MID,STRONG,3
-220697,J. Maddison,84,CAM,"RM, CM",26,England,Tottenham Hotspur,Premier League,Right,71,81,86,86,54,63,,MID,STRONG,3
-193747,Koke,84,CDM,CM,31,Spain,Atlético Madrid,La Liga,Right,69,72,85,79,79,78,,MID,STRONG,3
-222492,L. Sané,84,RM,LM,27,Germany,FC Bayern München,Bundesliga,Left,91,81,80,85,38,68,,MID,STRONG,3
-198706,Luis Alberto,84,CM,,30,Spain,Lazio,Serie A,Right,69,77,85,84,62,58,,MID,STRONG,3
-241852,M. Diaby,84,RM,LM,23,France,Aston Villa,Premier League,Left,95,73,75,86,42,59,,MID,STRONG,3
-226161,Marcos Llorente,84,RM,"CM, RB",28,Spain,Atlético Madrid,La Liga,Right,89,78,79,80,78,81,,MID,STRONG,3
-225193,Mikel Merino,84,CM,"CAM, LM",27,Spain,Real Sociedad,La Liga,Left,72,78,82,82,83,82,,MID,STRONG,3
-213648,P. Højbjerg,84,CDM,CM,27,Denmark,Tottenham Hotspur,Premier League,Right,55,73,78,78,81,82,,MID,STRONG,3
-212616,R. De Paul,84,CM,,29,Argentina,Atlético Madrid,La Liga,Right,78,77,83,82,75,83,,MID,STRONG,3
-224293,Rúben Neves,84,CDM,CM,26,Portugal,Al Hilal,Pro League,Right,60,75,86,77,76,73,,MID,STRONG,3
-206113,S. Gnabry,84,RM,"ST, LM",27,Germany,FC Bayern München,Bundesliga,Right,81,84,78,84,43,68,,MID,STRONG,3
-216435,S. Lobotka,84,CM,CDM,28,Slovakia,Napoli,Serie A,Right,71,70,81,83,77,75,,MID,STRONG,3
-189596,T. Müller,84,CAM,"CF, ST",33,Germany,FC Bayern München,Bundesliga,Right,59,82,83,79,55,69,,MID,STRONG,3
-189509,Thiago,84,CM,,32,Spain,Liverpool,Premier League,Right,61,72,86,89,71,67,,MID,STRONG,3
-227236,A. Zambo Anguissa,83,CDM,CM,27,Cameroon,Napoli,Serie A,Right,78,68,72,81,81,86,,MID,GOOD,2
-190460,C. Eriksen,83,CM,CDM,31,Denmark,Manchester United,Premier League,Right,59,77,89,81,51,53,,MID,GOOD,2
-244260,Dani Olmo,83,CAM,CF,25,Spain,RB Leipzig,Bundesliga,Right,68,76,82,86,50,59,,MID,GOOD,2
-208333,E. Can,83,CDM,CB,29,Germany,Borussia Dortmund,Bundesliga,Right,79,78,77,79,82,87,,MID,GOOD,2
-247090,E. Fernández,83,CM,CDM,22,Argentina,Chelsea,Premier League,Right,73,73,81,80,75,79,,MID,GOOD,2
-208574,F. Kostić,83,LM,LW,30,Serbia,Juventus,Serie A,Left,85,76,82,82,70,80,,MID,GOOD,2
-225659,G. Rodríguez,83,CDM,,28,Argentina,Real Betis,La Liga,Right,51,58,72,70,85,80,,MID,GOOD,2
-264240,Gavi,83,CM,LW,18,Spain,FC Barcelona,La Liga,Right,76,66,78,85,68,70,,MID,GOOD,2
-210324,J. Hofmann,83,CAM,"RM, LM",30,Germany,Bayer 04 Leverkusen,Bundesliga,Right,76,79,83,81,64,73,,MID,GOOD,2
-205498,Jorginho,83,CDM,CM,31,Italy,Arsenal,Premier League,Right,53,67,84,81,74,73,,MID,GOOD,2
-225375,K. Laimer,83,CDM,CM,26,Austria,FC Bayern München,Bundesliga,Right,80,69,77,78,81,79,,MID,GOOD,2
-228251,L. Pellegrini,83,CAM,"CM, CF",27,Italy,Roma,Serie A,Right,79,76,83,83,74,78,,MID,GOOD,2
-216352,M. Brozović,83,CDM,CM,30,Croatia,Al Nassr,Pro League,Right,66,74,81,80,80,78,,MID,GOOD,2
-188350,M. Reus,83,CAM,CF,34,Germany,Borussia Dortmund,Bundesliga,Right,65,83,83,85,53,63,,MID,GOOD,2
-216594,N. Fekir,83,CAM,,29,France,Real Betis,La Liga,Left,82,81,81,86,39,80,,MID,GOOD,2
-230142,Oyarzabal,83,LM,"RM, LW",26,Spain,Real Sociedad,La Liga,Left,77,83,80,83,41,62,,MID,GOOD,2
-210406,P. Zieliński,83,CM,CAM,29,Poland,Napoli,Serie A,Right,81,77,81,86,71,63,,MID,GOOD,2
-229391,Palhinha,83,CDM,CM,27,Portugal,Fulham,Premier League,Right,62,67,71,76,84,89,,MID,GOOD,2
-230481,Ronaldo Cabrais,83,CAM,RM,31,Brazil,Palmeiras,Serie A,Right,88,77,83,84,35,72,,MID,GOOD,2
-202648,Sergi Darder,83,CM,"CDM, CAM",29,Spain,Mallorca,La Liga,Right,81,76,82,83,74,77,,MID,GOOD,2
-189511,Sergio Busquets,83,CDM,,34,Spain,Inter Miami,Major League Soccer,Right,37,62,79,79,81,73,,MID,GOOD,2
-239837,A. Mac Allister,82,CM,"CAM, CDM",24,Argentina,Liverpool,Premier League,Right,70,79,82,82,70,72,,MID,GOOD,2
-231447,D. Malen,82,RM,ST,24,Netherlands,Borussia Dortmund,Bundesliga,Right,89,80,73,85,35,73,,MID,GOOD,2
-236772,D. Szoboszlai,82,CAM,,22,Hungary,Liverpool,Premier League,Right,83,82,84,82,34,64,,MID,GOOD,2
-248243,E. Camavinga,82,CDM,"CM, LB",20,France,Real Madrid,La Liga,Left,79,66,80,82,76,80,,MID,GOOD,2
-230938,F. Kessié,82,CDM,CM,26,Côte d'Ivoire,Al Ahli Jeddah,Pro League,Right,79,76,74,79,81,87,,MID,GOOD,2
-184134,Fernando,82,CDM,CB,35,Brazil,Sevilla,La Liga,Right,63,62,74,73,82,81,,MID,GOOD,2
-199503,G. Xhaka,82,CM,CDM,30,Switzerland,Bayer 04 Leverkusen,Bundesliga,Left,49,74,82,73,75,82,,MID,GOOD,2
-232498,Isi Palazón,82,RM,,28,Spain,Rayo Vallecano,La Liga,Left,84,79,79,82,39,64,,MID,GOOD,2
-223334,Joelinton,82,CM,LW,26,Brazil,Newcastle United,Premier League,Right,78,71,76,82,81,88,,MID,GOOD,2
-212814,João Mário,82,RM,"LM, CM",30,Portugal,Benfica,Liga Portugal,Right,70,79,81,83,69,70,,MID,GOOD,2
-207410,M. Kovačić,82,CM,CDM,29,Croatia,Manchester City,Premier League,Right,69,69,82,87,71,70,,MID,GOOD,2
-212096,V. Grifo,82,LM,"CF, CAM",30,Italy,SC Freiburg,Bundesliga,Right,71,80,83,81,40,64,,MID,GOOD,2
-216388,A. Saint-Maximin,81,LM,LW,26,France,Al Ahli Jeddah,Pro League,Right,89,73,73,88,29,68,,MID,GOOD,2
-236786,M. Terrier,81,LM,ST,26,France,Rennes,Ligue 1,Right,84,82,75,79,36,72,,MID,GOOD,2
-251852,K. Adeyemi,80,LM,"RM, ST",21,Germany,Borussia Dortmund,Bundesliga,Left,96,77,71,81,34,68,,MID,VALUE,1
+source_fifa_version,source_record_kind,player_id,name,overall,position,secondary_positions,age,nationality,club,league,preferred_foot,pace,shooting,passing,dribbling,defending,physical,image_url,auction_group,rating_tier,base_price_cr
+24,REGULAR_CAREER,192985,K. De Bruyne,91,CM,CAM,32,Belgium,Manchester City,Premier League,Right,72,88,94,87,65,78,,MID,ELITE,9
+24,REGULAR_CAREER,200145,Casemiro,89,CDM,,31,Brazil,Manchester United,Premier League,Right,63,75,79,73,89,88,,MID,PREMIUM,7
+24,REGULAR_CAREER,231866,Rodri,89,CDM,CM,27,Spain,Manchester City,Premier League,Right,58,73,80,80,85,84,,MID,PREMIUM,7
+24,REGULAR_CAREER,218667,Bernardo Silva,88,CM,RW,28,Portugal,Manchester City,Premier League,Left,69,78,86,92,70,69,,MID,PREMIUM,7
+24,REGULAR_CAREER,212198,Bruno Fernandes,88,CAM,CM,28,Portugal,Manchester United,Premier League,Right,71,86,90,83,69,77,,MID,PREMIUM,7
+24,REGULAR_CAREER,239053,F. Valverde,88,CM,RW,24,Uruguay,Real Madrid,La Liga,Right,88,82,84,84,80,82,,MID,PREMIUM,7
+24,REGULAR_CAREER,212622,J. Kimmich,88,CDM,"RB, CM",28,Germany,FC Bayern München,Bundesliga,Right,70,74,88,84,82,79,,MID,PREMIUM,7
+24,REGULAR_CAREER,228702,F. de Jong,87,CM,CDM,26,Netherlands,FC Barcelona,La Liga,Right,82,69,86,87,77,78,,MID,PREMIUM,7
+24,REGULAR_CAREER,177003,L. Modrić,87,CM,,37,Croatia,Real Madrid,La Liga,Right,72,76,89,87,72,66,,MID,PREMIUM,7
+24,REGULAR_CAREER,222665,M. Ødegaard,87,CAM,CM,24,Norway,Arsenal,Premier League,Left,72,81,88,87,61,64,,MID,PREMIUM,7
+24,REGULAR_CAREER,252371,J. Bellingham,86,CM,CAM,20,England,Real Madrid,La Liga,Right,76,78,80,85,78,82,,MID,STRONG,5
+24,REGULAR_CAREER,256790,J. Musiala,86,CAM,"CM, LM",20,Germany,FC Bayern München,Bundesliga,Right,85,75,76,91,63,61,,MID,STRONG,5
+24,REGULAR_CAREER,224232,N. Barella,86,CM,,26,Italy,Inter,Serie A,Right,78,78,82,85,78,80,,MID,STRONG,5
+24,REGULAR_CAREER,215914,N. Kanté,86,CDM,CM,32,France,Al Ittihad,Pro League,Right,69,65,73,80,85,77,,MID,STRONG,5
+24,REGULAR_CAREER,189513,Parejo,86,CM,CDM,34,Spain,Villarreal,La Liga,Right,49,83,90,80,73,69,,MID,STRONG,5
+24,REGULAR_CAREER,251854,Pedri,86,CM,,20,Spain,FC Barcelona,La Liga,Right,78,69,82,88,70,74,,MID,STRONG,5
+24,REGULAR_CAREER,204485,R. Mahrez,86,RM,RW,32,Algeria,Al Ahli Jeddah,Pro League,Left,79,81,81,89,38,60,,MID,STRONG,5
+24,REGULAR_CAREER,223848,S. Milinković-Savić,86,CM,,28,Serbia,Al Hilal,Pro League,Right,68,80,82,82,79,86,,MID,STRONG,5
+24,REGULAR_CAREER,241096,S. Tonali,86,CDM,CM,23,Italy,Newcastle United,Premier League,Right,84,74,81,81,82,84,,MID,STRONG,5
+24,REGULAR_CAREER,182521,T. Kroos,86,CM,CDM,33,Germany,Real Madrid,La Liga,Right,51,80,90,81,70,71,,MID,STRONG,5
+24,REGULAR_CAREER,186942,İ. Gündoğan,86,CM,CDM,32,Germany,FC Barcelona,La Liga,Right,62,81,84,86,72,73,,MID,STRONG,5
+24,REGULAR_CAREER,234378,D. Rice,85,CDM,CM,24,England,Arsenal,Premier League,Right,71,65,75,77,83,83,,MID,STRONG,5
+24,REGULAR_CAREER,256630,F. Wirtz,85,CAM,CM,20,Germany,Bayer 04 Leverkusen,Bundesliga,Right,74,76,83,87,52,63,,MID,STRONG,5
+24,REGULAR_CAREER,208128,H. Çalhanoğlu,85,CM,CDM,29,Turkey,Inter,Serie A,Right,67,80,86,85,70,66,,MID,STRONG,5
+24,REGULAR_CAREER,213345,K. Coman,85,LM,RM,27,France,FC Bayern München,Bundesliga,Right,89,76,79,87,30,62,,MID,STRONG,5
+24,REGULAR_CAREER,209658,L. Goretzka,85,CM,CDM,28,Germany,FC Bayern München,Bundesliga,Right,78,81,81,83,80,86,,MID,STRONG,5
+24,REGULAR_CAREER,209989,T. Partey,85,CDM,CM,30,Ghana,Arsenal,Premier League,Right,68,71,82,80,81,82,,MID,STRONG,5
+24,REGULAR_CAREER,210008,A. Rabiot,84,CM,LM,28,France,Juventus,Serie A,Left,78,76,80,80,82,84,,MID,STRONG,5
+24,REGULAR_CAREER,241637,A. Tchouaméni,84,CDM,CM,23,France,Real Madrid,La Liga,Right,73,69,79,78,81,81,,MID,STRONG,5
+24,REGULAR_CAREER,247851,Bruno Guimarães,84,CM,CDM,25,Brazil,Newcastle United,Premier League,Right,71,74,81,84,80,81,,MID,STRONG,5
+24,REGULAR_CAREER,235805,F. Chiesa,84,LM,"LW, RW",25,Italy,Juventus,Serie A,Right,91,82,76,86,53,75,,MID,STRONG,5
+24,REGULAR_CAREER,209499,Fabinho,84,CDM,,29,Brazil,Al Ittihad,Pro League,Right,59,69,78,77,82,82,,MID,STRONG,5
+24,REGULAR_CAREER,226754,I. Bennacer,84,CDM,"CM, CAM",25,Algeria,Milan,Serie A,Left,80,72,81,86,79,78,,MID,STRONG,5
+24,REGULAR_CAREER,212194,J. Brandt,84,CAM,"RM, CM",27,Germany,Borussia Dortmund,Bundesliga,Right,71,80,84,86,51,70,,MID,STRONG,5
+24,REGULAR_CAREER,220697,J. Maddison,84,CAM,"RM, CM",26,England,Tottenham Hotspur,Premier League,Right,71,81,86,86,54,63,,MID,STRONG,5
+24,REGULAR_CAREER,193747,Koke,84,CDM,CM,31,Spain,Atlético Madrid,La Liga,Right,69,72,85,79,79,78,,MID,STRONG,5
+24,REGULAR_CAREER,222492,L. Sané,84,RM,LM,27,Germany,FC Bayern München,Bundesliga,Left,91,81,80,85,38,68,,MID,STRONG,5
+24,REGULAR_CAREER,198706,Luis Alberto,84,CM,,30,Spain,Lazio,Serie A,Right,69,77,85,84,62,58,,MID,STRONG,5
+24,REGULAR_CAREER,241852,M. Diaby,84,RM,LM,23,France,Aston Villa,Premier League,Left,95,73,75,86,42,59,,MID,STRONG,5
+24,REGULAR_CAREER,226161,Marcos Llorente,84,RM,"CM, RB",28,Spain,Atlético Madrid,La Liga,Right,89,78,79,80,78,81,,MID,STRONG,5
+24,REGULAR_CAREER,225193,Mikel Merino,84,CM,"CAM, LM",27,Spain,Real Sociedad,La Liga,Left,72,78,82,82,83,82,,MID,STRONG,5
+24,REGULAR_CAREER,213648,P. Højbjerg,84,CDM,CM,27,Denmark,Tottenham Hotspur,Premier League,Right,55,73,78,78,81,82,,MID,STRONG,5
+24,REGULAR_CAREER,212616,R. De Paul,84,CM,,29,Argentina,Atlético Madrid,La Liga,Right,78,77,83,82,75,83,,MID,STRONG,5
+24,REGULAR_CAREER,224293,Rúben Neves,84,CDM,CM,26,Portugal,Al Hilal,Pro League,Right,60,75,86,77,76,73,,MID,STRONG,5
+24,REGULAR_CAREER,206113,S. Gnabry,84,RM,"ST, LM",27,Germany,FC Bayern München,Bundesliga,Right,81,84,78,84,43,68,,MID,STRONG,5
+24,REGULAR_CAREER,216435,S. Lobotka,84,CM,CDM,28,Slovakia,Napoli,Serie A,Right,71,70,81,83,77,75,,MID,STRONG,5
+24,REGULAR_CAREER,189596,T. Müller,84,CAM,"CF, ST",33,Germany,FC Bayern München,Bundesliga,Right,59,82,83,79,55,69,,MID,STRONG,5
+24,REGULAR_CAREER,189509,Thiago,84,CM,,32,Spain,Liverpool,Premier League,Right,61,72,86,89,71,67,,MID,STRONG,5
+24,REGULAR_CAREER,227236,A. Zambo Anguissa,83,CDM,CM,27,Cameroon,Napoli,Serie A,Right,78,68,72,81,81,86,,MID,GOOD,2
+24,REGULAR_CAREER,190460,C. Eriksen,83,CM,CDM,31,Denmark,Manchester United,Premier League,Right,59,77,89,81,51,53,,MID,GOOD,2
+24,REGULAR_CAREER,244260,Dani Olmo,83,CAM,CF,25,Spain,RB Leipzig,Bundesliga,Right,68,76,82,86,50,59,,MID,GOOD,2
+24,REGULAR_CAREER,208333,E. Can,83,CDM,CB,29,Germany,Borussia Dortmund,Bundesliga,Right,79,78,77,79,82,87,,MID,GOOD,2
+24,REGULAR_CAREER,247090,E. Fernández,83,CM,CDM,22,Argentina,Chelsea,Premier League,Right,73,73,81,80,75,79,,MID,GOOD,2
+24,REGULAR_CAREER,208574,F. Kostić,83,LM,LW,30,Serbia,Juventus,Serie A,Left,85,76,82,82,70,80,,MID,GOOD,2
+24,REGULAR_CAREER,225659,G. Rodríguez,83,CDM,,28,Argentina,Real Betis,La Liga,Right,51,58,72,70,85,80,,MID,GOOD,2
+24,REGULAR_CAREER,264240,Gavi,83,CM,LW,18,Spain,FC Barcelona,La Liga,Right,76,66,78,85,68,70,,MID,GOOD,2
+24,REGULAR_CAREER,210324,J. Hofmann,83,CAM,"RM, LM",30,Germany,Bayer 04 Leverkusen,Bundesliga,Right,76,79,83,81,64,73,,MID,GOOD,2
+24,REGULAR_CAREER,205498,Jorginho,83,CDM,CM,31,Italy,Arsenal,Premier League,Right,53,67,84,81,74,73,,MID,GOOD,2
+24,REGULAR_CAREER,225375,K. Laimer,83,CDM,CM,26,Austria,FC Bayern München,Bundesliga,Right,80,69,77,78,81,79,,MID,GOOD,2
+24,REGULAR_CAREER,228251,L. Pellegrini,83,CAM,"CM, CF",27,Italy,Roma,Serie A,Right,79,76,83,83,74,78,,MID,GOOD,2
+24,REGULAR_CAREER,216352,M. Brozović,83,CDM,CM,30,Croatia,Al Nassr,Pro League,Right,66,74,81,80,80,78,,MID,GOOD,2
+24,REGULAR_CAREER,188350,M. Reus,83,CAM,CF,34,Germany,Borussia Dortmund,Bundesliga,Right,65,83,83,85,53,63,,MID,GOOD,2
+24,REGULAR_CAREER,216594,N. Fekir,83,CAM,,29,France,Real Betis,La Liga,Left,82,81,81,86,39,80,,MID,GOOD,2
+24,REGULAR_CAREER,230142,Oyarzabal,83,LM,"RM, LW",26,Spain,Real Sociedad,La Liga,Left,77,83,80,83,41,62,,MID,GOOD,2
+24,REGULAR_CAREER,210406,P. Zieliński,83,CM,CAM,29,Poland,Napoli,Serie A,Right,81,77,81,86,71,63,,MID,GOOD,2
+24,REGULAR_CAREER,229391,Palhinha,83,CDM,CM,27,Portugal,Fulham,Premier League,Right,62,67,71,76,84,89,,MID,GOOD,2
+24,REGULAR_CAREER,230481,Ronaldo Cabrais,83,CAM,RM,31,Brazil,Palmeiras,Serie A,Right,88,77,83,84,35,72,,MID,GOOD,2
+24,REGULAR_CAREER,202648,Sergi Darder,83,CM,"CDM, CAM",29,Spain,Mallorca,La Liga,Right,81,76,82,83,74,77,,MID,GOOD,2
+24,REGULAR_CAREER,189511,Sergio Busquets,83,CDM,,34,Spain,Inter Miami,Major League Soccer,Right,37,62,79,79,81,73,,MID,GOOD,2
+24,REGULAR_CAREER,239837,A. Mac Allister,82,CM,"CAM, CDM",24,Argentina,Liverpool,Premier League,Right,70,79,82,82,70,72,,MID,GOOD,2
+24,REGULAR_CAREER,231447,D. Malen,82,RM,ST,24,Netherlands,Borussia Dortmund,Bundesliga,Right,89,80,73,85,35,73,,MID,GOOD,2
+24,REGULAR_CAREER,236772,D. Szoboszlai,82,CAM,,22,Hungary,Liverpool,Premier League,Right,83,82,84,82,34,64,,MID,GOOD,2
+24,REGULAR_CAREER,248243,E. Camavinga,82,CDM,"CM, LB",20,France,Real Madrid,La Liga,Left,79,66,80,82,76,80,,MID,GOOD,2
+24,REGULAR_CAREER,230938,F. Kessié,82,CDM,CM,26,Côte d'Ivoire,Al Ahli Jeddah,Pro League,Right,79,76,74,79,81,87,,MID,GOOD,2
+24,REGULAR_CAREER,184134,Fernando,82,CDM,CB,35,Brazil,Sevilla,La Liga,Right,63,62,74,73,82,81,,MID,GOOD,2
+24,REGULAR_CAREER,199503,G. Xhaka,82,CM,CDM,30,Switzerland,Bayer 04 Leverkusen,Bundesliga,Left,49,74,82,73,75,82,,MID,GOOD,2
+24,REGULAR_CAREER,232498,Isi Palazón,82,RM,,28,Spain,Rayo Vallecano,La Liga,Left,84,79,79,82,39,64,,MID,GOOD,2
+24,REGULAR_CAREER,223334,Joelinton,82,CM,LW,26,Brazil,Newcastle United,Premier League,Right,78,71,76,82,81,88,,MID,GOOD,2
+24,REGULAR_CAREER,212814,João Mário,82,RM,"LM, CM",30,Portugal,Benfica,Liga Portugal,Right,70,79,81,83,69,70,,MID,GOOD,2
+24,REGULAR_CAREER,207410,M. Kovačić,82,CM,CDM,29,Croatia,Manchester City,Premier League,Right,69,69,82,87,71,70,,MID,GOOD,2
+24,REGULAR_CAREER,212096,V. Grifo,82,LM,"CF, CAM",30,Italy,SC Freiburg,Bundesliga,Right,71,80,83,81,40,64,,MID,GOOD,2
+24,REGULAR_CAREER,216388,A. Saint-Maximin,81,LM,LW,26,France,Al Ahli Jeddah,Pro League,Right,89,73,73,88,29,68,,MID,GOOD,2
+24,REGULAR_CAREER,236786,M. Terrier,81,LM,ST,26,France,Rennes,Ligue 1,Right,84,82,75,79,36,72,,MID,GOOD,2
+24,REGULAR_CAREER,251852,K. Adeyemi,80,LM,"RM, ST",21,Germany,Borussia Dortmund,Bundesliga,Left,96,77,71,81,34,68,,MID,VALUE,1
