@@ -16,6 +16,9 @@ export function assertRoom(room: Room): void {
     invariant(['RUNNING', 'PAUSED'].includes(room.status), 'Active player outside live auction.');
     invariant(active[0]?.id === room.active.playerId, 'Active player mismatch.');
     invariant(Number.isSafeInteger(room.active.currentBidUnits) && room.active.currentBidUnits > 0, 'Invalid live bid.');
+    const votes = room.active.skipVoterUserIds ?? [];
+    invariant(new Set(votes).size === votes.length && votes.every(id => id !== room.hostUserId && room.teams.some(t => t.userId === id)), 'Invalid skip voters.');
+    invariant(!room.active.highestBidderTeamId || votes.length === 0, 'Skip votes cannot discard accepted bids.');
     invariant(Number.isFinite(room.active.endsAt), 'Invalid timer.');
     invariant(!room.active.highestBidderTeamId || room.teams.some(t => t.id === room.active!.highestBidderTeamId), 'Missing highest bidder.');
   }

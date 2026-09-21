@@ -121,3 +121,25 @@ Transitions UNSOLD → WAITING. The existing random category/player selector lat
 Each selected player emits PLAYER_RECALLED with payload {playerId,status:"WAITING",round}. The hub then sends each member an authoritative ROOM_STATE at the same new sequence and acknowledges the command. Persistence succeeds before broadcasts. Optional playerHistory in the room snapshot appends PLAYER_UNSOLD and PLAYER_RECALLED audit entries; existing snapshots remain compatible. Historical bids/purchases are untouched. Older snapshots cannot retroactively recover previously unrecorded unsold events.
 
 The legacy START_RECALL whole-round command remains supported. The new UI uses RECALL_PLAYERS only.
+
+## Unanimous participant skip voting
+
+Client commands use the existing authenticated socket and request envelope:
+
+```json
+{"type":"VOTE_SKIP_PLAYER","requestId":"unique-id","payload":{"roomCode":"ABC234","playerId":"player-id","activationId":"server-activation-uuid"}}
+```
+
+`REMOVE_SKIP_VOTE` uses the same payload. `activationId` comes from ROOM_STATE and distinguishes repeat/recall appearances of the same player. Never send a trusted voter identity. Membership, host exclusion, RUNNING state, biddingOpen, activation identity and server expiry are checked under the bidding/timer mutation lock.
+
+Eligible voters are all current non-host team owners, regardless of connection presence. Zero voters never produces unanimity. Existing room policy prohibits leaving/kicking after the lobby; a disconnect or Exit-to-lobby keeps membership and threshold intact. No new live membership-removal mechanism is introduced.
+
+Each member has one vote. Duplicate clicks with a new requestId return ALREADY_VOTED; an accepted request retried with the same requestId is acknowledged idempotently. Removing a missing vote returns NO_SKIP_VOTE. Other errors include HOST_CANNOT_VOTE, NOT_ROOM_MEMBER, AUCTION_PAUSED, AUCTION_NOT_RUNNING, NO_ACTIVE_PLAYER, STALE_STATE, TIMER_EXPIRED and BIDS_EXIST.
+
+`SKIP_VOTE_UPDATED` broadcasts `{playerId,activationId,votes,required,reason}` where reason is VOTE_CAST, VOTE_REMOVED or BID_ACCEPTED. Each mutation is followed by personalized ROOM_STATE containing `activationId` and `skipVote:{votes,required,hasCurrentUserVoted}`. Clients display the snapshot rather than incrementing local counters. No voter ID list is exposed in the vote event.
+
+Every accepted bid clears existing votes and broadcasts BID_ACCEPTED reset feedback. Invalid bids do not clear votes. Once any accepted bidder exists, new skip votes are disallowed: neither participants nor the host's existing Mark Unsold can discard that accepted bid. Normal bidding continues while votes are incomplete.
+
+At unanimity the server reuses its unsold resolution, with PLAYER_UNSOLD `{playerId,reason:"UNANIMOUS_SKIP"}`. The player is recall-eligible, budgets are untouched, and the normal random selector runs after the configured transition delay (including when ordinary autoAdvance is disabled). If no waiting players remain, the auction remains between rounds for host recall/end. Persistence succeeds before events publish. The active vote array is discarded with the resolved player; new activations start empty. Pausing preserves votes but disallows cast/remove commands until resume.
+
+Votes persist in the existing active-room snapshot as optional `skipVoterUserIds`; older snapshots default to no votes. `unsoldReason` on the player and an appended playerHistory entry preserve UNANIMOUS_SKIP. Recall preserves history; the next activation clears the current outcome reason. No database tables are added.

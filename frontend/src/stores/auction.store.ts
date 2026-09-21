@@ -9,13 +9,13 @@ import { useRoomStore } from './room.store';
 import { normalizeError } from '@/services/api';
 import { croreToUnits } from '@/lib/money';
 export interface SoldOverlayState {active:boolean;player:Player|null;winningTeam:Team|null;price:number}
-export interface UnsoldOverlayState {active:boolean;player:Player|null;recallCount:number}
+export interface UnsoldOverlayState {active:boolean;player:Player|null;recallCount:number;reason?:'UNANIMOUS_SKIP'}
 export interface AntiSnipingNotice {active:boolean;secondsAdded:number;message:string}
 interface Store{
  roomCode:string|null;snapshot:RoomStateDTO|null;sequence:number;auctionStatus:string;activePlayer:Player|null;
  currentBid:number;highestBidder:Team|null;endsAt:number|null;remainingTimeMs:number|null;serverTimeOffset:number;
  minimumNextBid:number;maximumPermittedBid:number;currentPot:string;teams:Team[];players:Player[];recentBids:Bid[];aiSuggestion:AISuggestion|null;
- soldOverlay:SoldOverlayState;unsoldOverlay:UnsoldOverlayState;antiSnipingNotice:AntiSnipingNotice|null;bidErrorNotice:string|null;
+ skipVoteNotice:string|null;soldOverlay:SoldOverlayState;unsoldOverlay:UnsoldOverlayState;antiSnipingNotice:AntiSnipingNotice|null;bidErrorNotice:string|null;
  initAuction:(code:string)=>void;leaveAuction:()=>void;handleServerEvent:(e:ServerEvent)=>void;
  placeBid:(amount:number)=>void;hostCommand:(type:HostCommand)=>Promise<void>;hostPause:()=>void;hostResume:()=>void;hostSkip:()=>void;hostEnd:()=>void;
  clearBidError:()=>void;clearAntiSnipingNotice:()=>void;dismissSoldOverlay:()=>void;dismissUnsoldOverlay:()=>void;
@@ -24,7 +24,7 @@ let unsubscribe:(()=>void)|undefined;let generation=0;
 let recommendationTimer:ReturnType<typeof setTimeout>|undefined;
 let noticeTimer:ReturnType<typeof setTimeout>|undefined;
 const initial={
- roomCode:null,snapshot:null,sequence:0,auctionStatus:'LOBBY',activePlayer:null,currentBid:0,highestBidder:null,endsAt:null,
+ skipVoteNotice:null,roomCode:null,snapshot:null,sequence:0,auctionStatus:'LOBBY',activePlayer:null,currentBid:0,highestBidder:null,endsAt:null,
  remainingTimeMs:null,serverTimeOffset:0,minimumNextBid:0,maximumPermittedBid:0,currentPot:'',teams:[],players:[],recentBids:[],aiSuggestion:null,
  soldOverlay:{active:false,player:null,winningTeam:null,price:0},unsoldOverlay:{active:false,player:null,recallCount:0},antiSnipingNotice:null,bidErrorNotice:null,
 };
@@ -47,13 +47,13 @@ export const useAuctionStore=create<Store>((set,get)=>({
   if(event.type==='ROOM_STATE'){
    const s=event.payload;if(s.roomCode!==state.roomCode||s.sequence<state.sequence)return;
    const teams=mapTeams(s),players=s.players.map(p=>mapPlayer(p,s));
-   const playerChanged=s.activePlayerId!==state.activePlayer?.id;
+   const playerChanged=s.activePlayerId!==state.activePlayer?.id || s.activationId!==state.snapshot?.activationId;
    set({snapshot:s,sequence:s.sequence,auctionStatus:s.status==='RUNNING'?'LIVE':s.status,teams,players,
     activePlayer:players.find(p=>p.id===s.activePlayerId)??null,currentBid:s.currentBidCr??0,
     highestBidder:teams.find(t=>t.id===s.highestBidderTeamId)??null,minimumNextBid:s.minimumNextBidCr??0,
     maximumPermittedBid:s.maximumPermittedBidCr,endsAt:s.endsAt,remainingTimeMs:s.remainingTimeMs,
     serverTimeOffset:event.serverTime-Date.now(),currentPot:s.activePotId??'',
-    ...(playerChanged?{aiSuggestion:null,recentBids:[]}:{})});
+    ...(playerChanged?{aiSuggestion:null,recentBids:[],skipVoteNotice:null}:{})});
    useRoomStore.getState().applySnapshot(s);
    clearTimeout(recommendationTimer);
    if(s.activePlayerId){
@@ -67,12 +67,15 @@ export const useAuctionStore=create<Store>((set,get)=>({
   }else if(event.type==='BID_UPDATED'){
    const team=state.teams.find(t=>t.id===event.payload.highestBidderTeamId);
    if(team)set({recentBids:[{id:String(event.sequence),amount:event.payload.amountCr,teamId:team.id,teamName:team.name,teamShortName:team.shortName,teamLogo:team.logo,bidderId:team.managerId,bidderUsername:team.managerUsername,timestamp:event.serverTime},...state.recentBids].slice(0,20)});
+  }else if(event.type==='SKIP_VOTE_UPDATED'){
+   if(event.payload.reason==='BID_ACCEPTED')set({skipVoteNotice:'Skip votes reset after a valid bid.'});
   }else if(event.type==='PLAYER_STARTED'){
+   set({skipVoteNotice:null});
    set({soldOverlay:initial.soldOverlay,unsoldOverlay:initial.unsoldOverlay,bidErrorNotice:null,antiSnipingNotice:null});
   }else if(event.type==='PLAYER_SOLD'){
    set({soldOverlay:{active:true,player:state.players.find(p=>p.id===event.payload.playerId)??null,winningTeam:state.teams.find(t=>t.id===event.payload.teamId)??null,price:event.payload.priceCr}});
   }else if(event.type==='PLAYER_UNSOLD'){
-   set({unsoldOverlay:{active:true,player:state.players.find(p=>p.id===event.payload.playerId)??null,recallCount:(state.snapshot?.unsoldPlayers.length??0)+1}});
+   set({unsoldOverlay:{active:true,player:state.players.find(p=>p.id===event.payload.playerId)??null,recallCount:(state.snapshot?.unsoldPlayers.length??0)+1,reason:event.payload.reason}});
   }else if(event.type==='TIMER_EXTENDED'){
    const added=Math.max(0,Math.round((event.payload.endsAt-(state.endsAt??event.payload.endsAt))/1000));
    set({antiSnipingNotice:{active:true,secondsAdded:added,message:'Deadline extended by the server'}});

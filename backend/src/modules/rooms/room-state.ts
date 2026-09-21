@@ -2,6 +2,7 @@ import type { Room } from '../../domain/types.js';
 import { toCr } from '../../domain/money.js';
 import { minimumNextBid } from '../auction/bid.service.js';
 import { publicPlayer, publicTeam } from '../teams/team.service.js';
+import { skipVoteState } from '../auction/skip-vote.service.js';
 import { requireMember } from './room.service.js';
 export function roomState(room: Room, userId: string, serverTime: number, connectedUsers: string[] = [], usernames: Record<string, string> = {}) {
   const team = requireMember(room, userId);
@@ -12,6 +13,7 @@ export function roomState(room: Room, userId: string, serverTime: number, connec
     roomId: room.id, roomCode: room.code, settings: room.settings, status: room.status,
     host: { userId: room.hostUserId, teamId: room.teams.find(t => t.userId === room.hostUserId)?.id },
     currentPlayer: player ? publicPlayer(player) : null,
+    skipVote: skipVoteState(room, userId), activationId: room.active?.activationId ?? null,
     activePotId: player?.potId ?? null, activePlayerId: player?.id ?? null,
     currentBidCr: room.active ? toCr(room.active.currentBidUnits) : null,
     highestBidderTeamId: room.active?.highestBidderTeamId ?? null,

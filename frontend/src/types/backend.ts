@@ -9,7 +9,7 @@ export interface SettingsDTO {
 }
 export interface PlayerDTO {
  id:string;name:string;position:'GK'|'DEF'|'MID'|'FWD';ovr:number;stats:Record<string,number>;basePriceCr:number;potId:string;
- status:'WAITING'|'ACTIVE'|'SOLD'|'UNSOLD'|'SKIPPED';round:number;
+ status:'WAITING'|'ACTIVE'|'SOLD'|'UNSOLD'|'SKIPPED';round:number;unsoldReason?:'UNANIMOUS_SKIP';
  club?:string;nationality?:string;age?:number;preferredFoot?:string;photoUrl?:string;
  subPosition?:string; // specific football position, e.g. CB, LB, ST, CM
 }
@@ -22,6 +22,7 @@ export interface PurchaseDTO {id:string;playerId:string;teamId:string;priceCr:nu
 export interface BidDTO {id:string;roomId:string;playerId:string;teamId:string;amountCr:number;at:number;round:number}
 export interface RoomStateDTO {
  room:{id:string;code:string;auctionName:string;createdAt:number}; roomId:string;roomCode:string;settings:SettingsDTO;status:RoomStatus;
+ activationId:string|null;skipVote:{votes:number;required:number;hasCurrentUserVoted:boolean};
  host:{userId:string;teamId?:string};currentPlayer:PlayerDTO|null;activePotId:string|null;activePlayerId:string|null;
  currentBidCr:number|null;highestBidderTeamId:string|null;minimumNextBidCr:number|null;maximumPermittedBidCr:number;
  startedAt:number|null;endsAt:number|null;remainingTimeMs:number|null;biddingOpen:boolean;lastBidAt:number|null;
@@ -46,6 +47,7 @@ export type ClientCommand =
  | {type:'JOIN_ROOM'|'REJOIN_ROOM'|'REQUEST_STATE';payload:{roomCode:string};requestId?:string}
  | {type:HostCommand;payload:RoomPayload;requestId?:string}
  | {type:'PLACE_BID';payload:RoomPayload & {amountCr:number;playerId?:string};requestId?:string}
+ | {type:'VOTE_SKIP_PLAYER'|'REMOVE_SKIP_VOTE';payload:RoomPayload & {playerId:string;activationId:string};requestId?:string}
  | {type:'RECALL_PLAYERS';payload:RoomPayload & {playerIds:string[]};requestId?:string}
  | {type:'KICK_MEMBER';payload:RoomPayload & {targetTeamId:string};requestId?:string}
  | {type:'UPDATE_SETTINGS';payload:RoomPayload & {settings:Partial<SettingsDTO>};requestId?:string}
@@ -60,7 +62,8 @@ interface Payloads {
  BID_UPDATED:{playerId:string;amountCr:number;highestBidderTeamId:string;minimumNextBidCr:number;endsAt:number;bidCount:number};
  TIMER_EXTENDED:{playerId:string;endsAt:number};
  PLAYER_SOLD:{playerId:string;teamId:string;priceCr:number;remainingBudgetCr:number;teamPlayerCount:number};
- PLAYER_UNSOLD:{playerId:string};
+ SKIP_VOTE_UPDATED:{playerId:string;activationId:string;votes:number;required:number;reason:'BID_ACCEPTED'|'VOTE_CAST'|'VOTE_REMOVED'};
+ PLAYER_UNSOLD:{playerId:string;reason?:'UNANIMOUS_SKIP'};
  PLAYER_RECALLED:{playerId:string;status:'WAITING';round:number};
  TEAM_UPDATED:{teamId:string};
  BUDGET_UPDATED:{teamId:string;spentCr:number;remainingBudgetCr:number};
@@ -75,7 +78,7 @@ export function parseServerEvent(raw:string):ServerEvent {
  const value:unknown=JSON.parse(raw);
  if(!value || typeof value!=='object') throw new Error('Invalid server event');
  const e=value as Record<string,unknown>;
- const names=['CONNECTED','ROOM_STATE','ROOM_UPDATED','MEMBER_JOINED','MEMBER_LEFT','PRESENCE_UPDATED','AUCTION_STARTED','PLAYER_STARTED','BID_UPDATED','TIMER_EXTENDED','PLAYER_SOLD','PLAYER_UNSOLD','PLAYER_RECALLED','TEAM_UPDATED','BUDGET_UPDATED','AUCTION_PAUSED','AUCTION_RESUMED','AUCTION_COMPLETED','COMMAND_ACK','BID_REJECTED','ERROR','PONG'];
+ const names=['CONNECTED','ROOM_STATE','ROOM_UPDATED','MEMBER_JOINED','MEMBER_LEFT','PRESENCE_UPDATED','AUCTION_STARTED','PLAYER_STARTED','BID_UPDATED','TIMER_EXTENDED','PLAYER_SOLD','PLAYER_UNSOLD','SKIP_VOTE_UPDATED','PLAYER_RECALLED','TEAM_UPDATED','BUDGET_UPDATED','AUCTION_PAUSED','AUCTION_RESUMED','AUCTION_COMPLETED','COMMAND_ACK','BID_REJECTED','ERROR','PONG'];
  if(typeof e.type!=='string'||!names.includes(e.type)||typeof e.sequence!=='number'||typeof e.serverTime!=='number'||!e.payload||typeof e.payload!=='object') throw new Error('Unsupported server event');
  if(e.type==='ROOM_STATE'){
   const p=e.payload as Record<string,unknown>;

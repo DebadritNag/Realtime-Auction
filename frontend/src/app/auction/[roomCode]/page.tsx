@@ -13,6 +13,7 @@ import { PlayerPoolSidebar } from "@/components/auction/PlayerPoolSidebar";
 import { PlayerAuctionCard } from "@/components/auction/PlayerAuctionCard";
 import { CurrentBid } from "@/components/auction/CurrentBid";
 import { AuctionTimer } from "@/components/auction/AuctionTimer";
+import { SkipPlayerVote } from "@/components/auction/SkipPlayerVote";
 import { AuctionControls } from "@/components/auction/AuctionControls";
 import { TeamPanel } from "@/components/auction/TeamPanel";
 import { TeamQuickView } from "@/components/auction/TeamQuickView";
@@ -40,6 +41,7 @@ export default function LiveAuctionPage({
   const { status: connectionStatus, latencyMs } = useConnectionStore();
   const router = useRouter();
   const snapshot = useAuctionStore(s => s.snapshot);
+  const skipVoteNotice = useAuctionStore(s => s.skipVoteNotice);
 
   // Determine host status from auction store (authoritative from ROOM_STATE)
   const hostUserId = useAuctionStore((state) => state.snapshot?.host.userId);
@@ -273,6 +275,7 @@ export default function LiveAuctionPage({
             onClearError={clearBidError}
           />
 
+          <SkipPlayerVote key={snapshot?.activationId ?? "idle"} snapshot={snapshot} synced={connectionStatus === "SYNCED"} isHost={isHost} notice={skipVoteNotice} />
           </section>
           {/* Live Recent Bids Feed */}
           <BidFeed bids={recentBids} />

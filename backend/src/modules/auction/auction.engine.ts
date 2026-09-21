@@ -8,6 +8,7 @@ import { requireHost, requireMember } from '../rooms/room.service.js';
 import { transitionPlayer, transitionRoom } from './auction.state-machine.js';
 import { minimumNextBid, validateBid } from './bid.service.js';
 import { remainingBudget } from './budget.service.js';
+import { skipVoteState, updateSkipVote } from './skip-vote.service.js';
 import { commandSchema, type AuctionCommand } from './auction.schemas.js';
 
 export class AuctionEngine {
@@ -31,6 +32,11 @@ export class AuctionEngine {
         const amount = validateBid(room, team, command.payload.amountCr, now);
         const active = room.active!;
         const player = room.players.find(p => p.id === active.playerId)!;
+        if (active.skipVoterUserIds?.length) {
+          active.skipVoterUserIds = [];
+          events.push({ type: 'SKIP_VOTE_UPDATED', payload: { playerId: player.id, activationId: active.activationId,
+            votes: 0, required: skipVoteState(room).required, reason: 'BID_ACCEPTED' } });
+        }
         active.currentBidUnits = amount;
         active.highestBidderTeamId = team.id;
         active.lastBidAt = now;
@@ -42,6 +48,18 @@ export class AuctionEngine {
         }
         events.push({ type: 'BID_UPDATED', payload: { playerId: player.id, amountCr: toCr(amount),
           highestBidderTeamId: team.id, minimumNextBidCr: toCr(minimumNextBid(room)!), endsAt: active.endsAt, bidCount: active.bidCount } });
+      } else if (command.type === 'VOTE_SKIP_PLAYER' || command.type === 'REMOVE_SKIP_VOTE') {
+        const { playerId, activationId } = command.payload;
+        const result = updateSkipVote(room, userId, playerId, activationId, command.type === 'REMOVE_SKIP_VOTE', now);
+        events.push({ type: 'SKIP_VOTE_UPDATED', payload: { playerId, activationId, votes: result.votes, required: result.required,
+          reason: command.type === 'REMOVE_SKIP_VOTE' ? 'VOTE_REMOVED' : 'VOTE_CAST' } });
+        if (result.unanimous) {
+          this.resolve(room, events, 'UNANIMOUS_SKIP');
+          // Unanimous skip advances after the usual transition delay, also in host-next rooms.
+          if (room.playerQueue.length || room.players.some(p => p.status === 'WAITING')) {
+            room.nextPlayerAt = now + room.settings.transitionDelaySeconds * 1000;
+          }
+        }
       } else {
         requireHost(room, userId);
         switch (command.type) {
@@ -216,8 +234,9 @@ export class AuctionEngine {
     const player = room.players.find(p => p.id === id)!;
     transitionPlayer(player, 'ACTIVE');
     player.round++;
+    delete player.unsoldReason;
     const now = this.manager.clock.now();
-    room.active = { playerId: id, currentBidUnits: player.basePriceUnits, highestBidderTeamId: null,
+    room.active = { skipVoterUserIds: [], playerId: id, currentBidUnits: player.basePriceUnits, highestBidderTeamId: null,
       startedAt: now, endsAt: now + room.settings.playerTimerSeconds * 1000, biddingOpen: true,
       remainingTimeMs: null, lastBidAt: null, bidCount: 0, activationId: randomUUID() };
     room.nextPlayerAt = null;
@@ -226,7 +245,7 @@ export class AuctionEngine {
       basePriceCr: toCr(player.basePriceUnits), currentBidCr: toCr(player.basePriceUnits),
       minimumNextBidCr: toCr(player.basePriceUnits), highestBidderTeamId: null, startedAt: now, endsAt: room.active.endsAt } });
   }
-  private resolve(room: Room, events: PendingEvent[]): void {
+  private resolve(room: Room, events: PendingEvent[], reason?: 'UNANIMOUS_SKIP'): void {
     const active = room.active!;
     active.biddingOpen = false;
     const player = room.players.find(p => p.id === active.playerId)!;
@@ -244,8 +263,9 @@ export class AuctionEngine {
         { type: 'BUDGET_UPDATED', payload: { teamId: team.id, spentCr: toCr(team.spentUnits), remainingBudgetCr: toCr(remainingBudget(team)) } });
     } else {
       transitionPlayer(player, 'UNSOLD');
-      (room.playerHistory ??= []).push({ type: 'PLAYER_UNSOLD', playerId: player.id, round: player.round, at: this.manager.clock.now() });
-      events.push({ type: 'PLAYER_UNSOLD', payload: { playerId: player.id } });
+      if (reason) player.unsoldReason = reason;
+      (room.playerHistory ??= []).push({ type: 'PLAYER_UNSOLD', playerId: player.id, round: player.round, at: this.manager.clock.now(), ...(reason ? { reason } : {}) });
+      events.push({ type: 'PLAYER_UNSOLD', payload: { playerId: player.id, ...(reason ? { reason } : {}) } });
     }
     room.active = null;
     this.planNext(room);

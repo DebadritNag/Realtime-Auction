@@ -142,3 +142,42 @@ it('broadcasts selected recall and authoritative snapshots to host, peer and rec
     unsoldPlayers: [], players: expect.arrayContaining([expect.objectContaining({ id, status: 'WAITING' })]),
   });
 });
+
+it('synchronizes skip voting for host + three peers, reconnect, unanimous resolution and bid reset', async () => {
+  const clock={value:100_000,now(){return this.value;}};
+  const {app,manager,engine}=await buildApp({authService:auth,logger:false,timersEnabled:false,clock,
+    playerRepository:new CatalogPlayerRepository(demoPlayers.slice(0,2))});
+  cleanup.push(()=>app.close());await app.ready();
+  const room=await manager.create({userId:'host'},{auctionName:'Skip Cup',teamName:'Host FC',settings:{numberOfTeams:4,minimumParticipants:1,autoAdvance:false,transitionDelaySeconds:1}});
+  for(const id of ['a','b','c'])await app.inject({method:'POST',url:'/api/rooms/'+room.code+'/join',headers:{authorization:'Bearer '+id+'-token'},payload:{teamName:id+' FC'}});
+  const sockets=[];
+  for(const id of ['host','a','b','c']){
+    const socket=await app.injectWS('/ws?token='+id+'-token',{headers:{origin}});sockets.push(socket);
+    await send(socket,'REJOIN_ROOM',{roomCode:room.code},'ROOM_STATE');
+  }
+  const host=sockets[0]!,a=sockets[1]!,b=sockets[2]!,c=sockets[3]!;
+  await send(host,'START_AUCTION',{roomCode:room.code});
+  const first=(await manager.loadRoom(room.code)).active!;
+  const payload={roomCode:room.code,playerId:first.playerId,activationId:first.activationId};
+  const notices=sockets.map(s=>event(s,'SKIP_VOTE_UPDATED'));
+  await send(a,'VOTE_SKIP_PLAYER',payload);
+  for(const notice of await Promise.all(notices))expect(notice.payload).toMatchObject({votes:1,required:3});
+  await send(b,'VOTE_SKIP_PLAYER',payload);
+  expect((await manager.loadRoom(room.code)).active?.playerId).toBe(first.playerId);
+  a.terminate();
+  const reconnect=await app.injectWS('/ws?token=a-token',{headers:{origin}});
+  const restored=await send(reconnect,'REJOIN_ROOM',{roomCode:room.code},'ROOM_STATE');
+  expect(restored.payload).toMatchObject({skipVote:{votes:2,required:3,hasCurrentUserVoted:true},activationId:first.activationId});
+  const unsold=[host,b,c,reconnect].map(s=>event(s,'PLAYER_UNSOLD'));
+  await send(c,'VOTE_SKIP_PLAYER',payload);
+  for(const update of await Promise.all(unsold))expect(update.payload).toEqual({playerId:first.playerId,reason:'UNANIMOUS_SKIP'});
+  const state=await manager.loadRoom(room.code);clock.value=state.nextPlayerAt!;
+  await engine.onTimer(room.code,null);
+  const second=(await manager.loadRoom(room.code)).active!;
+  const nextPayload={roomCode:room.code,playerId:second.playerId,activationId:second.activationId};
+  await send(reconnect,'VOTE_SKIP_PLAYER',nextPayload);await send(b,'VOTE_SKIP_PLAYER',nextPayload);
+  const reset=event(c,'SKIP_VOTE_UPDATED');
+  await send(host,'PLACE_BID',{roomCode:room.code,playerId:second.playerId,amountCr:1});
+  expect((await reset).payload).toMatchObject({votes:0,required:3,reason:'BID_ACCEPTED'});
+  expect((await send(c,'VOTE_SKIP_PLAYER',nextPayload,'ERROR')).payload).toMatchObject({reason:'BIDS_EXIST'});
+});

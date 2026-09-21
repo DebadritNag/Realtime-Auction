@@ -3,7 +3,7 @@
 import React from "react";
 import { UnsoldOverlayState } from "@/stores/auction.store";
 import { formatCr } from "@/lib/utils";
-import { AlertCircle, RotateCcw } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 
 export interface UnsoldOverlayProps {
   unsoldData: UnsoldOverlayState;
@@ -29,13 +29,14 @@ export const UnsoldOverlay: React.FC<UnsoldOverlayProps> = ({
         {/* UNSOLD Rubber Stamp */}
         <div className="inline-block mb-2 animate-stamp">
           <div className="px-5 py-1.5 rounded-lg border-4 border-slate-500 text-slate-400 font-black text-3xl tracking-widest uppercase rotate-[-5deg]">
-            UNSOLD
+            {unsoldData.reason === "UNANIMOUS_SKIP" ? "PLAYER SKIPPED" : "UNSOLD"}
           </div>
         </div>
 
         <h3 className="text-xl font-black uppercase text-[#f8fafc] mt-2">
           {unsoldData.player.name}
         </h3>
+        {unsoldData.reason === "UNANIMOUS_SKIP" && <p className="text-xs text-[#94a3b8] mt-1">Unsold — unanimous participant vote</p>}
         <p className="text-xs text-[#94a3b8] mt-0.5">
           Base Price: <strong className="font-mono text-white">{formatCr(unsoldData.player.basePrice)}</strong>
         </p>
