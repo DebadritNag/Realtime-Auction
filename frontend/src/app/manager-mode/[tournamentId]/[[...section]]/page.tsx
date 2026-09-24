@@ -4,6 +4,6 @@ export default async function Page({params}:{params:Promise<{tournamentId:string
   const {tournamentId,section}=await params;
   return <>
     <ManagerDeletedRedirect tournamentId={tournamentId}/>
-    <ManagerWorkspace section={section?.[0]??'dashboard'}/>
+    <ManagerWorkspace section={section?.join('/')??'dashboard'}/>
   </>;
 }

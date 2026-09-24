@@ -54,6 +54,12 @@ export type ClientCommand =
  | {type:'UPDATE_SETTINGS';payload:RoomPayload & {settings:Partial<SettingsDTO>};requestId?:string}
  | {type:'PING';payload?:Record<string,never>;requestId?:string};
 interface Payloads {
+BUYOUT_CREATED:{tournamentId:string};
+BUYOUT_UPDATED:{tournamentId:string};
+BUYOUT_ACCEPTED:{tournamentId:string};
+BUYOUT_REJECTED:{tournamentId:string};
+BUYOUT_COUNTERED:{tournamentId:string};
+TEAM_BUDGET_UPDATED:{tournamentId:string};
 NEGOTIATION_STARTED:{tournamentId:string};
 NEGOTIATION_UPDATED:{tournamentId:string};
 FREE_AGENT_OFFER_UPDATED:{tournamentId:string};
@@ -92,7 +98,7 @@ export function parseServerEvent(raw:string):ServerEvent {
  const value:unknown=JSON.parse(raw);
  if(!value || typeof value!=='object') throw new Error('Invalid server event');
  const e=value as Record<string,unknown>;
- const names=['NEGOTIATION_STARTED','NEGOTIATION_UPDATED','FREE_AGENT_OFFER_UPDATED','FREE_AGENT_ACCEPTED','FREE_AGENT_SIGNED','FREE_AGENT_SIGNED_ELSEWHERE','TRADE_CREATED','TRADE_UPDATED','PLAYER_TRANSFERRED','TRANSFER_WINDOW_OPENED','TRANSFER_WINDOW_CLOSED','MANAGER_MODE_STATE','MANAGER_MODE_INBOX','MANAGER_MODE_CREATED','MANAGER_MODE_UPDATED','MANAGER_MODE_DELETED','CONNECTED','ROOM_STATE','ROOM_UPDATED','MEMBER_JOINED','MEMBER_LEFT','PRESENCE_UPDATED','AUCTION_STARTED','PLAYER_STARTED','BID_UPDATED','TIMER_EXTENDED','PLAYER_SOLD','PLAYER_UNSOLD','SKIP_VOTE_UPDATED','PLAYER_RECALLED','TEAM_UPDATED','BUDGET_UPDATED','AUCTION_PAUSED','AUCTION_RESUMED','AUCTION_COMPLETED','COMMAND_ACK','BID_REJECTED','ERROR','PONG'];
+ const names=['BUYOUT_CREATED','BUYOUT_UPDATED','BUYOUT_ACCEPTED','BUYOUT_REJECTED','BUYOUT_COUNTERED','TEAM_BUDGET_UPDATED','NEGOTIATION_STARTED','NEGOTIATION_UPDATED','FREE_AGENT_OFFER_UPDATED','FREE_AGENT_ACCEPTED','FREE_AGENT_SIGNED','FREE_AGENT_SIGNED_ELSEWHERE','TRADE_CREATED','TRADE_UPDATED','PLAYER_TRANSFERRED','TRANSFER_WINDOW_OPENED','TRANSFER_WINDOW_CLOSED','MANAGER_MODE_STATE','MANAGER_MODE_INBOX','MANAGER_MODE_CREATED','MANAGER_MODE_UPDATED','MANAGER_MODE_DELETED','CONNECTED','ROOM_STATE','ROOM_UPDATED','MEMBER_JOINED','MEMBER_LEFT','PRESENCE_UPDATED','AUCTION_STARTED','PLAYER_STARTED','BID_UPDATED','TIMER_EXTENDED','PLAYER_SOLD','PLAYER_UNSOLD','SKIP_VOTE_UPDATED','PLAYER_RECALLED','TEAM_UPDATED','BUDGET_UPDATED','AUCTION_PAUSED','AUCTION_RESUMED','AUCTION_COMPLETED','COMMAND_ACK','BID_REJECTED','ERROR','PONG'];
  if(typeof e.type!=='string'||!names.includes(e.type)||typeof e.sequence!=='number'||typeof e.serverTime!=='number'||!e.payload||typeof e.payload!=='object') throw new Error('Unsupported server event');
  if(e.type==='MANAGER_MODE_STATE'){const p=e.payload as Record<string,unknown>;if(typeof p.id!=='string'||typeof p.sequence!=='number'||!Array.isArray(p.teams)||!Array.isArray(p.players)||!Array.isArray(p.fixtures)||!Array.isArray(p.standings))throw new Error('Invalid tournament snapshot');}
  if(e.type==='ROOM_STATE'){

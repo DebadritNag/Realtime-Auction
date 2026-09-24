@@ -91,6 +91,146 @@
       "definition": "CHECK ((status = ANY (ARRAY['SCHEDULED'::text, 'COMPLETED'::text, 'POSTPONED'::text, 'CANCELLED'::text])))"
     },
     {
+      "table_name": "manager_free_agent_offers",
+      "conname": "manager_free_agent_offers_counter_units_check",
+      "definition": "CHECK ((counter_units > 0))"
+    },
+    {
+      "table_name": "manager_free_agent_offers",
+      "conname": "manager_free_agent_offers_decision_check",
+      "definition": "CHECK ((decision = ANY (ARRAY['REJECT'::text, 'COUNTER'::text, 'CONSIDER'::text, 'ACCEPT'::text, 'WAIT'::text, 'WALK_AWAY'::text])))"
+    },
+    {
+      "table_name": "manager_free_agent_offers",
+      "conname": "manager_free_agent_offers_offer_units_check",
+      "definition": "CHECK ((offer_units > 0))"
+    },
+    {
+      "table_name": "manager_free_agent_offers",
+      "conname": "manager_free_agent_offers_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_free_agent_offers",
+      "conname": "manager_free_agent_offers_player_id_fkey",
+      "definition": "FOREIGN KEY (player_id) REFERENCES manager_tournament_players(id)"
+    },
+    {
+      "table_name": "manager_free_agent_offers",
+      "conname": "manager_free_agent_offers_session_id_fkey",
+      "definition": "FOREIGN KEY (session_id) REFERENCES manager_negotiation_sessions(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_free_agent_offers",
+      "conname": "manager_free_agent_offers_team_id_fkey",
+      "definition": "FOREIGN KEY (team_id) REFERENCES manager_tournament_teams(id)"
+    },
+    {
+      "table_name": "manager_negotiation_messages",
+      "conname": "manager_negotiation_messages_message_check",
+      "definition": "CHECK (((length(message) >= 1) AND (length(message) <= 600)))"
+    },
+    {
+      "table_name": "manager_negotiation_messages",
+      "conname": "manager_negotiation_messages_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_negotiation_messages",
+      "conname": "manager_negotiation_messages_provider_check",
+      "definition": "CHECK ((provider = ANY (ARRAY['TEMPLATE'::text, 'LLM'::text])))"
+    },
+    {
+      "table_name": "manager_negotiation_messages",
+      "conname": "manager_negotiation_messages_sender_check",
+      "definition": "CHECK ((sender = ANY (ARRAY['PLAYER'::text, 'MANAGER'::text, 'SYSTEM'::text])))"
+    },
+    {
+      "table_name": "manager_negotiation_messages",
+      "conname": "manager_negotiation_messages_session_id_fkey",
+      "definition": "FOREIGN KEY (session_id) REFERENCES manager_negotiation_sessions(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_confidence_check",
+      "definition": "CHECK (((confidence >= 0) AND (confidence <= 100)))"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_excitement_check",
+      "definition": "CHECK (((excitement >= 0) AND (excitement <= 100)))"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_frustration_check",
+      "definition": "CHECK (((frustration >= 0) AND (frustration <= 100)))"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_interest_check",
+      "definition": "CHECK (((interest >= 0) AND (interest <= 100)))"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_last_counter_units_check",
+      "definition": "CHECK ((last_counter_units > 0))"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_last_offer_units_check",
+      "definition": "CHECK ((last_offer_units > 0))"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_manager_user_id_fkey",
+      "definition": "FOREIGN KEY (manager_user_id) REFERENCES profiles(id)"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_patience_remaining_check",
+      "definition": "CHECK (((patience_remaining >= 0) AND (patience_remaining <= 100)))"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_player_id_fkey",
+      "definition": "FOREIGN KEY (player_id) REFERENCES manager_tournament_players(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_resume_status_check",
+      "definition": "CHECK ((resume_status = ANY (ARRAY['ACTIVE'::text, 'ACCEPTED'::text])))"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_status_check",
+      "definition": "CHECK ((status = ANY (ARRAY['ACTIVE'::text, 'ACCEPTED'::text, 'REJECTED'::text, 'WALKED_AWAY'::text, 'SIGNED'::text, 'CLOSED_LOST_PLAYER'::text, 'PAUSED_WINDOW_CLOSED'::text])))"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_team_id_fkey",
+      "definition": "FOREIGN KEY (team_id) REFERENCES manager_tournament_teams(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_tournament_id_team_id_player_i_key",
+      "definition": "UNIQUE (tournament_id, team_id, player_id)"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "conname": "manager_negotiation_sessions_trust_check",
+      "definition": "CHECK (((trust >= 0) AND (trust <= 100)))"
+    },
+    {
       "table_name": "manager_notifications",
       "conname": "manager_notifications_pkey",
       "definition": "PRIMARY KEY (id)"
@@ -109,6 +249,91 @@
       "table_name": "manager_notifications",
       "conname": "mn_type_values",
       "definition": "CHECK ((type = ANY (ARRAY['TOURNAMENT_INVITE'::text, 'MANAGER_JOINED'::text, 'FIXTURES_GENERATED'::text, 'RESULT_UPDATED'::text, 'TRANSFER_WINDOW_OPENED'::text, 'TRANSFER_WINDOW_CLOSED'::text, 'TRADE_RECEIVED'::text, 'TRADE_ACCEPTED'::text, 'TRADE_REJECTED'::text, 'TRADE_CANCELLED'::text, 'PLAYER_TRANSFERRED'::text, 'TOURNAMENT_ANNOUNCEMENT'::text])))"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_prof_squad_strength_importance_check",
+      "definition": "CHECK (((squad_strength_importance >= (0)::double precision) AND (squad_strength_importance <= (1)::double precision)))"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profil_playing_time_importance_check",
+      "definition": "CHECK (((playing_time_importance >= (0)::double precision) AND (playing_time_importance <= (1)::double precision)))"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profile_compromise_willingness_check",
+      "definition": "CHECK (((compromise_willingness >= (0)::double precision) AND (compromise_willingness <= (1)::double precision)))"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profile_negotiation_aggression_check",
+      "definition": "CHECK (((negotiation_aggression >= (0)::double precision) AND (negotiation_aggression <= (1)::double precision)))"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profiles_archetype_check",
+      "definition": "CHECK ((archetype = ANY (ARRAY['BALANCED'::text, 'MONEY_DRIVEN'::text, 'AMBITIOUS'::text, 'PLAYING_TIME_FOCUSED'::text, 'PRESTIGE_DRIVEN'::text, 'LOYAL'::text, 'STUBBORN'::text, 'OPPORTUNISTIC'::text, 'COMPETITIVE'::text, 'RELAXED'::text])))"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profiles_check",
+      "definition": "CHECK (((minimum_value_units <= preferred_value_units) AND (preferred_value_units <= ideal_value_units)))"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profiles_competitiveness_check",
+      "definition": "CHECK (((competitiveness >= (0)::double precision) AND (competitiveness <= (1)::double precision)))"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profiles_ego_check",
+      "definition": "CHECK (((ego >= (0)::double precision) AND (ego <= (1)::double precision)))"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profiles_loyalty_check",
+      "definition": "CHECK (((loyalty >= (0)::double precision) AND (loyalty <= (1)::double precision)))"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profiles_market_value_units_check",
+      "definition": "CHECK ((market_value_units > 0))"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profiles_minimum_value_units_check",
+      "definition": "CHECK ((minimum_value_units > 0))"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profiles_money_importance_check",
+      "definition": "CHECK (((money_importance >= (0)::double precision) AND (money_importance <= (1)::double precision)))"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profiles_patience_check",
+      "definition": "CHECK (((patience >= (0)::double precision) AND (patience <= (1)::double precision)))"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profiles_pkey",
+      "definition": "PRIMARY KEY (player_id)"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profiles_player_id_fkey",
+      "definition": "FOREIGN KEY (player_id) REFERENCES manager_tournament_players(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profiles_prestige_importance_check",
+      "definition": "CHECK (((prestige_importance >= (0)::double precision) AND (prestige_importance <= (1)::double precision)))"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "conname": "manager_player_negotiation_profiles_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
     },
     {
       "table_name": "manager_tournament_events",
@@ -342,11 +567,6 @@
     },
     {
       "table_name": "manager_tournaments",
-      "conname": "manager_tournaments_source_auction_id_fkey",
-      "definition": "FOREIGN KEY (source_auction_id) REFERENCES auction_rooms(id) ON DELETE RESTRICT"
-    },
-    {
-      "table_name": "manager_tournaments",
       "conname": "mt_budget_nn",
       "definition": "CHECK ((starting_transfer_budget_units >= 0))"
     },
@@ -424,6 +644,36 @@
       "table_name": "manager_trade_offers",
       "conname": "mto_status_values",
       "definition": "CHECK ((status = ANY (ARRAY['PENDING'::text, 'ACCEPTED'::text, 'REJECTED'::text, 'COUNTERED'::text, 'CANCELLED'::text, 'EXPIRED'::text])))"
+    },
+    {
+      "table_name": "manager_transfer_rules",
+      "conname": "manager_transfer_rules_difficulty_check",
+      "definition": "CHECK ((difficulty = ANY (ARRAY['RELAXED'::text, 'NORMAL'::text, 'HARD'::text])))"
+    },
+    {
+      "table_name": "manager_transfer_rules",
+      "conname": "manager_transfer_rules_offer_cooldown_ms_check",
+      "definition": "CHECK (((offer_cooldown_ms >= 2000) AND (offer_cooldown_ms <= 5000)))"
+    },
+    {
+      "table_name": "manager_transfer_rules",
+      "conname": "manager_transfer_rules_pkey",
+      "definition": "PRIMARY KEY (tournament_id)"
+    },
+    {
+      "table_name": "manager_transfer_rules",
+      "conname": "manager_transfer_rules_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_transfer_rules",
+      "conname": "manager_transfer_rules_visibility_check",
+      "definition": "CHECK ((visibility = ANY (ARRAY['PRIVATE'::text, 'SEMI_TRANSPARENT'::text, 'TRANSPARENT'::text])))"
+    },
+    {
+      "table_name": "manager_transfer_rules",
+      "conname": "manager_transfer_rules_walk_away_cooldown_ms_check",
+      "definition": "CHECK (((walk_away_cooldown_ms >= 10000) AND (walk_away_cooldown_ms <= 3600000)))"
     },
     {
       "table_name": "manager_transfer_transactions",
@@ -715,6 +965,265 @@
       "column_default": null
     },
     {
+      "table_name": "manager_free_agent_offers",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_free_agent_offers",
+      "column_name": "session_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_free_agent_offers",
+      "column_name": "player_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_free_agent_offers",
+      "column_name": "team_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_free_agent_offers",
+      "column_name": "offer_units",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_free_agent_offers",
+      "column_name": "decision",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_free_agent_offers",
+      "column_name": "counter_units",
+      "data_type": "bigint",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_free_agent_offers",
+      "column_name": "emotion",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_free_agent_offers",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_negotiation_messages",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_negotiation_messages",
+      "column_name": "session_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_messages",
+      "column_name": "sender",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_messages",
+      "column_name": "message",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_messages",
+      "column_name": "emotion",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_messages",
+      "column_name": "decision",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_messages",
+      "column_name": "provider",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'TEMPLATE'::text"
+    },
+    {
+      "table_name": "manager_negotiation_messages",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "player_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "team_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "manager_user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "resume_status",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "interest",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "trust",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "frustration",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "excitement",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "patience_remaining",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "confidence",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "last_offer_units",
+      "data_type": "bigint",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "last_counter_units",
+      "data_type": "bigint",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "last_offer_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "cooldown_until",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_negotiation_sessions",
+      "column_name": "closed_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
       "table_name": "manager_notifications",
       "column_name": "id",
       "data_type": "uuid",
@@ -772,6 +1281,132 @@
     },
     {
       "table_name": "manager_notifications",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "player_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "archetype",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "money_importance",
+      "data_type": "real",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "prestige_importance",
+      "data_type": "real",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "playing_time_importance",
+      "data_type": "real",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "squad_strength_importance",
+      "data_type": "real",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "patience",
+      "data_type": "real",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "ego",
+      "data_type": "real",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "loyalty",
+      "data_type": "real",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "competitiveness",
+      "data_type": "real",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "negotiation_aggression",
+      "data_type": "real",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "compromise_willingness",
+      "data_type": "real",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "market_value_units",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "minimum_value_units",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "preferred_value_units",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
+      "column_name": "ideal_value_units",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_player_negotiation_profiles",
       "column_name": "created_at",
       "data_type": "timestamp with time zone",
       "is_nullable": "NO",
@@ -1275,6 +1910,13 @@
       "column_default": "now()"
     },
     {
+      "table_name": "manager_tournaments",
+      "column_name": "state",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
       "table_name": "manager_trade_offers",
       "column_name": "id",
       "data_type": "uuid",
@@ -1357,6 +1999,41 @@
       "data_type": "timestamp with time zone",
       "is_nullable": "YES",
       "column_default": null
+    },
+    {
+      "table_name": "manager_transfer_rules",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_transfer_rules",
+      "column_name": "difficulty",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'NORMAL'::text"
+    },
+    {
+      "table_name": "manager_transfer_rules",
+      "column_name": "visibility",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'SEMI_TRANSPARENT'::text"
+    },
+    {
+      "table_name": "manager_transfer_rules",
+      "column_name": "offer_cooldown_ms",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "3000"
+    },
+    {
+      "table_name": "manager_transfer_rules",
+      "column_name": "walk_away_cooldown_ms",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "180000"
     },
     {
       "table_name": "manager_transfer_transactions",
@@ -1487,8 +2164,8 @@
   ],
   "counts": [
     {
-      "completed_auctions": "0",
-      "tournaments": "0"
+      "completed_auctions": "1",
+      "tournaments": "2"
     }
   ]
 }

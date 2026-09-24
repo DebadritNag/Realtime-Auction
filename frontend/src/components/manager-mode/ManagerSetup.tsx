@@ -10,7 +10,7 @@ import { formatCrore, croreToUnits } from '@/lib/money';
 import type { ImportReport } from '@/types/manager-mode';
 export const panel = 'rounded-2xl border border-slate-800 bg-[#111822] p-5 space-y-4';
 export const button = 'rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 disabled:opacity-40 disabled:cursor-not-allowed';
-export const field = 'w-full rounded-lg border border-slate-700 bg-[#080f18] p-2 text-white';
+export const field = 'w-full rounded-lg border border-slate-700 bg-[#0d1929] p-2 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors [color-scheme:dark]';
 export function ResultManagerAction({ code }: {
     code: string;
 }) { const user = useAuthStore(s => s.user); const [target, setTarget] = useState<{

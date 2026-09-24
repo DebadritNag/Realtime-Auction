@@ -1,3 +1,4 @@
+import type {BuyoutOffer} from './manager-buyout';
 import type {NegotiationData,NegotiationView} from './manager-negotiation';
 export type TournamentStatus = 'INVITING' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED';
 export type PlayerSource = 'AUCTION_SQUAD' | 'AUCTION_UNSOLD' | 'EXTERNAL_POOL';
@@ -19,7 +20,7 @@ export interface ManagerPlayer {
     ownershipStatus: 'OWNED' | 'FREE_AGENT';
     availability: 'AVAILABLE' | 'NEGOTIATING' | 'SIGNED';
     auctionPurchasePriceUnits: number | null;
-    acquisitionType: 'AUCTION_PURCHASE' | 'FREE_AGENT_SIGNING' | 'TRADE' | null;
+    acquisitionType: 'AUCTION_PURCHASE' | 'FREE_AGENT_SIGNING' | 'TRADE' | 'BUYOUT' | null;
     acquisitionPriceUnits: number | null;
     metadata: Record<string, unknown>;
 }
@@ -77,7 +78,8 @@ export interface TransferTransaction {
     playerId: string;
     fromTeamId: string | null;
     toTeamId: string;
-    type: 'AUCTION_PURCHASE' | 'TRADE' | 'FREE_AGENT_SIGNING';
+    type: 'AUCTION_PURCHASE' | 'TRADE' | 'FREE_AGENT_SIGNING' | 'BUYOUT';
+    buyoutId?: string | null;
     amountUnits: number;
     tradeId: string | null;
     at: number;
@@ -100,6 +102,7 @@ export interface ManagerAudit {
     detail: string;
 }
 export interface Tournament {
+    buyouts?: BuyoutOffer[];
     negotiation?: NegotiationData;
     id: string;
     sourceAuctionId: string;

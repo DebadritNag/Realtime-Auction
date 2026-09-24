@@ -1,4 +1,5 @@
 'use client';
+import {ManagerTransfers} from './ManagerTransfers';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useManagerStore } from '@/stores/manager-mode.store';
@@ -16,7 +17,7 @@ export const panel = 'rounded-2xl border border-white/8 bg-[#0a1628]/70 p-5 spac
 export const dangerBtn =
   'cursor-pointer inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-semibold bg-red-500/10 text-red-400 border border-red-700/50 hover:bg-red-500/20 hover:border-red-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed';
 export const field =
-  'block w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors';
+  'block w-full rounded-xl bg-[#0d1929] border border-white/10 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors [color-scheme:dark]';
 
 type Act = (action: ManagerAction) => Promise<void>;
 
@@ -285,7 +286,7 @@ function StandingsTable({ state }: { state: TournamentState }) {
 
 // ─── Section: Transfers ───────────────────────────────────────────────────────
 function Transfers({ state, action, busy }: { state: TournamentState; action: Act; busy: boolean }) {
-  const [tab, setTab] = useState<'overview' | 'free-agents' | 'trade' | 'offers'>('overview');
+  const [tab, setTab] = useState<'overview' | 'free-agents' | 'trade' | 'offers'>('trade');
   const [query, setQuery] = useState('');
   const [position, setPosition] = useState('');
   const [source, setSource] = useState('');
@@ -302,8 +303,6 @@ function Transfers({ state, action, busy }: { state: TournamentState; action: Ac
   const name = (id: string) => state.players.find(p => p.id === id)?.name ?? id;
 
   const tabs: { id: typeof tab; label: string }[] = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'free-agents', label: 'Free Agents' },
     { id: 'trade', label: 'Trade Centre' },
     { id: 'offers', label: `Offers ${incoming.filter(t => t.status === 'PENDING').length ? `(${incoming.filter(t => t.status === 'PENDING').length})` : ''}` },
   ];
@@ -384,7 +383,7 @@ function Transfers({ state, action, busy }: { state: TournamentState; action: Ac
               <option value="EXTERNAL_POOL">External pool</option>
             </select>
           </div>
-          <p className="text-xs text-slate-500 italic">Player browsing is available. Free-agent signing is planned for a later phase.</p>
+          <p className="text-xs text-slate-500 italic">Free-agent negotiations are available in Transfers → Free Agents.</p>
           <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {freeAgents
               .filter(p =>
@@ -808,7 +807,7 @@ export function ManagerWorkspace({ section }: { section: string }) {
   const renderSection = () => {
     if (!joined) return <InvitationGate state={state} action={action} busy={busy} />;
 
-    switch (section) {
+    switch (section.split('/')[0]) {
       case 'dashboard':
         return <Dashboard state={state} action={action} busy={busy} />;
       case 'squad':
@@ -835,8 +834,8 @@ export function ManagerWorkspace({ section }: { section: string }) {
       case 'transfers':
         return (
           <>
-            <SectionTitle title="Transfers" subtitle="Manage player swaps and browse free agents." />
-            <Transfers state={state} action={action} busy={busy} />
+            <SectionTitle title="Transfers" subtitle="Negotiate free-agent signings, swap players and send club buyouts." />
+            <ManagerTransfers state={state} action={action} busy={busy} path={section} />
           </>
         );
       case 'teams':
@@ -866,7 +865,7 @@ export function ManagerWorkspace({ section }: { section: string }) {
   };
 
   return (
-    <ManagerModeLayout state={state} section={section} connectionStatus={status}>
+    <ManagerModeLayout state={state} section={section.split('/')[0]!} connectionStatus={status}>
       {error && (
         <div role="alert" className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-700/50 text-sm text-red-300">
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" /></svg>
