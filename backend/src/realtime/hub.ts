@@ -24,10 +24,10 @@ export class RealtimeHub {
   private readonly unsubscribe: () => void;
   private readonly unsubscribeManager: () => void;
   constructor(private manager: RoomManager, private engine: AuctionEngine, private logger: FastifyBaseLogger, private managerMode: ManagerModeService) {
-    this.unsubscribeManager = managerMode.subscribe((t,event) => {
+    this.unsubscribeManager = managerMode.subscribe((t,event,audience) => {
       for(const c of this.connections.values()) {
-        if(!t.teams.some(team=>team.managerUserId===c.auth.userId)) continue;
-        if(c.managerTournament===t.id) this.send(c,{...this.envelope('MANAGER_MODE_STATE',managerMode.view(t,c.auth.userId)),sequence:t.sequence});
+        if(!t.teams.some(team=>team.managerUserId===c.auth.userId)||audience&&!audience.includes(c.auth.userId)) continue;
+        if(c.managerTournament===t.id&&['MANAGER_MODE_CREATED','MANAGER_MODE_UPDATED'].includes(event)) this.send(c,{...this.envelope('MANAGER_MODE_STATE',managerMode.view(t,c.auth.userId)),sequence:t.sequence});
         this.send(c,{...this.envelope(event,{tournamentId:t.id}),sequence:t.sequence});
       }
     });

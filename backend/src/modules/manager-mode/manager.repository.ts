@@ -1,7 +1,7 @@
 import type { Tournament } from './manager.types.js';
 import { SerialQueue } from '../../utils/serial-queue.js';
 import { DomainError, requireThat } from '../../domain/errors.js';
-/** Kiro's production adapter must implement this aggregate transaction boundary.
+/** Production adapters implement this aggregate transaction boundary.
  * Lock/CAS across processes, atomically save ownership+offers+transactions+notifications+receipts.
  * Never retain a draft when callback or persistence fails. Return detached values.
  */
@@ -14,6 +14,8 @@ export interface ManagerTournamentRepository {
         created: boolean;
     }>;
     mutate(id: string, change: (draft: Tournament) => Promise<void> | void): Promise<Tournament>;
+    /** Permanently remove a tournament and all its child data. */
+    delete(id: string): Promise<void>;
 }
 export interface ManagerIdentityRepository {
     findUsernames(userIds: string[]): Promise<Record<string, string>>;
@@ -43,8 +45,11 @@ export class MemoryManagerRepository implements ManagerTournamentRepository {
             return structuredClone(draft);
         });
     }
+    async delete(id: string): Promise<void> {
+        await this.lock.runExclusive(id, async () => { this.rooms.delete(id); });
+    }
 }
-/** Production fails explicitly until Kiro injects the real repository. */
+/** Safe default for app instances that do not inject a repository. */
 export class UnavailableManagerRepository implements ManagerTournamentRepository {
     private fail(): never { throw new DomainError('MANAGER_PERSISTENCE_UNAVAILABLE', 'Manager Mode persistence is not configured yet.', 503); }
     async find(_id: string): Promise<Tournament | null> { return this.fail(); }
@@ -55,4 +60,5 @@ export class UnavailableManagerRepository implements ManagerTournamentRepository
         created: boolean;
     }> { return this.fail(); }
     async mutate(_id: string, _change: (t: Tournament) => Promise<void> | void): Promise<Tournament> { return this.fail(); }
+    async delete(_id: string): Promise<void> { return this.fail(); }
 }

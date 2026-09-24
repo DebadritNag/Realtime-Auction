@@ -3,6 +3,7 @@ export type RoomStatus = 'LOBBY' | 'STARTING' | 'RUNNING' | 'PAUSED' | 'COMPLETE
 export type PlayerStatus = 'WAITING' | 'ACTIVE' | 'SOLD' | 'UNSOLD' | 'SKIPPED';
 export interface AuthContext { userId: string; username?: string; expiresAt?: number }
 export interface Player {
+  externalId?: string;
   club?: string; nationality?: string; age?: number; preferredFoot?: string; photoUrl?: string;
   subPosition?: string; secondaryPositions?: string; league?: string; ratingTier?: string;
   id: string; name: string; position: 'GK' | 'DEF' | 'MID' | 'FWD' | 'ATT'; ovr: number;

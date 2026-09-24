@@ -17,3 +17,6 @@ dist/
 
 # Python generator cache
 __pycache__/
+
+# Supabase CLI local cache
+supabase/.temp/

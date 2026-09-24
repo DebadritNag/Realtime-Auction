@@ -1,5 +1,8 @@
+import {describeOffer} from './negotiation/offer-reaction.js';
+import {SafeDialogueProvider,type NegotiationDialogueProvider} from './negotiation/dialogue.provider.js';
+import {ensureNegotiations,negotiationAction,publicNegotiations,synchronizeWindow} from './negotiation/negotiation.engine.js';
 import { assertRoom } from '../auction/squad.service.js';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { requireThat } from '../../domain/errors.js';
 import type { Room } from '../../domain/types.js';
 import type { ManagerTournamentRepository, ManagerIdentityRepository } from './manager.repository.js';
@@ -8,23 +11,25 @@ import { generateFixtures, standings } from './fixture.service.js';
 import { importExternalCsv } from './external-import.service.js';
 import { setupSchema, actionSchema, type ManagerAction } from './manager.schemas.js';
 export class ManagerModeService {
-    private listeners = new Set<(t: Tournament, event: string) => void>();
-    constructor(readonly repository: ManagerTournamentRepository, private auction: (id: string) => Promise<Room | null>, private identities?: ManagerIdentityRepository) { }
-    subscribe(fn: (t: Tournament, event: string) => void) { this.listeners.add(fn); return () => { this.listeners.delete(fn); }; }
-    private emit(t: Tournament, event: string) { for (const fn of this.listeners) {
+    private listeners = new Set<(t: Tournament, event: string, audience?: string[]) => void>();
+    constructor(readonly repository: ManagerTournamentRepository, private auction: (id: string) => Promise<Room | null>, private identities?: ManagerIdentityRepository, private prepareAuction?: (id:string,user:string)=>Promise<void>,private dialogue:NegotiationDialogueProvider=new SafeDialogueProvider()) { }
+    subscribe(fn: (t: Tournament, event: string, audience?: string[]) => void) { this.listeners.add(fn); return () => { this.listeners.delete(fn); }; }
+    private emit(t: Tournament, event: string, audience?: string[]) { for (const fn of this.listeners) {
         try {
-            fn(t, event);
+            fn(t, event, audience);
         }
         catch { /* delivery failure must not undo a committed transaction */ }
     } }
     private notify(t: Tournament, type: string, message: string, users = t.teams.map(x => x.managerUserId)) { for (const userId of users)
         t.notifications.push({ id: randomUUID(), userId, type, title: type.replaceAll('_', ' '), message, read: false, createdAt: Date.now(), metadata: { tournamentId: t.id } }); }
-    view(t: Tournament, userId: string): TournamentState { const team = t.teams.find(x => x.managerUserId === userId); requireThat(team, 'NOT_TOURNAMENT_MEMBER', 'You are not invited to this tournament.', 403); const { startingSnapshot, receipts, ...state } = structuredClone(t); return { ...state, notifications: state.notifications.filter(n => n.userId === userId), trades: state.trades.filter(x => x.fromTeamId === team.id || x.toTeamId === team.id || t.hostUserId === userId), standings: standings(t.teams, t.fixtures), myTeamId: team.id, isHost: t.hostUserId === userId }; }
+    view(t: Tournament, userId: string): TournamentState { const team = t.teams.find(x => x.managerUserId === userId); requireThat(team, 'NOT_TOURNAMENT_MEMBER', 'You are not invited to this tournament.', 403); const { startingSnapshot, receipts, negotiation, ...state } = structuredClone(t); return { ...state, negotiation:publicNegotiations(t,team.id), audit:state.audit.map(a=>({...a,detail:'',userId:a.userId===userId?userId:''})), notifications: state.notifications.filter(n => n.userId === userId), trades: state.trades.filter(x => x.fromTeamId === team.id || x.toTeamId === team.id || t.hostUserId === userId), standings: standings(t.teams, t.fixtures), myTeamId: team.id, isHost: t.hostUserId === userId }; }
     async state(id: string, user: string) { const t = await this.repository.find(id); requireThat(t, 'TOURNAMENT_NOT_FOUND', 'Tournament not found.', 404); return this.view(t, user); }
     async list(user: string) { return (await this.repository.listForUser(user)).map(t => { const team = t.teams.find(x => x.managerUserId === user)!; return { id: t.id, name: t.name, sourceAuctionId: t.sourceAuctionId, sourceAuctionCode: t.sourceAuctionCode, status: t.status, teamName: team.name, invitation: team.invitation, unread: t.notifications.filter(n => n.userId === user && !n.read).length, sequence: t.sequence }; }); }
-    async preview(id: string, user: string, csv = '') { const room = await this.auction(id); requireThat(room, 'ROOM_NOT_FOUND', 'Auction not found.', 404); requireThat(room.hostUserId === user, 'HOST_ONLY', 'Only the auction host may configure Manager Mode.', 403); requireThat(room.status === 'COMPLETED', 'AUCTION_NOT_COMPLETED', 'Complete the auction first.'); assertRoom(room); const usernames=await this.identities?.findUsernames(room.teams.map(t=>t.userId))??{}; return { room:{...room,teams:room.teams.map(t=>({...t,managerUsername:usernames[t.userId]??t.managerUsername}))}, existing: await this.repository.findByAuction(room.id), importReport: importExternalCsv(csv, room.players.map(p => p.id)) }; }
+    async preview(id: string, user: string, csv = '') { const room = await this.auction(id); requireThat(room, 'ROOM_NOT_FOUND', 'Auction not found.', 404); requireThat(room.hostUserId === user, 'HOST_ONLY', 'Only the auction host may configure Manager Mode.', 403); requireThat(room.status === 'COMPLETED', 'AUCTION_NOT_COMPLETED', 'Complete the auction first.'); assertRoom(room); const usernames=await this.identities?.findUsernames(room.teams.map(t=>t.userId))??{}; return { room:{...room,teams:room.teams.map(t=>({...t,managerUsername:usernames[t.userId]??t.managerUsername}))}, existing: await this.repository.findByAuction(room.id), importReport: importExternalCsv(csv, room.players.flatMap(p => [p.id,...(p.externalId?[p.externalId]:[])])) }; }
     async create(id: string, user: string, input: unknown) {
         const settings = setupSchema.parse(input);
+        await this.preview(id,user,settings.csv);
+        await this.prepareAuction?.(id,user);
         const { room, existing, importReport } = await this.preview(id, user, settings.csv);
         if (existing)
             return this.view(existing, user);
@@ -35,7 +40,8 @@ export class ManagerModeService {
         const players: ManagerPlayer[] = room.players.filter(p => p.status === 'SOLD' || p.status === 'UNSOLD').map(p => { const purchase = room.purchases.find(x => x.playerId === p.id); requireThat(p.status !== 'SOLD' || purchase, 'INVALID_AUCTION_SNAPSHOT', 'A sold player has no purchase record.'); return { id: p.id, name: p.name, overall: p.ovr, position: p.subPosition ?? p.position, category: p.position, secondaryPositions: p.secondaryPositions ?? '', club: p.club ?? '', nationality: p.nationality ?? '', imageUrl: p.photoUrl ?? '', ...(p.age !== undefined ? { age: p.age } : {}), stats: p.stats, tier: p.ratingTier ?? '', source: purchase ? 'AUCTION_SQUAD' : 'AUCTION_UNSOLD', currentTeamId: purchase?.teamId ?? null, ownershipStatus: purchase ? 'OWNED' : 'FREE_AGENT', availability: purchase ? 'SIGNED' : 'AVAILABLE', auctionPurchasePriceUnits: purchase?.priceUnits ?? null, acquisitionType: purchase ? 'AUCTION_PURCHASE' : null, acquisitionPriceUnits: purchase?.priceUnits ?? null, metadata: { potId: p.potId } }; });
         players.push(...importReport.players);
         const now = Date.now();
-        const t: Tournament = { id: randomUUID(), sourceAuctionId: room.id, sourceAuctionCode: room.code, sourceAuctionName: room.auctionName, name: settings.name, hostUserId: user, status: 'INVITING', format: settings.format, budgetMode: 'EQUAL', startingBudgetUnits: settings.startingBudgetUnits, createdAt: now, updatedAt: now, sequence: 1, transferWindowOpen: false, teams, players, fixtures: [], trades: [], transactions: room.purchases.map(p => ({ id: randomUUID(), playerId: p.playerId, fromTeamId: null, toTeamId: p.teamId, type: 'AUCTION_PURCHASE', amountUnits: p.priceUnits, tradeId: null, at: p.at })), notifications: [], audit: [], startingSnapshot: structuredClone({ teams, players, auctionSequence: room.sequence }), receipts: {} };
+        const t: Tournament = { id: randomUUID(), sourceAuctionId: room.id, sourceAuctionCode: room.code, sourceAuctionName: room.auctionName, name: settings.name, hostUserId: user, status: 'INVITING', format: settings.format, budgetMode: 'EQUAL', startingBudgetUnits: settings.startingBudgetUnits, createdAt: now, updatedAt: now, sequence: 1, transferWindowOpen: false, teams, players, fixtures: [], trades: [], transactions: room.purchases.map(p => ({ id: randomUUID(), playerId: p.playerId, fromTeamId: null, toTeamId: p.teamId, type: 'AUCTION_PURCHASE', amountUnits: p.priceUnits, tradeId: null, at: p.at })), notifications: [], audit: [], startingSnapshot: structuredClone({ teams, players, auctionSequence: room.sequence, importReport }), receipts: {} };
+        ensureNegotiations(t);
         this.notify(t, 'INVITATION', 'Your auction team has been invited to ' + t.name);
         const result = await this.repository.createUnique(t);
         if (result.created)
@@ -45,11 +51,11 @@ export class ManagerModeService {
     async mutate(id: string, user: string, requestId: string, action: ManagerAction) {
         action = actionSchema.parse(action);
         let changed = false;
-        const result = await this.repository.mutate(id, async (t) => {
+        let result = await this.repository.mutate(id, async (t) => {
             const team = t.teams.find(x => x.managerUserId === user);
             requireThat(team, 'NOT_TOURNAMENT_MEMBER', 'Tournament membership required.', 403);
             const key = user + ':' + requestId;
-            const fingerprint = JSON.stringify(action);
+            const fingerprint = createHash('sha256').update(JSON.stringify(action)).digest('hex');
             if (t.receipts[key]) {
                 requireThat(t.receipts[key].fingerprint === fingerprint, 'REQUEST_ID_REUSED', 'Request ID was already used for another action.', 409);
                 return;
@@ -60,6 +66,7 @@ export class ManagerModeService {
             if (action.type !== 'INVITATION' && action.type !== 'READ_NOTIFICATION')
                 requireThat(team.invitation === 'JOINED', 'INVITATION_NOT_ACCEPTED', 'Accept your invitation first.', 403);
             switch (action.type) {
+ case 'START_NEGOTIATION':case 'OFFER_FREE_AGENT':case 'END_NEGOTIATION':case 'CONFIRM_SIGNING':case 'TRANSFER_RULES':negotiationAction(t,user,action);break;
                 case 'INVITATION':
                     requireThat(t.status === 'INVITING', 'INVITATIONS_CLOSED', 'Invitations are closed.');
                     requireThat(user !== t.hostUserId || action.accept, 'HOST_REQUIRED', 'The host cannot decline.');
@@ -166,16 +173,50 @@ export class ManagerModeService {
                     this.notify(t, 'INVITATION', 'Please respond to your tournament invitation.', t.teams.filter(x => x.invitation === 'PENDING').map(x => x.managerUserId));
                     break;
             }
+            synchronizeWindow(t);
             t.receipts[key] = { fingerprint };
             t.sequence++;
             t.updatedAt = Date.now();
             t.audit.push({ id: randomUUID(), type: action.type, userId: user, at: t.updatedAt, detail: JSON.stringify(action) });
-            if (!['READ_NOTIFICATION', 'ANNOUNCE', 'RESEND_INVITATIONS', 'INVITATION'].includes(action.type))
+            if (['START_NEGOTIATION','OFFER_FREE_AGENT','END_NEGOTIATION'].includes(action.type)) this.notify(t,action.type,'Your negotiation has been updated.',[user]);
+            else if(action.type==='CONFIRM_SIGNING'){const session=t.negotiation!.sessions.find(s=>s.id===action.sessionId)!;this.notify(t,'PLAYER_TRANSFERRED',t.players.find(p=>p.id===session.playerId)!.name+' has signed for '+team.name+'.');}
+            else if (!['READ_NOTIFICATION', 'ANNOUNCE', 'RESEND_INVITATIONS', 'INVITATION'].includes(action.type))
                 this.notify(t, action.type, 'Tournament updated: ' + action.type.replaceAll('_', ' ').toLowerCase());
             changed = true;
         });
-        if (changed)
-            this.emit(result, 'MANAGER_MODE_UPDATED');
+        if(changed&&action.type==='OFFER_FREE_AGENT'){
+ this.emit(result,'MANAGER_MODE_UPDATED'); // Decision is committed and visible before any external dialogue request.
+ const session=result.negotiation!.sessions.find(s=>s.id===action.sessionId)!;
+ const message=result.negotiation!.messages.filter(m=>m.sessionId===session.id&&m.sender==='PLAYER').at(-1)!;
+ const player=result.players.find(p=>p.id===session.playerId)!;
+ const publicSession=publicNegotiations(result,session.teamId).sessions.find(s=>s.id===session.id)!;
+ const reply=await new SafeDialogueProvider(this.dialogue).generateResponse({reaction:describeOffer(result,session),player:{name:player.name,position:player.position,overall:player.overall},personality:result.negotiation!.profiles.find(p=>p.playerId===player.id)!.archetype,emotion:message.emotion!,decision:message.decision!,counterUnits:session.lastCounterUnits,offerUnits:session.lastOfferUnits,club:{name:result.teams.find(t=>t.id===session.teamId)!.name},competition:publicSession.competition,fallback:message.message});
+ if(reply.message!==message.message){try{result=await this.repository.mutate(id,draft=>{const target=draft.negotiation?.messages.find(m=>m.id===message.id);if(!target)return;target.message=reply.message;target.provider=reply.provider??'LLM';draft.sequence++;draft.updatedAt=Date.now();draft.audit.push({id:randomUUID(),type:'DIALOGUE_GENERATED',userId:user,at:Date.now(),detail:JSON.stringify({type:'DIALOGUE_GENERATED'})});});}catch{/* The committed deterministic template remains available. */}}
+ }
+ if (changed) {
+ this.emit(result,'MANAGER_MODE_UPDATED');
+ if(action.type==='START_NEGOTIATION')this.emit(result,'NEGOTIATION_STARTED',[user]);
+ if(action.type==='OFFER_FREE_AGENT'||action.type==='END_NEGOTIATION')this.emit(result,'NEGOTIATION_UPDATED',[user]);
+ if(action.type==='OFFER_FREE_AGENT'){this.emit(result,'FREE_AGENT_OFFER_UPDATED',[user]);if(result.negotiation!.sessions.find(s=>s.id===action.sessionId)?.status==='ACCEPTED')this.emit(result,'FREE_AGENT_ACCEPTED',[user]);}
+ if(action.type==='CONFIRM_SIGNING'){this.emit(result,'FREE_AGENT_SIGNED');this.emit(result,'PLAYER_TRANSFERRED');const signed=result.negotiation!.sessions.find(s=>s.id===action.sessionId)!;this.emit(result,'FREE_AGENT_SIGNED_ELSEWHERE',result.negotiation!.sessions.filter(s=>s.playerId===signed.playerId&&s.id!==signed.id&&s.status==='CLOSED_LOST_PLAYER').map(s=>s.managerUserId));}
+ if(action.type==='WINDOW')this.emit(result,action.open?'TRANSFER_WINDOW_OPENED':'TRANSFER_WINDOW_CLOSED');
+ if(action.type==='TRADE'||action.type==='TRADE_RESPONSE'){const trade=action.type==='TRADE'?result.trades.at(-1):result.trades.find(t=>t.id===action.tradeId);const audience=result.teams.filter(t=>t.id===trade?.fromTeamId||t.id===trade?.toTeamId).map(t=>t.managerUserId);this.emit(result,action.type==='TRADE'?'TRADE_CREATED':'TRADE_UPDATED',audience);if(trade?.status==='ACCEPTED')this.emit(result,'PLAYER_TRANSFERRED');}
+ }
         return this.view(result, user);
+    }
+
+    async delete(id: string, user: string): Promise<void> {
+        const t = await this.repository.find(id);
+        requireThat(t, 'TOURNAMENT_NOT_FOUND', 'Tournament not found.', 404);
+        requireThat(t.hostUserId === user, 'HOST_ONLY', 'Only the tournament host may delete this Manager Mode.', 403);
+        // Log intent before deletion (the tournament row itself will be gone after)
+        const hostUserId = t.hostUserId;
+        const tournamentName = t.name;
+        const teams = t.teams.map(x => x.managerUserId);
+        await this.repository.delete(id);
+        // Emit deletion event; emit with the original team data so hub can notify all members
+        const tombstone = { ...t, status: 'ARCHIVED' as const };
+        this.emit(tombstone, 'MANAGER_MODE_DELETED', teams);
+        void hostUserId; void tournamentName;
     }
 }

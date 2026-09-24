@@ -138,6 +138,21 @@ export const AppHeader: React.FC = () => {
               </svg>
               <span>Leaderboard</span>
             </Link>
+
+            <Link
+              href="/manager-mode"
+              className={cn(
+                "flex items-center space-x-2 px-3.5 py-1.5 rounded-full transition-colors",
+                pathname?.startsWith("/manager-mode")
+                  ? "text-brand-mint bg-brand-mint/10 border border-brand-mint/70 px-4"
+                  : "text-[#8CA0B3] hover:text-white"
+              )}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>Manager Mode</span>
+            </Link>
           </nav>
         )}
 
@@ -254,6 +269,7 @@ export const AppHeader: React.FC = () => {
           <Link href="/create" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-[#A1B3C6] hover:text-white">Create Room</Link>
           <Link href="/join" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-[#A1B3C6] hover:text-white">Join Room</Link>
           <Link href="/results/PREM-2026" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-[#A1B3C6] hover:text-white">Leaderboard</Link>
+          <Link href="/manager-mode" onClick={() => setMobileMenuOpen(false)} className={cn("block py-1.5 text-sm", pathname?.startsWith("/manager-mode") ? "text-brand-mint font-semibold" : "text-[#A1B3C6] hover:text-white")}>Manager Mode</Link>
           <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-[#A1B3C6] hover:text-white">Profile</Link>
           <button onClick={handleSignOut} className="block py-1.5 text-sm text-[#ef4444] text-left w-full">Sign Out</button>
         </div>

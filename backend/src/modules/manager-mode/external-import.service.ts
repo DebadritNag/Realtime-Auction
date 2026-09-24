@@ -32,7 +32,7 @@ export function importExternalCsv(csv: string, excludedIds: string[]): ImportRep
             if (!r[k])
                 continue;
             const v = Number(r[k]);
-            if (!Number.isFinite(v) || v < 0 || v > 100) {
+            if (!Number.isInteger(v) || v < 0 || v > 99) {
                 report.invalidRows.push({ row: i + 2, reason: 'Invalid ' + k });
                 return;
             }
@@ -47,5 +47,7 @@ export function importExternalCsv(csv: string, excludedIds: string[]): ImportRep
         report.players.push({ ...p, category: group(p.position), secondaryPositions: (r.secondary_positions || '').slice(0, 100), club: (r.club || '').slice(0, 100), nationality: (r.nationality || r.nation || '').slice(0, 100), imageUrl: image, age, stats, tier: r.rating_tier || '', source: 'EXTERNAL_POOL', currentTeamId: null, ownershipStatus: 'FREE_AGENT', availability: 'AVAILABLE', auctionPurchasePriceUnits: null, acquisitionType: null, acquisitionPriceUnits: null, metadata: {} } satisfies ManagerPlayer);
     });
     report.validPlayers = report.players.length;
+    const used=new Set(excludedIds);
+    report.auditRows=rows.map((r,i)=>{const id=r.player_id||r.sofifa_id||r.ea_id||null;const invalid=report.invalidRows.find(x=>x.row===i+2);const duplicate=id!==null&&used.has(id);if(id&&!invalid)used.add(id);return {row:i+2,externalId:id,name:r.name||r.short_name||null,status:invalid?'INVALID' as const:duplicate?'DUPLICATE' as const:'VALID' as const,reason:invalid?.reason??null};});
     return report;
 }

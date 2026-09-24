@@ -1,3 +1,4 @@
+import type {NegotiationDialogueProvider} from './modules/manager-mode/negotiation/dialogue.provider.js';
 import { ManagerModeService } from './modules/manager-mode/manager.service.js';
 import { registerManagerRoutes } from './modules/manager-mode/manager.routes.js';
 import { UnavailableManagerRepository, type ManagerTournamentRepository, type ManagerIdentityRepository } from './modules/manager-mode/manager.repository.js';
@@ -22,6 +23,8 @@ import { RealtimeHub } from './realtime/hub.js';
 import { registerRoomRoutes } from './modules/rooms/room.routes.js';
 
 export interface AppOptions {
+  negotiationDialogue?: NegotiationDialogueProvider;
+  managerAuctionSource?: (id:string)=>Promise<import('./domain/types.js').Room|null>; managerPrepareAuction?: (id:string,user:string)=>Promise<void>;
   managerRepository?: ManagerTournamentRepository; managerIdentities?: ManagerIdentityRepository;
   database?: Sql; authService: AuthService; repository?: RoomRepository; playerRepository?: PlayerRepository;
   recommendationService?: AuctionRecommendationService; origins?: string[];
@@ -42,7 +45,7 @@ export async function buildApp(options: AppOptions) {
   await app.register(websocket, { options: { maxPayload: 16 * 1024, perMessageDeflate: false } });
   const clock = options.clock ?? systemClock;
   const auctionRepository = options.repository ?? new MemoryRoomRepository();
-  const managerMode = new ManagerModeService(options.managerRepository ?? new UnavailableManagerRepository(), async id => (await auctionRepository.listRecoverable()).find(r => r.id === id) ?? null, options.managerIdentities);
+  const managerMode = new ManagerModeService(options.managerRepository ?? new UnavailableManagerRepository(), options.managerAuctionSource ?? (async id => (await auctionRepository.listRecoverable()).find(r => r.id === id) ?? null), options.managerIdentities, options.managerPrepareAuction, options.negotiationDialogue);
   const manager = new RoomManager(auctionRepository,
     options.playerRepository ?? await CatalogPlayerRepository.fromDefaultPool(), clock);
   const engine = new AuctionEngine(manager);

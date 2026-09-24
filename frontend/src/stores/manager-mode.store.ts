@@ -10,11 +10,14 @@ interface ManagerStore {
     error: string | null;
     busy: boolean;
     inboxLoading: boolean;
+    deletedTournamentId: string | null;
     start: (id?: string) => () => void;
     action: (a: ManagerAction) => Promise<void>;
     refreshInbox: () => Promise<void>;
+    deleteManagerMode: (id: string) => Promise<void>;
+    clearDeleted: () => void;
 }
-export const useManagerStore = create<ManagerStore>((set, get) => ({ state: null, inbox: [], error: null, busy: false, inboxLoading: true,
+export const useManagerStore = create<ManagerStore>((set, get) => ({ state: null, inbox: [], error: null, busy: false, inboxLoading: true, deletedTournamentId: null,
     async refreshInbox() { const g = generation; set({ inboxLoading: true }); try {
         const inbox = await managerService.list();
         if (g === generation)
@@ -28,16 +31,26 @@ export const useManagerStore = create<ManagerStore>((set, get) => ({ state: null
         if (g === generation)
             set({ inboxLoading: false });
     } },
-    start(id) { release?.(); const g = ++generation; set({ state: null, error: null }); release = webSocketService.subscribe(e => { if (g !== generation)
-        return; if (e.type === 'MANAGER_MODE_STATE' && e.payload.id === id) {
-        const current = get().state;
-        if (!current || e.sequence >= current.sequence)
-            set({ state: e.payload, error: null });
-    } if (e.type === 'MANAGER_MODE_INBOX')
-        set({ inbox: e.payload }); if (e.type === 'MANAGER_MODE_CREATED' || e.type === 'MANAGER_MODE_UPDATED')
-        void get().refreshInbox(); if (e.type === 'ERROR')
-        set({ error: e.payload.message }); }); webSocketService.connectManager(id); void get().refreshInbox(); return () => { if (g !== generation)
-        return; generation++; release?.(); release = undefined; webSocketService.disconnect(); set({ state: null, inbox: [], error: null }); }; },
+    start(id) { release?.(); const g = ++generation; set({ state: null, error: null, deletedTournamentId: null }); release = webSocketService.subscribe(e => { if (g !== generation)
+        return;
+        if (e.type === 'MANAGER_MODE_STATE' && e.payload.id === id) {
+            const current = get().state;
+            if (!current || e.sequence >= current.sequence)
+                set({ state: e.payload, error: null });
+        }
+        if (e.type === 'MANAGER_MODE_INBOX')
+            set({ inbox: e.payload });
+        if (e.type === 'MANAGER_MODE_CREATED' || e.type === 'MANAGER_MODE_UPDATED')
+            void get().refreshInbox();
+        if (e.type === 'MANAGER_MODE_DELETED') {
+            const tid = (e.payload as { tournamentId: string }).tournamentId;
+            set({ state: null, inbox: get().inbox.filter(t => t.id !== tid), deletedTournamentId: tid, error: null });
+            void get().refreshInbox();
+        }
+        if (e.type === 'ERROR')
+            set({ error: e.payload.message });
+    }); webSocketService.connectManager(id); void get().refreshInbox(); return () => { if (g !== generation)
+        return; generation++; release?.(); release = undefined; webSocketService.disconnect(); set({ state: null, inbox: [], error: null, deletedTournamentId: null }); }; },
     async action(a) { const state = get().state; if (!state)
         return; set({ busy: true, error: null }); try {
         const updated = await managerService.action(state.id, a);
@@ -49,5 +62,21 @@ export const useManagerStore = create<ManagerStore>((set, get) => ({ state: null
     }
     finally {
         set({ busy: false });
-    } }
+    } },
+    async deleteManagerMode(id) {
+        set({ busy: true, error: null });
+        try {
+            await managerService.delete(id);
+            // Optimistically clear state; the WS MANAGER_MODE_DELETED event will
+            // also arrive and set deletedTournamentId for the redirect handler.
+            set({ state: null, deletedTournamentId: id });
+            void get().refreshInbox();
+        } catch (e) {
+            set({ error: e instanceof Error ? e.message : 'Deletion failed.' });
+            throw e;
+        } finally {
+            set({ busy: false });
+        }
+    },
+    clearDeleted() { set({ deletedTournamentId: null }); },
 }));

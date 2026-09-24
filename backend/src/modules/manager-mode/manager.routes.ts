@@ -8,6 +8,8 @@ export function registerManagerRoutes(app: FastifyInstance, service: ManagerMode
     app.get('/api/manager-mode/from-auction/:id', async (req) => { const { room, existing, importReport } = await service.preview(params.parse(req.params).id, req.auth.userId); return { auctionId: room.id, name: room.auctionName, teams: room.teams, players: room.players, purchases: room.purchases, existingId: existing?.id ?? null, importReport }; });
     app.post('/api/manager-mode/from-auction/:id/preview', { bodyLimit: 2100000 }, async (req) => { const body = z.object({ csv: z.string().max(2000000) }).strict().parse(req.body); return (await service.preview(params.parse(req.params).id, req.auth.userId, body.csv)).importReport; });
     app.post('/api/manager-mode/from-auction/:id', { bodyLimit: 2100000 }, async (req) => service.create(params.parse(req.params).id, req.auth.userId, req.body));
+    app.post('/api/manager-mode/:id/join',async req=>{const body=z.object({requestId:z.string().uuid()}).strict().parse(req.body);return service.mutate(params.parse(req.params).id,req.auth.userId,body.requestId,{type:'INVITATION',accept:true});});
     app.get('/api/manager-mode/:id', async (req) => service.state(params.parse(req.params).id, req.auth.userId));
     app.post('/api/manager-mode/:id/actions', async (req) => { const body = mutationSchema.parse(req.body); return service.mutate(params.parse(req.params).id, req.auth.userId, body.requestId, body.action); });
+    app.delete('/api/manager-mode/:id', async (req, reply) => { await service.delete(params.parse(req.params).id, req.auth.userId); reply.code(204).send(); });
 }

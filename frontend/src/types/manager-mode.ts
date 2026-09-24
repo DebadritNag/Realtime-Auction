@@ -1,3 +1,4 @@
+import type {NegotiationData,NegotiationView} from './manager-negotiation';
 export type TournamentStatus = 'INVITING' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED';
 export type PlayerSource = 'AUCTION_SQUAD' | 'AUCTION_UNSOLD' | 'EXTERNAL_POOL';
 export interface ManagerPlayer {
@@ -99,6 +100,7 @@ export interface ManagerAudit {
     detail: string;
 }
 export interface Tournament {
+    negotiation?: NegotiationData;
     id: string;
     sourceAuctionId: string;
     sourceAuctionCode: string;
@@ -124,12 +126,14 @@ export interface Tournament {
         teams: ManagerTeam[];
         players: ManagerPlayer[];
         auctionSequence: number;
+        importReport?: ImportReport;
     };
     receipts: Record<string, {
         fingerprint: string;
     }>;
 }
-export type TournamentState = Omit<Tournament, 'startingSnapshot' | 'receipts'> & {
+export type TournamentState = Omit<Tournament, 'startingSnapshot' | 'receipts' | 'negotiation'> & {
+    negotiation: NegotiationView;
     standings: Standing[];
     myTeamId: string;
     isHost: boolean;
@@ -146,6 +150,7 @@ export interface TournamentSummary {
     sequence: number;
 }
 export interface ImportReport {
+    auditRows?: {row:number;externalId:string|null;name:string|null;status:"VALID"|"INVALID"|"DUPLICATE";reason:string|null}[];
     rowsDetected: number;
     validPlayers: number;
     duplicates: number;
@@ -155,7 +160,7 @@ export interface ImportReport {
     }[];
     players: ManagerPlayer[];
 }
-/** Reserved for the later negotiation phase. No signing or AI behavior is enabled. */
+/** Negotiation service boundary. Implemented by ManagerModeService actions. */
 export interface FreeAgentNegotiationService {
     start(tournamentId: string, userId: string, playerId: string): Promise<{
         sessionId: string;

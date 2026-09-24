@@ -1,0 +1,8 @@
+import {GroqNegotiationDialogueProvider,SafeDialogueProvider} from '../src/modules/manager-mode/negotiation/dialogue.provider.js';
+if(!process.env.GROQ_API_KEY)throw Error('GROQ_API_KEY is not configured');
+if(process.argv.includes('--list-models')){const response=await fetch('https://api.groq.com/openai/v1/models',{headers:{Authorization:'Bearer '+process.env.GROQ_API_KEY},signal:AbortSignal.timeout(5000)});const body=await response.json() as {data?:{id:string}[]};console.log(JSON.stringify({status:response.status,models:body.data?.map(m=>m.id)}));process.exit(response.ok?0:1);}
+const log:unknown[]=[];let failure:string|undefined;const groq=new GroqNegotiationDialogueProvider(process.env.GROQ_API_KEY,process.env.GROQ_MODEL);
+const provider=new SafeDialogueProvider({async generateResponse(context){try{return await groq.generateResponse(context);}catch(error){failure=error instanceof Error&&/^Dialogue provider HTTP [0-9]+$/.test(error.message)?error.message:"Output validation or transport failure";throw error;}}},{provider:'groq',model:process.env.GROQ_MODEL??'openai/gpt-oss-20b',log:entry=>log.push(entry)});
+const result=await provider.generateResponse({player:{name:'Test Player',position:'CM',overall:82},personality:'AMBITIOUS',emotion:'INTERESTED',decision:'COUNTER',offerUnits:32,counterUnits:38,club:{name:'Test Club'},competition:{count:0},fallback:'I would need ₹19 Cr.',reaction:{previousOfferUnits:24,offerBehavior:'STRONG_IMPROVEMENT',offerQuality:'BELOW_PREFERRED',lowballCount:0,consecutiveImprovementCount:1,playingTime:'HIGH',clubStrength:'STRONG'}});
+console.log(JSON.stringify({telemetry:log,failure,provider:result.provider,decision:result.decisionAcknowledged,message:result.message}));
+if(result.provider!=='LLM')process.exitCode=1;

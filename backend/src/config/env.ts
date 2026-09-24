@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
 const envSchema = z.object({
+  NEGOTIATION_DIALOGUE_PROVIDER:z.enum(['template','groq','custom']).default('template'),
+  GROQ_API_KEY:z.string().optional(),
+  GROQ_MODEL:z.string().regex(/^[a-zA-Z0-9_./:-]{1,120}$/).default('openai/gpt-oss-20b'),
+  NEGOTIATION_DIALOGUE_URL:z.string().url().optional(),
+  NEGOTIATION_DIALOGUE_API_KEY:z.string().optional(),
   // ---- Server
   PORT:             z.coerce.number().int().min(1).max(65535).default(4000),
   HOST:             z.string().default('0.0.0.0'),       // 0.0.0.0 required for Render/Railway
@@ -8,7 +13,7 @@ const envSchema = z.object({
   FRONTEND_ORIGIN:  z.string().default('http://localhost:3000'),
   LOG_LEVEL:        z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal', 'silent']).default('info'),
 
-  // ---- Storage (memory or file only — no postgres adapter)
+  // ---- Live auction storage; Manager Mode uses DATABASE_URL.
   STORAGE:  z.enum(['memory', 'file']).default('file'),
   DATA_DIR: z.string().default('./data'),
 
@@ -42,6 +47,7 @@ export function readEnvironment(input: NodeJS.ProcessEnv = process.env) {
   if (env.NODE_ENV === 'production' && !env.DATABASE_URL)
     throw new Error('DATABASE_URL is required in production.');
 
+  if(env.NODE_ENV==='production'&&env.NEGOTIATION_DIALOGUE_URL&&!env.NEGOTIATION_DIALOGUE_URL.startsWith('https://')) throw new Error('Production dialogue endpoint requires HTTPS.');
   const origins = env.FRONTEND_ORIGIN.split(',')
     .map((v) => v.trim().replace(/\/+$/, '')); // strip accidental trailing slashes
   for (const origin of origins)
