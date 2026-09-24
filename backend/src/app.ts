@@ -1,3 +1,6 @@
+import { ManagerModeService } from './modules/manager-mode/manager.service.js';
+import { registerManagerRoutes } from './modules/manager-mode/manager.routes.js';
+import { UnavailableManagerRepository, type ManagerTournamentRepository, type ManagerIdentityRepository } from './modules/manager-mode/manager.repository.js';
 import Fastify from 'fastify';
 import { registerPlayerRoutes } from './modules/players/player.routes.js';
 import type { Sql } from 'postgres';
@@ -19,6 +22,7 @@ import { RealtimeHub } from './realtime/hub.js';
 import { registerRoomRoutes } from './modules/rooms/room.routes.js';
 
 export interface AppOptions {
+  managerRepository?: ManagerTournamentRepository; managerIdentities?: ManagerIdentityRepository;
   database?: Sql; authService: AuthService; repository?: RoomRepository; playerRepository?: PlayerRepository;
   recommendationService?: AuctionRecommendationService; origins?: string[];
   clock?: Clock; timersEnabled?: boolean; logger?: boolean; logLevel?: string;
@@ -37,7 +41,9 @@ export async function buildApp(options: AppOptions) {
   await app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
   await app.register(websocket, { options: { maxPayload: 16 * 1024, perMessageDeflate: false } });
   const clock = options.clock ?? systemClock;
-  const manager = new RoomManager(options.repository ?? new MemoryRoomRepository(),
+  const auctionRepository = options.repository ?? new MemoryRoomRepository();
+  const managerMode = new ManagerModeService(options.managerRepository ?? new UnavailableManagerRepository(), async id => (await auctionRepository.listRecoverable()).find(r => r.id === id) ?? null, options.managerIdentities);
+  const manager = new RoomManager(auctionRepository,
     options.playerRepository ?? await CatalogPlayerRepository.fromDefaultPool(), clock);
   const engine = new AuctionEngine(manager);
   const timers = new TimerService(clock, (code, id) => engine.onTimer(code, id),
@@ -46,7 +52,7 @@ export async function buildApp(options: AppOptions) {
     if (options.timersEnabled !== false) timers.schedule(room);
     app.log.info({ roomId: room.id, sequence: room.sequence, status: room.status, eventTypes: events.map(e => e.type) }, 'Room committed');
   });
-  const hub = new RealtimeHub(manager, engine, app.log);
+  const hub = new RealtimeHub(manager, engine, app.log, managerMode);
   const recovered = await manager.recover();
   if (options.timersEnabled !== false) for (const room of recovered) timers.schedule(room);
   app.decorateRequest('auth');
@@ -77,10 +83,11 @@ export async function buildApp(options: AppOptions) {
       message: status < 500 ? 'Request rejected.' : 'Unable to process request.' }, requestId: request.id });
   });
   app.get('/api/health', async () => ({ status: 'ok', serverTime: clock.now() }));
+  registerManagerRoutes(app, managerMode);
   registerProfileRoutes(app, manager, options.database);
   registerPlayerRoutes(app, manager.players);
   registerRoomRoutes(app, manager, options.recommendationService ?? new DeterministicRecommendationService(), hub);
   app.get('/ws', { websocket: true }, (socket, request) => hub.attach(socket, request.auth));
   app.addHook('onClose', async () => { hub.close(); timers.close(); unsubscribe(); });
-  return { app, manager, engine, timers, hub };
+  return { app, managerMode, manager, engine, timers, hub };
 }

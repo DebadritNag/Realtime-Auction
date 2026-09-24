@@ -1,5 +1,6 @@
 "use client";
 
+import {ResultManagerAction} from '@/components/manager-mode/ManagerSetup';
 import React, { useEffect, useState, use } from "react";
 import { auctionService } from "@/services/auction.service";
 import { AuctionAnalytics, Team } from "@/types";
@@ -67,6 +68,7 @@ export default function ResultsPage({
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
       {/* Top Banner and Summary */}
       <ResultSummary analytics={analytics} teams={teams} />
+      <ResultManagerAction code={roomCode}/>
 
       {/* Navigation Tabs */}
       <div className="flex items-center justify-between border-b border-[#242c3d] pb-3 overflow-x-auto">

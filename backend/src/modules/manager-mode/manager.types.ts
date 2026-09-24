@@ -1,0 +1,163 @@
+export type TournamentStatus = 'INVITING' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED';
+export type PlayerSource = 'AUCTION_SQUAD' | 'AUCTION_UNSOLD' | 'EXTERNAL_POOL';
+export interface ManagerPlayer {
+    id: string;
+    name: string;
+    overall: number;
+    position: string;
+    category: string;
+    secondaryPositions: string;
+    club: string;
+    nationality: string;
+    imageUrl: string;
+    age?: number;
+    stats: Record<string, number>;
+    tier: string;
+    source: PlayerSource;
+    currentTeamId: string | null;
+    ownershipStatus: 'OWNED' | 'FREE_AGENT';
+    availability: 'AVAILABLE' | 'NEGOTIATING' | 'SIGNED';
+    auctionPurchasePriceUnits: number | null;
+    acquisitionType: 'AUCTION_PURCHASE' | 'FREE_AGENT_SIGNING' | 'TRADE' | null;
+    acquisitionPriceUnits: number | null;
+    metadata: Record<string, unknown>;
+}
+export interface ManagerTeam {
+    id: string;
+    sourceAuctionTeamId: string;
+    name: string;
+    logoUrl: string;
+    logoEmoji: string;
+    managerUserId: string;
+    managerUsername: string | null;
+    invitation: 'PENDING' | 'JOINED' | 'DECLINED';
+    auctionBudgetUnits: number;
+    auctionSpentUnits: number;
+    auctionRemainingUnits: number;
+    transferBudgetUnits: number;
+}
+export interface Fixture {
+    id: string;
+    matchday: number;
+    homeTeamId: string;
+    awayTeamId: string;
+    homeScore: number | null;
+    awayScore: number | null;
+    status: 'SCHEDULED' | 'COMPLETED' | 'POSTPONED' | 'CANCELLED';
+    scheduledAt: number | null;
+    completedAt: number | null;
+}
+export interface Standing {
+    teamId: string;
+    position: number;
+    played: number;
+    won: number;
+    drawn: number;
+    lost: number;
+    gf: number;
+    ga: number;
+    gd: number;
+    points: number;
+}
+export interface Trade {
+    id: string;
+    fromTeamId: string;
+    toTeamId: string;
+    offeredPlayerId: string;
+    requestedPlayerId: string;
+    status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'COUNTERED' | 'CANCELLED' | 'EXPIRED';
+    parentTradeId: string | null;
+    createdBy: string;
+    createdAt: number;
+    updatedAt: number;
+}
+export interface TransferTransaction {
+    id: string;
+    playerId: string;
+    fromTeamId: string | null;
+    toTeamId: string;
+    type: 'AUCTION_PURCHASE' | 'TRADE' | 'FREE_AGENT_SIGNING';
+    amountUnits: number;
+    tradeId: string | null;
+    at: number;
+}
+export interface ManagerNotification {
+    id: string;
+    userId: string;
+    type: string;
+    title: string;
+    message: string;
+    read: boolean;
+    createdAt: number;
+    metadata: Record<string, string>;
+}
+export interface ManagerAudit {
+    id: string;
+    type: string;
+    userId: string;
+    at: number;
+    detail: string;
+}
+export interface Tournament {
+    id: string;
+    sourceAuctionId: string;
+    sourceAuctionCode: string;
+    sourceAuctionName: string;
+    name: string;
+    hostUserId: string;
+    status: TournamentStatus;
+    format: 'SINGLE_ROUND_ROBIN' | 'DOUBLE_ROUND_ROBIN';
+    budgetMode: 'EQUAL' | 'CARRY_OVER';
+    startingBudgetUnits: number;
+    createdAt: number;
+    updatedAt: number;
+    sequence: number;
+    transferWindowOpen: boolean;
+    teams: ManagerTeam[];
+    players: ManagerPlayer[];
+    fixtures: Fixture[];
+    trades: Trade[];
+    transactions: TransferTransaction[];
+    notifications: ManagerNotification[];
+    audit: ManagerAudit[];
+    startingSnapshot: {
+        teams: ManagerTeam[];
+        players: ManagerPlayer[];
+        auctionSequence: number;
+    };
+    receipts: Record<string, {
+        fingerprint: string;
+    }>;
+}
+export type TournamentState = Omit<Tournament, 'startingSnapshot' | 'receipts'> & {
+    standings: Standing[];
+    myTeamId: string;
+    isHost: boolean;
+};
+export interface TournamentSummary {
+    id: string;
+    name: string;
+    sourceAuctionId: string;
+    sourceAuctionCode: string;
+    status: TournamentStatus;
+    teamName: string;
+    invitation: ManagerTeam['invitation'];
+    unread: number;
+    sequence: number;
+}
+export interface ImportReport {
+    rowsDetected: number;
+    validPlayers: number;
+    duplicates: number;
+    invalidRows: {
+        row: number;
+        reason: string;
+    }[];
+    players: ManagerPlayer[];
+}
+/** Reserved for the later negotiation phase. No signing or AI behavior is enabled. */
+export interface FreeAgentNegotiationService {
+    start(tournamentId: string, userId: string, playerId: string): Promise<{
+        sessionId: string;
+    }>;
+}

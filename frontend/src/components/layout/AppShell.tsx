@@ -1,4 +1,6 @@
 "use client";
+import { useManagerStore } from '@/stores/manager-mode.store';
+import Link from 'next/link';
 import React, { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth.store";
@@ -7,7 +9,7 @@ import { AppHeader } from "./AppHeader";
 import { Footer } from "./Footer";
 import { MobileNav } from "./MobileNav";
 
-const PROTECTED = /^\/(home|create|join|room|auction|results|team|profile)(\/|$)/;
+const PROTECTED = /^\/(home|create|join|room|auction|results|team|profile|manager-mode)(\/|$)/;
 const AUTH_PAGES = /^\/auth\//;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -47,12 +49,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => useAuctionStore.getState().leaveAuction();
   }, [roomCode, isAuthenticated, isRestoring, user?.id]);
 
+  const managerId=pathname.startsWith('/manager-mode/') ? pathname.split('/')[2] : undefined;
+  useEffect(()=>{
+    if(roomCode||!isAuthenticated||isRestoring)return;
+    return useManagerStore.getState().start(managerId==='create'?undefined:managerId);
+  },[roomCode,managerId,isAuthenticated,isRestoring,user?.id]);
+  const invitations=useManagerStore(s=>s.inbox.filter(t=>t.invitation==='PENDING').length);
   // Show placeholder while session is restoring on a protected route
   const showLoader = isProtected && (isRestoring || !isAuthenticated);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#08090d] text-[#f8fafc]">
       <AppHeader />
+      {isAuthenticated&&!roomCode&&<Link href="/manager-mode" className="px-6 py-2 text-sm text-emerald-300 border-b border-slate-800">Manager Mode{invitations ? ` · ${invitations} invitation(s)` : ""}</Link>}
       <main className={pathname.startsWith("/auction/") ? "flex-1" : "flex-1 pb-16 md:pb-0"}>
         {showLoader ? (
           <div className="p-12 text-center text-sm text-[#94a3b8]">

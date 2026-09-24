@@ -29,7 +29,7 @@ export function registerRoomRoutes(app: FastifyInstance, manager: RoomManager, r
   });
   app.post('/api/rooms/:code/join', { config: { rateLimit: { max: 30, timeWindow: '1 minute' } } }, async request => {
     const code = params.parse(request.params).code;
-    const team = await service.join(code, request.auth.userId, joinSchema.parse(request.body));
+    const team = await service.join(code, request.auth.userId, joinSchema.parse(request.body), request.auth.username);
     const room = await manager.loadRoom(code);
     return { roomId: room.id, roomCode: code, team: publicTeam(team, room.settings), sequence: room.sequence };
   });

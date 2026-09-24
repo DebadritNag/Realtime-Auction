@@ -1,0 +1,1494 @@
+{
+  "constraints": [
+    {
+      "table_name": "manager_external_player_import_rows",
+      "conname": "manager_external_player_import_rows_import_id_fkey",
+      "definition": "FOREIGN KEY (import_id) REFERENCES manager_external_player_imports(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_external_player_import_rows",
+      "conname": "manager_external_player_import_rows_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_external_player_import_rows",
+      "conname": "mepir_status_values",
+      "definition": "CHECK ((status = ANY (ARRAY['VALID'::text, 'INVALID'::text, 'DUPLICATE'::text, 'SKIPPED'::text])))"
+    },
+    {
+      "table_name": "manager_external_player_imports",
+      "conname": "manager_external_player_imports_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_external_player_imports",
+      "conname": "manager_external_player_imports_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_external_player_imports",
+      "conname": "manager_external_player_imports_uploaded_by_fkey",
+      "definition": "FOREIGN KEY (uploaded_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "manager_external_player_imports",
+      "conname": "mepi_rows_nn",
+      "definition": "CHECK (((total_rows >= 0) AND (valid_rows >= 0) AND (invalid_rows >= 0) AND (duplicate_rows >= 0)))"
+    },
+    {
+      "table_name": "manager_external_player_imports",
+      "conname": "mepi_status_values",
+      "definition": "CHECK ((status = ANY (ARRAY['PROCESSING'::text, 'COMPLETED'::text, 'FAILED'::text])))"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "conname": "manager_fixtures_away_team_id_fkey",
+      "definition": "FOREIGN KEY (away_team_id) REFERENCES manager_tournament_teams(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "conname": "manager_fixtures_home_team_id_fkey",
+      "definition": "FOREIGN KEY (home_team_id) REFERENCES manager_tournament_teams(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "conname": "manager_fixtures_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "conname": "manager_fixtures_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "conname": "mf_away_score_nn",
+      "definition": "CHECK (((away_score IS NULL) OR (away_score >= 0)))"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "conname": "mf_completed_has_scores",
+      "definition": "CHECK (((status <> 'COMPLETED'::text) OR ((home_score IS NOT NULL) AND (away_score IS NOT NULL))))"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "conname": "mf_home_score_nn",
+      "definition": "CHECK (((home_score IS NULL) OR (home_score >= 0)))"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "conname": "mf_matchday_positive",
+      "definition": "CHECK ((matchday > 0))"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "conname": "mf_no_self_fixture",
+      "definition": "CHECK ((home_team_id <> away_team_id))"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "conname": "mf_status_values",
+      "definition": "CHECK ((status = ANY (ARRAY['SCHEDULED'::text, 'COMPLETED'::text, 'POSTPONED'::text, 'CANCELLED'::text])))"
+    },
+    {
+      "table_name": "manager_notifications",
+      "conname": "manager_notifications_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_notifications",
+      "conname": "manager_notifications_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_notifications",
+      "conname": "manager_notifications_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_notifications",
+      "conname": "mn_type_values",
+      "definition": "CHECK ((type = ANY (ARRAY['TOURNAMENT_INVITE'::text, 'MANAGER_JOINED'::text, 'FIXTURES_GENERATED'::text, 'RESULT_UPDATED'::text, 'TRANSFER_WINDOW_OPENED'::text, 'TRANSFER_WINDOW_CLOSED'::text, 'TRADE_RECEIVED'::text, 'TRADE_ACCEPTED'::text, 'TRADE_REJECTED'::text, 'TRADE_CANCELLED'::text, 'PLAYER_TRANSFERRED'::text, 'TOURNAMENT_ANNOUNCEMENT'::text])))"
+    },
+    {
+      "table_name": "manager_tournament_events",
+      "conname": "manager_tournament_events_actor_user_id_fkey",
+      "definition": "FOREIGN KEY (actor_user_id) REFERENCES profiles(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_tournament_events",
+      "conname": "manager_tournament_events_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_tournament_events",
+      "conname": "manager_tournament_events_player_id_fkey",
+      "definition": "FOREIGN KEY (player_id) REFERENCES manager_tournament_players(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_tournament_events",
+      "conname": "manager_tournament_events_team_id_fkey",
+      "definition": "FOREIGN KEY (team_id) REFERENCES manager_tournament_teams(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_tournament_events",
+      "conname": "manager_tournament_events_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_tournament_events",
+      "conname": "mte_event_type_values",
+      "definition": "CHECK ((event_type = ANY (ARRAY['MANAGER_MODE_CREATED'::text, 'MEMBER_JOINED'::text, 'MEMBER_DECLINED'::text, 'MEMBER_REMOVED'::text, 'FIXTURES_GENERATED'::text, 'RESULT_CREATED'::text, 'RESULT_EDITED'::text, 'TRANSFER_WINDOW_OPENED'::text, 'TRANSFER_WINDOW_CLOSED'::text, 'TRADE_CREATED'::text, 'TRADE_ACCEPTED'::text, 'TRADE_REJECTED'::text, 'TRADE_CANCELLED'::text, 'TRADE_COUNTERED'::text, 'PLAYER_TRANSFERRED'::text, 'PLAYER_RELEASED'::text, 'TOURNAMENT_STATUS_CHANGED'::text, 'TOURNAMENT_COMPLETED'::text])))"
+    },
+    {
+      "table_name": "manager_tournament_invitations",
+      "conname": "manager_tournament_invitations_invited_by_fkey",
+      "definition": "FOREIGN KEY (invited_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "manager_tournament_invitations",
+      "conname": "manager_tournament_invitations_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_tournament_invitations",
+      "conname": "manager_tournament_invitations_team_id_fkey",
+      "definition": "FOREIGN KEY (team_id) REFERENCES manager_tournament_teams(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_tournament_invitations",
+      "conname": "manager_tournament_invitations_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_tournament_invitations",
+      "conname": "manager_tournament_invitations_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "manager_tournament_invitations",
+      "conname": "mti_status_values",
+      "definition": "CHECK ((status = ANY (ARRAY['PENDING'::text, 'JOINED'::text, 'DECLINED'::text])))"
+    },
+    {
+      "table_name": "manager_tournament_members",
+      "conname": "manager_tournament_members_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_tournament_members",
+      "conname": "manager_tournament_members_team_id_fkey",
+      "definition": "FOREIGN KEY (team_id) REFERENCES manager_tournament_teams(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_tournament_members",
+      "conname": "manager_tournament_members_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_tournament_members",
+      "conname": "manager_tournament_members_user_id_fkey",
+      "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "manager_tournament_members",
+      "conname": "mtm_role_values",
+      "definition": "CHECK ((role = ANY (ARRAY['HOST'::text, 'MANAGER'::text])))"
+    },
+    {
+      "table_name": "manager_tournament_members",
+      "conname": "mtm_status_values",
+      "definition": "CHECK ((status = ANY (ARRAY['INVITED'::text, 'JOINED'::text, 'DECLINED'::text])))"
+    },
+    {
+      "table_name": "manager_tournament_members",
+      "conname": "mtm_user_tournament_unique",
+      "definition": "UNIQUE (tournament_id, user_id)"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "manager_tournament_players_current_team_id_fkey",
+      "definition": "FOREIGN KEY (current_team_id) REFERENCES manager_tournament_teams(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "manager_tournament_players_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "manager_tournament_players_source_auction_player_id_fkey",
+      "definition": "FOREIGN KEY (source_auction_player_id) REFERENCES auction_pool(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "manager_tournament_players_source_player_id_fkey",
+      "definition": "FOREIGN KEY (source_player_id) REFERENCES football_players(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "manager_tournament_players_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "mtp_acquisition_price_nn",
+      "definition": "CHECK (((manager_mode_acquisition_price_units IS NULL) OR (manager_mode_acquisition_price_units >= 0)))"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "mtp_auction_price_nn",
+      "definition": "CHECK (((auction_purchase_price_units IS NULL) OR (auction_purchase_price_units >= 0)))"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "mtp_defending_range",
+      "definition": "CHECK (((defending IS NULL) OR ((defending >= 0) AND (defending <= 99))))"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "mtp_dribbling_range",
+      "definition": "CHECK (((dribbling IS NULL) OR ((dribbling >= 0) AND (dribbling <= 99))))"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "mtp_free_agent_no_team",
+      "definition": "CHECK (((ownership_status <> 'FREE_AGENT'::text) OR (current_team_id IS NULL)))"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "mtp_overall_range",
+      "definition": "CHECK (((overall >= 1) AND (overall <= 99)))"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "mtp_owned_has_team",
+      "definition": "CHECK (((ownership_status <> 'OWNED'::text) OR (current_team_id IS NOT NULL)))"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "mtp_ownership_values",
+      "definition": "CHECK ((ownership_status = ANY (ARRAY['OWNED'::text, 'FREE_AGENT'::text, 'LOCKED'::text])))"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "mtp_pace_range",
+      "definition": "CHECK (((pace IS NULL) OR ((pace >= 0) AND (pace <= 99))))"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "mtp_passing_range",
+      "definition": "CHECK (((passing IS NULL) OR ((passing >= 0) AND (passing <= 99))))"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "mtp_physical_range",
+      "definition": "CHECK (((physical IS NULL) OR ((physical >= 0) AND (physical <= 99))))"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "mtp_shooting_range",
+      "definition": "CHECK (((shooting IS NULL) OR ((shooting >= 0) AND (shooting <= 99))))"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "conname": "mtp_source_values",
+      "definition": "CHECK ((source = ANY (ARRAY['AUCTION_SQUAD'::text, 'AUCTION_UNSOLD'::text, 'EXTERNAL_POOL'::text])))"
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "conname": "manager_tournament_teams_manager_user_id_fkey",
+      "definition": "FOREIGN KEY (manager_user_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "conname": "manager_tournament_teams_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "conname": "manager_tournament_teams_source_auction_team_id_fkey",
+      "definition": "FOREIGN KEY (source_auction_team_id) REFERENCES room_members(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "conname": "manager_tournament_teams_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "conname": "mtt_current_budget_nn",
+      "definition": "CHECK ((current_transfer_budget_units >= 0))"
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "conname": "mtt_name_length",
+      "definition": "CHECK (((char_length(team_name) >= 2) AND (char_length(team_name) <= 100)))"
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "conname": "mtt_starting_budget_nn",
+      "definition": "CHECK ((starting_transfer_budget_units >= 0))"
+    },
+    {
+      "table_name": "manager_tournaments",
+      "conname": "manager_tournaments_host_user_id_fkey",
+      "definition": "FOREIGN KEY (host_user_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "manager_tournaments",
+      "conname": "manager_tournaments_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_tournaments",
+      "conname": "manager_tournaments_source_auction_id_fkey",
+      "definition": "FOREIGN KEY (source_auction_id) REFERENCES auction_rooms(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "manager_tournaments",
+      "conname": "mt_budget_nn",
+      "definition": "CHECK ((starting_transfer_budget_units >= 0))"
+    },
+    {
+      "table_name": "manager_tournaments",
+      "conname": "mt_fixture_format_values",
+      "definition": "CHECK ((fixture_format = ANY (ARRAY['SINGLE_ROUND_ROBIN'::text, 'DOUBLE_ROUND_ROBIN'::text])))"
+    },
+    {
+      "table_name": "manager_tournaments",
+      "conname": "mt_name_length",
+      "definition": "CHECK (((char_length(name) >= 2) AND (char_length(name) <= 120)))"
+    },
+    {
+      "table_name": "manager_tournaments",
+      "conname": "mt_source_auction_unique",
+      "definition": "UNIQUE (source_auction_id)"
+    },
+    {
+      "table_name": "manager_tournaments",
+      "conname": "mt_status_values",
+      "definition": "CHECK ((status = ANY (ARRAY['SETUP'::text, 'INVITING'::text, 'ACTIVE'::text, 'COMPLETED'::text, 'ARCHIVED'::text])))"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "conname": "manager_trade_offers_created_by_fkey",
+      "definition": "FOREIGN KEY (created_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "conname": "manager_trade_offers_from_team_id_fkey",
+      "definition": "FOREIGN KEY (from_team_id) REFERENCES manager_tournament_teams(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "conname": "manager_trade_offers_offered_player_id_fkey",
+      "definition": "FOREIGN KEY (offered_player_id) REFERENCES manager_tournament_players(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "conname": "manager_trade_offers_parent_trade_id_fkey",
+      "definition": "FOREIGN KEY (parent_trade_id) REFERENCES manager_trade_offers(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "conname": "manager_trade_offers_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "conname": "manager_trade_offers_requested_player_id_fkey",
+      "definition": "FOREIGN KEY (requested_player_id) REFERENCES manager_tournament_players(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "conname": "manager_trade_offers_to_team_id_fkey",
+      "definition": "FOREIGN KEY (to_team_id) REFERENCES manager_tournament_teams(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "conname": "manager_trade_offers_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "conname": "mto_distinct_players",
+      "definition": "CHECK ((offered_player_id <> requested_player_id))"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "conname": "mto_no_self_trade",
+      "definition": "CHECK ((from_team_id <> to_team_id))"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "conname": "mto_status_values",
+      "definition": "CHECK ((status = ANY (ARRAY['PENDING'::text, 'ACCEPTED'::text, 'REJECTED'::text, 'COUNTERED'::text, 'CANCELLED'::text, 'EXPIRED'::text])))"
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "conname": "manager_transfer_transactions_from_team_id_fkey",
+      "definition": "FOREIGN KEY (from_team_id) REFERENCES manager_tournament_teams(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "conname": "manager_transfer_transactions_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "conname": "manager_transfer_transactions_player_id_fkey",
+      "definition": "FOREIGN KEY (player_id) REFERENCES manager_tournament_players(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "conname": "manager_transfer_transactions_related_trade_id_fkey",
+      "definition": "FOREIGN KEY (related_trade_id) REFERENCES manager_trade_offers(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "conname": "manager_transfer_transactions_to_team_id_fkey",
+      "definition": "FOREIGN KEY (to_team_id) REFERENCES manager_tournament_teams(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "conname": "manager_transfer_transactions_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "conname": "mtt_amount_nn",
+      "definition": "CHECK (((amount_units IS NULL) OR (amount_units >= 0)))"
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "conname": "mtt_type_values",
+      "definition": "CHECK ((type = ANY (ARRAY['AUCTION_IMPORT'::text, 'FREE_AGENT_SIGNING'::text, 'TRADE'::text, 'RELEASE'::text])))"
+    },
+    {
+      "table_name": "manager_transfer_windows",
+      "conname": "manager_transfer_windows_closed_by_fkey",
+      "definition": "FOREIGN KEY (closed_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "manager_transfer_windows",
+      "conname": "manager_transfer_windows_opened_by_fkey",
+      "definition": "FOREIGN KEY (opened_by) REFERENCES profiles(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "manager_transfer_windows",
+      "conname": "manager_transfer_windows_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_transfer_windows",
+      "conname": "manager_transfer_windows_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_transfer_windows",
+      "conname": "mtw_closed_consistency",
+      "definition": "CHECK (((status <> 'CLOSED'::text) OR ((closed_by IS NOT NULL) AND (closed_at IS NOT NULL))))"
+    },
+    {
+      "table_name": "manager_transfer_windows",
+      "conname": "mtw_status_values",
+      "definition": "CHECK ((status = ANY (ARRAY['OPEN'::text, 'CLOSED'::text])))"
+    }
+  ],
+  "functions": [
+    {
+      "proname": "accept_manager_trade",
+      "definition": "CREATE OR REPLACE FUNCTION public.accept_manager_trade(p_trade_id uuid, p_actor_user_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nDECLARE\n  v_trade        public.manager_trade_offers%ROWTYPE;\n  v_offered_p    public.manager_tournament_players%ROWTYPE;\n  v_requested_p  public.manager_tournament_players%ROWTYPE;\n  v_group_id     UUID := gen_random_uuid();\nBEGIN\n  -- 1. Lock trade row\n  SELECT * INTO v_trade\n  FROM public.manager_trade_offers\n  WHERE id = p_trade_id\n  FOR UPDATE;\n\n  IF NOT FOUND THEN\n    RAISE EXCEPTION 'accept_manager_trade: trade % not found', p_trade_id;\n  END IF;\n\n  IF v_trade.status <> 'PENDING' THEN\n    RAISE EXCEPTION 'accept_manager_trade: trade % is not PENDING (status=%)', p_trade_id, v_trade.status;\n  END IF;\n\n  -- 2. Lock both player rows\n  SELECT * INTO v_offered_p\n  FROM public.manager_tournament_players\n  WHERE id = v_trade.offered_player_id\n  FOR UPDATE;\n\n  SELECT * INTO v_requested_p\n  FROM public.manager_tournament_players\n  WHERE id = v_trade.requested_player_id\n  FOR UPDATE;\n\n  -- 3. Verify current ownership matches what the trade assumed\n  IF v_offered_p.current_team_id <> v_trade.from_team_id THEN\n    RAISE EXCEPTION 'accept_manager_trade: offered player % ownership changed (expected team %, actual %)',\n      v_trade.offered_player_id, v_trade.from_team_id, v_offered_p.current_team_id;\n  END IF;\n\n  IF v_requested_p.current_team_id <> v_trade.to_team_id THEN\n    RAISE EXCEPTION 'accept_manager_trade: requested player % ownership changed (expected team %, actual %)',\n      v_trade.requested_player_id, v_trade.to_team_id, v_requested_p.current_team_id;\n  END IF;\n\n  -- 4. Swap ownership\n  UPDATE public.manager_tournament_players\n  SET current_team_id = v_trade.to_team_id,\n      ownership_status = 'OWNED',\n      updated_at = NOW()\n  WHERE id = v_trade.offered_player_id;\n\n  UPDATE public.manager_tournament_players\n  SET current_team_id = v_trade.from_team_id,\n      ownership_status = 'OWNED',\n      updated_at = NOW()\n  WHERE id = v_trade.requested_player_id;\n\n  -- 5. Accept trade\n  UPDATE public.manager_trade_offers\n  SET status = 'ACCEPTED',\n      resolved_at = NOW(),\n      updated_at = NOW()\n  WHERE id = p_trade_id;\n\n  -- 6. Insert two transfer transaction rows\n  INSERT INTO public.manager_transfer_transactions\n    (tournament_id, player_id, from_team_id, to_team_id, type,\n     related_trade_id, transaction_group_id)\n  VALUES\n    (v_trade.tournament_id, v_trade.offered_player_id,\n     v_trade.from_team_id, v_trade.to_team_id, 'TRADE',\n     p_trade_id, v_group_id),\n    (v_trade.tournament_id, v_trade.requested_player_id,\n     v_trade.to_team_id, v_trade.from_team_id, 'TRADE',\n     p_trade_id, v_group_id);\n\n  -- 7. Audit event\n  INSERT INTO public.manager_tournament_events\n    (tournament_id, event_type, actor_user_id, metadata)\n  VALUES (\n    v_trade.tournament_id,\n    'TRADE_ACCEPTED',\n    p_actor_user_id,\n    jsonb_build_object(\n      'trade_id',           p_trade_id,\n      'transaction_group_id', v_group_id,\n      'offered_player_id',  v_trade.offered_player_id,\n      'requested_player_id', v_trade.requested_player_id,\n      'from_team_id',       v_trade.from_team_id,\n      'to_team_id',         v_trade.to_team_id\n    )\n  );\n\n  RETURN jsonb_build_object(\n    'trade_id',            p_trade_id,\n    'transaction_group_id', v_group_id,\n    'offered_player_id',   v_trade.offered_player_id,\n    'requested_player_id', v_trade.requested_player_id\n  );\nEND;\n$function$\n"
+    },
+    {
+      "proname": "change_player_ownership",
+      "definition": "CREATE OR REPLACE FUNCTION public.change_player_ownership(p_player_id uuid, p_to_team_id uuid, p_transaction_type text, p_amount_units bigint, p_actor_user_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nDECLARE\n  v_player    public.manager_tournament_players%ROWTYPE;\n  v_new_status TEXT;\nBEGIN\n  SELECT * INTO v_player\n  FROM public.manager_tournament_players\n  WHERE id = p_player_id\n  FOR UPDATE;\n\n  IF NOT FOUND THEN\n    RAISE EXCEPTION 'change_player_ownership: player % not found', p_player_id;\n  END IF;\n\n  v_new_status := CASE WHEN p_to_team_id IS NOT NULL THEN 'OWNED' ELSE 'FREE_AGENT' END;\n\n  UPDATE public.manager_tournament_players\n  SET current_team_id  = p_to_team_id,\n      ownership_status = v_new_status,\n      updated_at       = NOW()\n  WHERE id = p_player_id;\n\n  INSERT INTO public.manager_transfer_transactions\n    (tournament_id, player_id, from_team_id, to_team_id, type, amount_units)\n  VALUES (\n    v_player.tournament_id,\n    p_player_id,\n    v_player.current_team_id,\n    p_to_team_id,\n    p_transaction_type,\n    p_amount_units\n  );\n\n  INSERT INTO public.manager_tournament_events\n    (tournament_id, event_type, actor_user_id, player_id, metadata)\n  VALUES (\n    v_player.tournament_id,\n    'PLAYER_TRANSFERRED',\n    p_actor_user_id,\n    p_player_id,\n    jsonb_build_object(\n      'from_team_id',   v_player.current_team_id,\n      'to_team_id',     p_to_team_id,\n      'type',           p_transaction_type,\n      'amount_units',   p_amount_units,\n      'new_status',     v_new_status\n    )\n  );\n\n  RETURN jsonb_build_object(\n    'player_id',     p_player_id,\n    'from_team_id',  v_player.current_team_id,\n    'to_team_id',    p_to_team_id,\n    'new_status',    v_new_status\n  );\nEND;\n$function$\n"
+    },
+    {
+      "proname": "save_fixture_result",
+      "definition": "CREATE OR REPLACE FUNCTION public.save_fixture_result(p_fixture_id uuid, p_home_score integer, p_away_score integer, p_actor_user_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nDECLARE\n  v_fixture     public.manager_fixtures%ROWTYPE;\n  v_event_type  TEXT;\n  v_was_completed BOOLEAN;\nBEGIN\n  IF p_home_score < 0 OR p_away_score < 0 THEN\n    RAISE EXCEPTION 'save_fixture_result: scores must be non-negative';\n  END IF;\n\n  SELECT * INTO v_fixture\n  FROM public.manager_fixtures\n  WHERE id = p_fixture_id\n  FOR UPDATE;\n\n  IF NOT FOUND THEN\n    RAISE EXCEPTION 'save_fixture_result: fixture % not found', p_fixture_id;\n  END IF;\n\n  v_was_completed := v_fixture.status = 'COMPLETED';\n  v_event_type    := CASE WHEN v_was_completed THEN 'RESULT_EDITED' ELSE 'RESULT_CREATED' END;\n\n  UPDATE public.manager_fixtures\n  SET home_score   = p_home_score,\n      away_score   = p_away_score,\n      status       = 'COMPLETED',\n      completed_at = COALESCE(v_fixture.completed_at, NOW()),\n      updated_at   = NOW()\n  WHERE id = p_fixture_id;\n\n  INSERT INTO public.manager_tournament_events\n    (tournament_id, event_type, actor_user_id, metadata)\n  VALUES (\n    v_fixture.tournament_id,\n    v_event_type,\n    p_actor_user_id,\n    jsonb_build_object(\n      'fixture_id',           p_fixture_id,\n      'home_team_id',         v_fixture.home_team_id,\n      'away_team_id',         v_fixture.away_team_id,\n      'home_score',           p_home_score,\n      'away_score',           p_away_score,\n      'previous_home_score',  v_fixture.home_score,\n      'previous_away_score',  v_fixture.away_score\n    )\n  );\n\n  RETURN jsonb_build_object(\n    'fixture_id',  p_fixture_id,\n    'home_score',  p_home_score,\n    'away_score',  p_away_score,\n    'was_edit',    v_was_completed\n  );\nEND;\n$function$\n"
+    }
+  ],
+  "columns": [
+    {
+      "table_name": "manager_external_player_import_rows",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_external_player_import_rows",
+      "column_name": "import_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_external_player_import_rows",
+      "column_name": "row_number",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_external_player_import_rows",
+      "column_name": "external_player_id",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_external_player_import_rows",
+      "column_name": "player_name",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_external_player_import_rows",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'VALID'::text"
+    },
+    {
+      "table_name": "manager_external_player_import_rows",
+      "column_name": "error_message",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_external_player_import_rows",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_external_player_imports",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_external_player_imports",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_external_player_imports",
+      "column_name": "uploaded_by",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_external_player_imports",
+      "column_name": "filename",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_external_player_imports",
+      "column_name": "total_rows",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "manager_external_player_imports",
+      "column_name": "valid_rows",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "manager_external_player_imports",
+      "column_name": "invalid_rows",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "manager_external_player_imports",
+      "column_name": "duplicate_rows",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "manager_external_player_imports",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'PROCESSING'::text"
+    },
+    {
+      "table_name": "manager_external_player_imports",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_fixtures",
+      "column_name": "matchday",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_fixtures",
+      "column_name": "home_team_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_fixtures",
+      "column_name": "away_team_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_fixtures",
+      "column_name": "home_score",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_fixtures",
+      "column_name": "away_score",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_fixtures",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'SCHEDULED'::text"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "column_name": "completed_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_notifications",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_notifications",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_notifications",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_notifications",
+      "column_name": "type",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_notifications",
+      "column_name": "title",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_notifications",
+      "column_name": "message",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_notifications",
+      "column_name": "metadata",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_notifications",
+      "column_name": "read_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_notifications",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_tournament_events",
+      "column_name": "id",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": "nextval('manager_tournament_events_id_seq'::regclass)"
+    },
+    {
+      "table_name": "manager_tournament_events",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_events",
+      "column_name": "event_type",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_events",
+      "column_name": "actor_user_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_events",
+      "column_name": "team_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_events",
+      "column_name": "player_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_events",
+      "column_name": "metadata",
+      "data_type": "jsonb",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_events",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_tournament_invitations",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_tournament_invitations",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_invitations",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_invitations",
+      "column_name": "team_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_invitations",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'PENDING'::text"
+    },
+    {
+      "table_name": "manager_tournament_invitations",
+      "column_name": "invited_by",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_invitations",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_tournament_invitations",
+      "column_name": "responded_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_members",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_tournament_members",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_members",
+      "column_name": "user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_members",
+      "column_name": "team_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_members",
+      "column_name": "role",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'MANAGER'::text"
+    },
+    {
+      "table_name": "manager_tournament_members",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'JOINED'::text"
+    },
+    {
+      "table_name": "manager_tournament_members",
+      "column_name": "joined_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_tournament_members",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "source_player_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "source_auction_player_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "external_source_key",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "name",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "overall",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "primary_position",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "auction_category",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "secondary_positions",
+      "data_type": "ARRAY",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "club",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "nationality",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "age",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "image_url",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "tier",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "pace",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "shooting",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "passing",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "dribbling",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "defending",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "physical",
+      "data_type": "integer",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "source",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "ownership_status",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'FREE_AGENT'::text"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "current_team_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "auction_purchase_price_units",
+      "data_type": "bigint",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "manager_mode_acquisition_price_units",
+      "data_type": "bigint",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_tournament_players",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "column_name": "source_auction_team_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "column_name": "team_name",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "column_name": "team_logo_url",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "column_name": "manager_user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "column_name": "starting_transfer_budget_units",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "column_name": "current_transfer_budget_units",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_tournament_teams",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_tournaments",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_tournaments",
+      "column_name": "source_auction_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournaments",
+      "column_name": "name",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournaments",
+      "column_name": "host_user_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_tournaments",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'SETUP'::text"
+    },
+    {
+      "table_name": "manager_tournaments",
+      "column_name": "fixture_format",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'SINGLE_ROUND_ROBIN'::text"
+    },
+    {
+      "table_name": "manager_tournaments",
+      "column_name": "starting_transfer_budget_units",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": "0"
+    },
+    {
+      "table_name": "manager_tournaments",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_tournaments",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "column_name": "from_team_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "column_name": "to_team_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "column_name": "offered_player_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "column_name": "requested_player_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'PENDING'::text"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "column_name": "parent_trade_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "column_name": "created_by",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_trade_offers",
+      "column_name": "resolved_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "column_name": "player_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "column_name": "from_team_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "column_name": "to_team_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "column_name": "type",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "column_name": "amount_units",
+      "data_type": "bigint",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "column_name": "related_trade_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "column_name": "transaction_group_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_transfer_transactions",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_transfer_windows",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_transfer_windows",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_transfer_windows",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'OPEN'::text"
+    },
+    {
+      "table_name": "manager_transfer_windows",
+      "column_name": "opened_by",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_transfer_windows",
+      "column_name": "opened_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_transfer_windows",
+      "column_name": "closed_by",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_transfer_windows",
+      "column_name": "closed_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_transfer_windows",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    }
+  ],
+  "counts": [
+    {
+      "completed_auctions": "0",
+      "tournaments": "0"
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import type { ManagerModeService } from '../modules/manager-mode/manager.service.js';
 import { randomUUID } from 'node:crypto';
 import type { FastifyBaseLogger } from 'fastify';
 import type { WebSocket } from 'ws';
@@ -13,7 +14,7 @@ import { commandSchema } from '../modules/auction/auction.schemas.js';
 import { UserThrottle } from '../utils/throttle.js';
 
 interface Connection {
-  id: string; socket: WebSocket; auth: AuthContext; rooms: Set<string>; lastSeen: number;
+  managerTournament?: string; managerInbox?: boolean; id: string; socket: WebSocket; auth: AuthContext; rooms: Set<string>; lastSeen: number;
   alive: boolean; pending: number; chain: Promise<void>;
 }
 export class RealtimeHub {
@@ -21,7 +22,15 @@ export class RealtimeHub {
   private readonly throttle = new UserThrottle();
   private readonly heartbeat: ReturnType<typeof setInterval>;
   private readonly unsubscribe: () => void;
-  constructor(private manager: RoomManager, private engine: AuctionEngine, private logger: FastifyBaseLogger) {
+  private readonly unsubscribeManager: () => void;
+  constructor(private manager: RoomManager, private engine: AuctionEngine, private logger: FastifyBaseLogger, private managerMode: ManagerModeService) {
+    this.unsubscribeManager = managerMode.subscribe((t,event) => {
+      for(const c of this.connections.values()) {
+        if(!t.teams.some(team=>team.managerUserId===c.auth.userId)) continue;
+        if(c.managerTournament===t.id) this.send(c,{...this.envelope('MANAGER_MODE_STATE',managerMode.view(t,c.auth.userId)),sequence:t.sequence});
+        this.send(c,{...this.envelope(event,{tournamentId:t.id}),sequence:t.sequence});
+      }
+    });
     this.unsubscribe = manager.subscribe((room, events) => this.broadcast(room, events));
     this.heartbeat = setInterval(() => {
       for (const connection of this.connections.values()) {
@@ -118,6 +127,12 @@ export class RealtimeHub {
   }
   private async handle(connection: Connection, command: ClientMessage): Promise<void> {
     if (command.type === 'PING') { this.send(connection, this.envelope('PONG', {}, command.requestId)); return; }
+    if(command.type === 'SUBSCRIBE_MANAGER_MODE') {
+      const id=command.payload.tournamentId;
+      if(id) {const state=await this.managerMode.state(id,connection.auth.userId);connection.managerTournament=id;this.send(connection,{...this.envelope('MANAGER_MODE_STATE',state,command.requestId),sequence:state.sequence});}
+      else {connection.managerInbox=true;this.send(connection,this.envelope('MANAGER_MODE_INBOX',await this.managerMode.list(connection.auth.userId),command.requestId));}
+      return;
+    }
     const code = command.payload.roomCode;
     if (command.type === 'JOIN_ROOM' || command.type === 'REJOIN_ROOM' || command.type === 'REQUEST_STATE') {
       const room = await this.manager.loadRoom(code);
@@ -138,6 +153,7 @@ export class RealtimeHub {
   close(): void {
     clearInterval(this.heartbeat);
     this.unsubscribe();
+    this.unsubscribeManager();
     for (const connection of this.connections.values()) connection.socket.terminate();
     this.connections.clear();
   }

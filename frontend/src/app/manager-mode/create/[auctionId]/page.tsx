@@ -1,0 +1,2 @@
+import {ManagerSetup} from '@/components/manager-mode/ManagerSetup';
+export default async function Page({params}:{params:Promise<{auctionId:string}>}){const {auctionId}=await params;return <ManagerSetup auctionId={auctionId}/>;}

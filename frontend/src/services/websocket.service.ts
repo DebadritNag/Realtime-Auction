@@ -11,6 +11,7 @@ export class WebSocketService {
  private syncTimeout:ReturnType<typeof setTimeout>|undefined;
  private generation=0;private attempts=0;private room:string|null=null;private manual=true;
  subscribe(listener:(event:ServerEvent)=>void){this.listeners.add(listener);return()=>{this.listeners.delete(listener);};}
+ connectManager(id?:string){this.connect('@manager:'+ (id??''));}
  connect(roomCode:string){
   if(this.room===roomCode&&!this.manual)return;
   this.disconnect();this.room=roomCode;this.manual=false;this.attempts=0;void this.open(this.generation);
@@ -31,13 +32,13 @@ export class WebSocketService {
    socket.onopen=()=>{
     if(generation!==this.generation)return socket.close();
     useConnectionStore.getState().setStatus('CONNECTED');
-    socket.send(JSON.stringify({type:'REJOIN_ROOM',requestId:crypto.randomUUID(),payload:{roomCode:this.room}}));
+    socket.send(JSON.stringify(this.room?.startsWith('@manager:') ? {type:'SUBSCRIBE_MANAGER_MODE',requestId:crypto.randomUUID(),payload:{...(this.room.slice(9)?{tournamentId:this.room.slice(9)}:{})}} : {type:'REJOIN_ROOM',requestId:crypto.randomUUID(),payload:{roomCode:this.room}}));
    };
    socket.onmessage=message=>{
     if(generation!==this.generation||socket!==this.socket)return;
     try{
      const event=parseServerEvent(String(message.data));
-     if(event.type==='ROOM_STATE'&&event.payload.roomCode===this.room){
+     if((event.type==='ROOM_STATE'&&event.payload.roomCode===this.room)||(event.type==='MANAGER_MODE_STATE'&&this.room==='@manager:'+event.payload.id)||(event.type==='MANAGER_MODE_INBOX'&&this.room==='@manager:')){
       clearTimeout(this.syncTimeout);this.attempts=0;useConnectionStore.getState().setStatus('SYNCED');
      }
      const pending=event.requestId?this.pending.get(event.requestId):undefined;

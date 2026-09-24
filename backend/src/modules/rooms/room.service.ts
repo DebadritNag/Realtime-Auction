@@ -14,7 +14,7 @@ export function requireHost(room: Room, userId: string): void {
 }
 export class RoomService {
   constructor(private manager: RoomManager) {}
-  async join(code: string, userId: string, input: { teamName: string; teamLogoUrl?: string; teamLogoEmoji?: string }): Promise<Team> {
+  async join(code: string, userId: string, input: { teamName: string; teamLogoUrl?: string; teamLogoEmoji?: string }, managerUsername?: string): Promise<Team> {
     return this.manager.mutate(code, (room, events) => {
       const existing = room.teams.find(t => t.userId === userId);
       if (existing) {
@@ -24,7 +24,7 @@ export class RoomService {
       requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Join is only available in the lobby.', 409);
       requireThat(room.teams.length < room.settings.numberOfTeams, 'ROOM_FULL', 'Room is full.', 409);
       requireThat(!room.teams.some(t => t.name.toLowerCase() === input.teamName.toLowerCase()), 'TEAM_NAME_TAKEN', 'Team name is already taken.', 409);
-      const team: Team = { id: randomUUID(), userId, name: input.teamName, logoUrl: input.teamLogoUrl, logoEmoji: input.teamLogoEmoji,
+      const team: Team = { id: randomUUID(), userId, managerUsername, name: input.teamName, logoUrl: input.teamLogoUrl, logoEmoji: input.teamLogoEmoji,
         startingBudgetUnits: toUnits(room.settings.startingBudgetCr), spentUnits: 0, playerIds: [] };
       room.teams.push(team);
       events.push({ type: 'MEMBER_JOINED', payload: { teamId: team.id } });

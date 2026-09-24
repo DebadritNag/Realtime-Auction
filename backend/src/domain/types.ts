@@ -10,7 +10,7 @@ export interface Player {
 }
 export interface AuctionPlayer extends Player { status: PlayerStatus; round: number; unsoldReason?: 'UNANIMOUS_SKIP' }
 export interface Team {
-  id: string; userId: string; name: string; logoUrl?: string; logoEmoji?: string;
+  id: string; userId: string; managerUsername?: string; name: string; logoUrl?: string; logoEmoji?: string;
   startingBudgetUnits: number; spentUnits: number; playerIds: string[];
 }
 export interface Bid { id: string; roomId: string; playerId: string; teamId: string; amountUnits: number; at: number; round: number }

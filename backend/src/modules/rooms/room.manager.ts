@@ -52,7 +52,7 @@ export class RoomManager {
         if (await this.repository.findByCode(code)) continue;
         const room: Room = { id: randomUUID(), code, hostUserId: auth.userId, auctionName: input.auctionName,
           status: 'LOBBY', createdAt: this.clock.now(), settings,
-          teams: [{ id: randomUUID(), userId: auth.userId, name: input.teamName, logoUrl: input.teamLogoUrl, logoEmoji: input.teamLogoEmoji,
+          teams: [{ id: randomUUID(), userId: auth.userId, managerUsername: auth.username, name: input.teamName, logoUrl: input.teamLogoUrl, logoEmoji: input.teamLogoEmoji,
             startingBudgetUnits: toUnits(settings.startingBudgetCr), spentUnits: 0, playerIds: [] }],
           players: [], playerQueue: [], purchases: [], bids: [], active: null, sequence: 1, nextPlayerAt: null, receipts: {} };
         try { await this.repository.create(room); }

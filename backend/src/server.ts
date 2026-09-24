@@ -1,3 +1,4 @@
+import { MemoryManagerRepository } from './modules/manager-mode/manager.repository.js';
 import { z } from 'zod';
 import { buildApp } from './app.js';
 import { readEnvironment } from './config/env.js';
@@ -31,6 +32,7 @@ const authService =
 
 const { app } = await buildApp({
   authService,
+  managerRepository: env.NODE_ENV !== 'production' ? new MemoryManagerRepository() : undefined,
   origins: env.origins,
   logLevel: env.LOG_LEVEL,
   repository:
