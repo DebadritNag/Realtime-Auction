@@ -1,4 +1,5 @@
 import { MemoryManagerRepository } from './modules/manager-mode/manager.repository.js';
+import { PostgresManagerRepository, PostgresManagerIdentityRepository } from './modules/manager-mode/postgres-manager.repository.js';
 import { z } from 'zod';
 import { buildApp } from './app.js';
 import { readEnvironment } from './config/env.js';
@@ -6,6 +7,7 @@ import { JwtAuthService, StaticTokenAuthService } from './modules/auth-context/a
 import { FileRoomRepository } from './repositories/file.js';
 import { MemoryRoomRepository } from './repositories/memory.js';
 import { CatalogPlayerRepository } from './modules/players/player.service.js';
+import { connectDatabase } from './repositories/postgres.js';
 
 const env = readEnvironment();
 
@@ -30,9 +32,30 @@ const authService =
         audience: z.string().min(1).parse(env.JWT_AUDIENCE || 'authenticated'),
       });
 
+// ── Manager Mode persistence ──────────────────────────────────────────────────
+// Uses Postgres (DATABASE_URL) whenever available so tournaments survive restarts.
+// Falls back to in-memory only when DATABASE_URL is absent (local dev without DB).
+const managerDb = env.DATABASE_URL ? connectDatabase(env.DATABASE_URL) : null;
+const managerRepository = managerDb
+  ? new PostgresManagerRepository(managerDb)
+  : new MemoryManagerRepository();
+const managerIdentities = managerDb
+  ? new PostgresManagerIdentityRepository(managerDb)
+  : undefined;
+
+if (managerDb) {
+  // Warm the connection and verify the Manager Mode table is reachable
+  managerDb`SELECT id FROM public.manager_tournaments LIMIT 1`
+    .then(() => console.log('[manager-mode] persistence=postgres initialized=true'))
+    .catch(err => console.error('[manager-mode] persistence initialization failed:', (err as Error).message));
+} else {
+  console.warn('[manager-mode] DATABASE_URL not set — using in-memory repository (data lost on restart)');
+}
+
 const { app } = await buildApp({
   authService,
-  managerRepository: env.NODE_ENV !== 'production' ? new MemoryManagerRepository() : undefined,
+  managerRepository,
+  managerIdentities,
   origins: env.origins,
   logLevel: env.LOG_LEVEL,
   repository:
