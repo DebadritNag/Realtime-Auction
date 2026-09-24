@@ -30,6 +30,30 @@ import type { ManagerTournamentRepository, ManagerIdentityRepository } from './m
 import type { Tournament } from './manager.types.js';
 import { SerialQueue } from '../../utils/serial-queue.js';
 
+// ── Postgres error → DomainError mapping ─────────────────────────────────────
+function mapDbError(err: unknown, context: string): never {
+  const e = err as { code?: string; constraint?: string; message?: string };
+  const code = e.code ?? 'UNKNOWN';
+  const constraint = e.constraint ?? '';
+  const msg = e.message ?? 'Database error';
+
+  // Log the real error for debugging (never log secrets/tokens — only metadata)
+  console.error(`[manager-mode:db] ${context} code=${code} constraint=${constraint} msg=${msg}`);
+
+  if (code === '23505') {
+    if (constraint.includes('source_auction'))
+      throw new DomainError('MANAGER_MODE_ALREADY_EXISTS', 'A Manager Mode tournament already exists for this auction.', 409);
+    if (constraint.includes('manager_user_id') || constraint.includes('user_id'))
+      throw new DomainError('DUPLICATE_MEMBER', 'A team member record already exists for this user.', 409);
+    throw new DomainError('DUPLICATE_ENTRY', 'A duplicate record already exists.', 409);
+  }
+  if (code === '23503') throw new DomainError('INVALID_REFERENCE', `A required reference is missing. (${constraint || msg})`, 400);
+  if (code === '23514') throw new DomainError('INVALID_MANAGER_MODE_STATE', `Data constraint violation. (${constraint})`, 400);
+  if (code === '23502') throw new DomainError('REQUIRED_FIELD_MISSING', `A required field is null. (${constraint})`, 400);
+
+  throw new DomainError('MANAGER_MODE_CREATION_FAILED', `Manager Mode operation failed at: ${context}. Check server logs.`, 500);
+}
+
 // ── Postgres row shape ───────────────────────────────────────────────────────
 interface TournamentRow {
   id: string;
@@ -95,37 +119,46 @@ export class PostgresManagerRepository implements ManagerTournamentRepository {
 
   async createUnique(tournament: Tournament): Promise<{ tournament: Tournament; created: boolean }> {
     return this.lock.runExclusive('create:' + tournament.sourceAuctionId, async () => {
-      return this.sql.begin(async tx => {
-        // Check for existing tournament with the same source auction (UNIQUE constraint)
-        const existing = await tx<TournamentRow[]>`
-          SELECT id, source_auction_id, host_user_id, status, state
-          FROM   public.manager_tournaments
-          WHERE  source_auction_id = ${tournament.sourceAuctionId}
-          FOR UPDATE
-        `;
-        if (existing.length) {
-          return { tournament: rowToTournament(existing[0]!), created: false };
-        }
+      try {
+        return await this.sql.begin(async tx => {
+          // Check for existing tournament with the same source auction (UNIQUE constraint)
+          const existing = await tx<TournamentRow[]>`
+            SELECT id, source_auction_id, host_user_id, status, state
+            FROM   public.manager_tournaments
+            WHERE  source_auction_id = ${tournament.sourceAuctionId}
+            FOR UPDATE
+          `;
+          if (existing.length) {
+            return { tournament: rowToTournament(existing[0]!), created: false };
+          }
 
-        // Insert new row — scalar columns + full state blob
-        await tx`
-          INSERT INTO public.manager_tournaments (
-            id, source_auction_id, host_user_id, name, status,
-            fixture_format, starting_transfer_budget_units, state
-          ) VALUES (
-            ${tournament.id},
-            ${tournament.sourceAuctionId},
-            ${tournament.hostUserId},
-            ${tournament.name},
-            ${mapStatus(tournament.status)},
-            ${tournament.format},
-            ${tournament.startingBudgetUnits},
-            ${tx.json(JSON.parse(JSON.stringify(tournament)) as import('postgres').JSONValue)}
-          )
-        `;
+          console.log(`[manager-mode:create] inserting tournament ${tournament.id} for auction ${tournament.sourceAuctionId}`);
 
-        return { tournament, created: true };
-      });
+          // Insert new row — scalar columns + full state blob
+          await tx`
+            INSERT INTO public.manager_tournaments (
+              id, source_auction_id, host_user_id, name, status,
+              fixture_format, starting_transfer_budget_units, state
+            ) VALUES (
+              ${tournament.id},
+              ${tournament.sourceAuctionId},
+              ${tournament.hostUserId},
+              ${tournament.name},
+              ${mapStatus(tournament.status)},
+              ${tournament.format},
+              ${tournament.startingBudgetUnits},
+              ${tx.json(JSON.parse(JSON.stringify(tournament)) as import('postgres').JSONValue)}
+            )
+          `;
+
+          console.log(`[manager-mode:create] tournament ${tournament.id} created successfully`);
+          return { tournament, created: true };
+        });
+      } catch (err) {
+        // If it's already a DomainError (e.g. state corruption), rethrow
+        if (err instanceof DomainError) throw err;
+        mapDbError(err, 'createUnique');
+      }
     });
   }
 
@@ -134,31 +167,34 @@ export class PostgresManagerRepository implements ManagerTournamentRepository {
     change: (draft: Tournament) => Promise<void> | void
   ): Promise<Tournament> {
     return this.lock.runExclusive(id, async () => {
-      return this.sql.begin(async tx => {
-        // Lock the row for the duration of this transaction
-        const rows = await tx<TournamentRow[]>`
-          SELECT id, source_auction_id, host_user_id, status, state
-          FROM   public.manager_tournaments
-          WHERE  id = ${id}
-          FOR UPDATE
-        `;
-        requireThat(rows.length, 'TOURNAMENT_NOT_FOUND', 'Tournament not found.', 404);
+      try {
+        return await this.sql.begin(async tx => {
+          const rows = await tx<TournamentRow[]>`
+            SELECT id, source_auction_id, host_user_id, status, state
+            FROM   public.manager_tournaments
+            WHERE  id = ${id}
+            FOR UPDATE
+          `;
+          requireThat(rows.length, 'TOURNAMENT_NOT_FOUND', 'Tournament not found.', 404);
 
-        const draft = rowToTournament(rows[0]!);
-        await change(draft);
+          const draft = rowToTournament(rows[0]!);
+          await change(draft);
 
-        // Persist updated state + sync scalar status column
-        await tx`
-          UPDATE public.manager_tournaments
-          SET    state    = ${tx.json(JSON.parse(JSON.stringify(draft)) as import('postgres').JSONValue)},
-                 status   = ${mapStatus(draft.status)},
-                 name     = ${draft.name},
-                 updated_at = NOW()
-          WHERE  id = ${id}
-        `;
+          await tx`
+            UPDATE public.manager_tournaments
+            SET    state    = ${tx.json(JSON.parse(JSON.stringify(draft)) as import('postgres').JSONValue)},
+                   status   = ${mapStatus(draft.status)},
+                   name     = ${draft.name},
+                   updated_at = NOW()
+            WHERE  id = ${id}
+          `;
 
-        return draft;
-      });
+          return draft;
+        });
+      } catch (err) {
+        if (err instanceof DomainError) throw err;
+        mapDbError(err, `mutate(${id})`);
+      }
     });
   }
 }

@@ -66,7 +66,16 @@ export function ManagerSetup({ auctionId }: {
         router.push('/manager-mode/' + t.id);
     }
     catch (e) {
-        setError(e instanceof Error ? e.message : 'Unable to create tournament.');
+        const msg = e instanceof Error ? e.message : 'Unable to create tournament.';
+        // Surface known domain errors with friendly text
+        setError(
+          msg.includes('ALREADY_EXISTS') ? 'A Manager Mode tournament already exists for this auction.' :
+          msg.includes('DUPLICATE') ? 'A duplicate record was found. Please try again.' :
+          msg.includes('INVALID_REFERENCE') ? 'A required profile or record is missing. Ensure all managers have logged in.' :
+          msg.includes('INVALID_MANAGER_MODE_STATE') ? 'A data validation error occurred. Check the budget and team settings.' :
+          msg.includes('REQUIRED_FIELD') ? 'A required field is missing. Please fill in all settings.' :
+          msg
+        );
     }
     finally {
         setBusy(false);
