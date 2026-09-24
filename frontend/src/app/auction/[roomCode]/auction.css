@@ -28,10 +28,17 @@
 .auction-timer.animate-timer-urgency { animation:none; background:#301920; }
 .auction-timer > p { animation:none; }
 .auction-bid-actions { padding:14px; }
-.auction-primary-actions { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; }
+.auction-primary-actions { display:grid; grid-template-columns:minmax(0,2.5fr) minmax(0,1fr) minmax(0,1fr); gap:8px; }
 .auction-primary-actions button { min-height:48px; padding:10px 14px; box-shadow:none; font-size:13px; }
 .auction-primary-actions .auction-main-bid { font-size:16px; font-weight:800; letter-spacing:0; }
 .auction-primary-actions .auction-main-bid:disabled { font-size:13px; }
+/* Skip vote button — neutral secondary style (it's a vote, not a destructive action) */
+.auction-skip-btn { display:flex; align-items:center; justify-content:center; gap:6px; min-height:48px; padding:10px 10px; border:1px solid #395348; border-radius:8px; background:#13271f; color:#80ffc0; font-size:13px; font-weight:700; cursor:pointer; transition:background .15s,border-color .15s; white-space:nowrap; overflow:hidden; }
+.auction-skip-btn:hover:not(:disabled) { background:#204435; border-color:#00ff87; }
+.auction-skip-btn:disabled { opacity:.45; cursor:not-allowed; }
+.auction-skip-btn span { overflow:hidden; text-overflow:ellipsis; }
+.auction-skip-voted { background:#0d2e1f; border-color:#00ff87; color:#00ff87; }
+.auction-skip-voted:hover:not(:disabled) { background:#0a3d27; }
 .auction-quick-heading { display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px; color:var(--auction-muted); font-size:11px; margin:12px 0 6px; }
 .auction-quick-heading > span:first-child { color:#e3edf6; font-weight:600; }
 .auction-quick-bids { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
@@ -129,9 +136,11 @@
  .auction-current-bid,.auction-timer { padding:12px; }
  .auction-current-bid > div:first-child > span:last-child { display:none; }
  .auction-bid-actions { padding:12px; }
- .auction-primary-actions { grid-template-columns:minmax(0,1fr) auto; }
+ /* On mobile: Bid full width row 1, Custom+Skip row 2 */
+ .auction-primary-actions { grid-template-columns:1fr 1fr; }
+ .auction-primary-actions .auction-main-bid { grid-column:1/-1; font-size:14px; }
  .auction-primary-actions button { padding:10px; font-size:12px; gap:6px; }
- .auction-primary-actions .auction-main-bid { font-size:14px; }
+ .auction-skip-btn { font-size:12px; padding:10px 8px; }
  .auction-quick-bids button { justify-content:center; flex-direction:column; min-height:52px; padding:6px; }
 }
 @media (prefers-reduced-motion:reduce) {

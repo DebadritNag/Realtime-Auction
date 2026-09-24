@@ -259,7 +259,7 @@ export default function LiveAuctionPage({
             />
           </div>
 
-          {/* Bid Button & Custom Controls */}
+          {/* Bid Button & Custom Controls + inline Skip Vote */}
           <AuctionControls
             minimumNextBid={minimumNextBid}
             currentBid={currentBid}
@@ -273,9 +273,11 @@ export default function LiveAuctionPage({
             antiSnipingNotice={antiSnipingNotice}
             bidErrorNotice={bidErrorNotice}
             onClearError={clearBidError}
+            snapshot={snapshot}
+            synced={connectionStatus === "SYNCED"}
+            skipVoteNotice={skipVoteNotice}
           />
 
-          <SkipPlayerVote key={snapshot?.activationId ?? "idle"} snapshot={snapshot} synced={connectionStatus === "SYNCED"} isHost={isHost} notice={skipVoteNotice} />
           </section>
           {/* Live Recent Bids Feed */}
           <BidFeed bids={recentBids} />
