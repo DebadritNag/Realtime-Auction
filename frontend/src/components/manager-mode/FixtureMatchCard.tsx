@@ -31,7 +31,7 @@ export function FixtureMatchCard({ fixture: f, state, onAction, busy }: Props) {
 
   const homeTeam = state.teams.find(t => t.id === f.homeTeamId);
   const awayTeam = state.teams.find(t => t.id === f.awayTeamId);
-  const canEdit = state.isHost && state.status === 'ACTIVE';
+  const canEdit = state.isHost && state.status === 'ACTIVE' && state.modeStatus !== 'ENDED' && state.seasonData?.seasons.find(s=>s.id===state.seasonData?.currentSeasonId)?.status === 'ACTIVE';
   const isMyMatch = f.homeTeamId === state.myTeamId || f.awayTeamId === state.myTeamId;
 
   const handleSave = async (e: React.FormEvent) => {

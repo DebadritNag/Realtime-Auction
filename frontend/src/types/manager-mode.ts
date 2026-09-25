@@ -1,6 +1,7 @@
+import type {SeasonData,SaleQuote} from './manager-season';
 import type {BuyoutOffer} from './manager-buyout';
 import type {NegotiationData,NegotiationView} from './manager-negotiation';
-export type TournamentStatus = 'INVITING' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED';
+export type TournamentStatus = 'INVITING' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED' | 'ENDED';
 export type PlayerSource = 'AUCTION_SQUAD' | 'AUCTION_UNSOLD' | 'EXTERNAL_POOL';
 export interface ManagerPlayer {
     id: string;
@@ -39,6 +40,7 @@ export interface ManagerTeam {
     transferBudgetUnits: number;
 }
 export interface Fixture {
+    seasonId?: string;
     id: string;
     matchday: number;
     homeTeamId: string;
@@ -77,8 +79,8 @@ export interface TransferTransaction {
     id: string;
     playerId: string;
     fromTeamId: string | null;
-    toTeamId: string;
-    type: 'AUCTION_PURCHASE' | 'TRADE' | 'FREE_AGENT_SIGNING' | 'BUYOUT';
+    toTeamId: string | null;
+    type: 'AUCTION_PURCHASE' | 'TRADE' | 'FREE_AGENT_SIGNING' | 'BUYOUT' | 'RELEASE';
     buyoutId?: string | null;
     amountUnits: number;
     tradeId: string | null;
@@ -102,6 +104,7 @@ export interface ManagerAudit {
     detail: string;
 }
 export interface Tournament {
+    seasonData?: SeasonData;
     buyouts?: BuyoutOffer[];
     negotiation?: NegotiationData;
     id: string;
@@ -137,6 +140,9 @@ export interface Tournament {
 }
 export type TournamentState = Omit<Tournament, 'startingSnapshot' | 'receipts' | 'negotiation'> & {
     negotiation: NegotiationView;
+    saleQuotes?: Record<string,SaleQuote>;
+    seasonFixturesById?: Record<string,Fixture[]>;
+    modeStatus?: "ACTIVE" | "ENDED";
     standings: Standing[];
     myTeamId: string;
     isHost: boolean;

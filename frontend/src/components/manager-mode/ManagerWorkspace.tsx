@@ -1,4 +1,5 @@
 'use client';
+import {SeasonPanel,SeasonSettings,PlayerSales} from './ManagerSeasons';
 import {ManagerTransfers} from './ManagerTransfers';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -85,12 +86,12 @@ function Dashboard({ state, action, busy }: { state: TournamentState; action: Ac
             {next ? 'Next Match' : 'Recent Results'}
           </h3>
           {next && (
-            <FixtureMatchCard fixture={next} state={state} onAction={action} busy={busy} />
+            <FixtureMatchCard fixture={next} state={state} onAction={action} busy={busy||state.modeStatus==='ENDED'} />
           )}
           {recent.length > 0 && (
             <div className="space-y-2">
               {!next && <p className="text-xs text-slate-500 uppercase tracking-widest mb-2">Recent Results</p>}
-              {recent.map(f => <FixtureMatchCard key={f.id} fixture={f} state={state} onAction={action} busy={busy} />)}
+              {recent.map(f => <FixtureMatchCard key={f.id} fixture={f} state={state} onAction={action} busy={busy || state.modeStatus === 'ENDED'} />)}
             </div>
           )}
           {!next && recent.length === 0 && (
@@ -214,7 +215,7 @@ function FixturesSection({ state, action, busy }: { state: TournamentState; acti
               )}
               <div className="grid lg:grid-cols-2 gap-3">
                 {games.map(f => (
-                  <FixtureMatchCard key={f.id} fixture={f} state={state} onAction={action} busy={busy} />
+                  <FixtureMatchCard key={f.id} fixture={f} state={state} onAction={action} busy={busy || state.modeStatus === 'ENDED'} />
                 ))}
               </div>
             </section>
@@ -588,19 +589,8 @@ function HostControl({ state, action, busy }: { state: TournamentState; action: 
           <button className={button} disabled={busy || Boolean(state.fixtures.length) || state.teams.some(t => t.invitation !== 'JOINED')} onClick={() => void action({ type: 'GENERATE_FIXTURES' })}>
             Generate Fixtures &amp; Start
           </button>
-          <button className={button} disabled={busy || state.status !== 'ACTIVE'} onClick={() => void action({ type: 'WINDOW', open: !state.transferWindowOpen })}>
+          <button className={button} disabled={busy || state.status !== 'ACTIVE'||state.seasonData?.seasons.find(s=>s.id===state.seasonData?.currentSeasonId)?.status!=='ACTIVE'} onClick={() => void action({ type: 'WINDOW', open: !state.transferWindowOpen })}>
             {state.transferWindowOpen ? 'Close' : 'Open'} Transfer Window
-          </button>
-          <button className={button} disabled={busy || state.status !== 'ACTIVE' || !state.fixtures.length || state.fixtures.some(f => f.status !== 'COMPLETED')} onClick={() => void action({ type: 'STATUS', status: 'COMPLETED' })}>
-            Complete Tournament
-          </button>
-          {state.status === 'COMPLETED' && (
-            <button className={button} disabled={busy} onClick={() => void action({ type: 'STATUS', status: 'ACTIVE' })}>
-              Reopen for Corrections
-            </button>
-          )}
-          <button className={button} disabled={busy || state.status === 'ARCHIVED'} onClick={() => { if (window.confirm('Archive this tournament? It will become read-only.')) void action({ type: 'STATUS', status: 'ARCHIVED' }); }}>
-            Archive Tournament
           </button>
           <Link className={button} href={`/manager-mode/${state.id}/fixtures`}>
             Manage Results
@@ -805,23 +795,23 @@ export function ManagerWorkspace({ section }: { section: string }) {
   const joined = mine.invitation === 'JOINED';
 
   const renderSection = () => {
-    if (!joined) return <InvitationGate state={state} action={action} busy={busy} />;
+    if (!joined && state.modeStatus !== 'ENDED') return <InvitationGate state={state} action={action} busy={busy} />;
 
     switch (section.split('/')[0]) {
       case 'dashboard':
-        return <Dashboard state={state} action={action} busy={busy} />;
+        return <><SeasonPanel state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/><Dashboard state={state} action={action} busy={busy || state.modeStatus === 'ENDED'} /></>;
       case 'squad':
         return (
           <>
             <SectionTitle title="Squad" subtitle={`${state.players.filter(p => p.currentTeamId === state.myTeamId).length} players in your squad`} />
-            <Squad players={state.players.filter(p => p.currentTeamId === mine.id)} />
+            <Squad players={state.players.filter(p => p.currentTeamId === mine.id)} /><PlayerSales state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/>
           </>
         );
       case 'fixtures':
         return (
           <>
             <SectionTitle title="Fixtures" subtitle="Track all league matches and enter results as host." />
-            <FixturesSection state={state} action={action} busy={busy} />
+            <FixturesSection state={state} action={action} busy={busy || state.modeStatus === 'ENDED' || state.seasonData?.seasons.find(s=>s.id===state.seasonData?.currentSeasonId)?.status !== 'ACTIVE'} />
           </>
         );
       case 'standings':
@@ -835,28 +825,28 @@ export function ManagerWorkspace({ section }: { section: string }) {
         return (
           <>
             <SectionTitle title="Transfers" subtitle="Negotiate free-agent signings, swap players and send club buyouts." />
-            <ManagerTransfers state={state} action={action} busy={busy} path={section} />
+            <ManagerTransfers state={state} action={action} busy={busy || state.modeStatus === 'ENDED'} path={section} />
           </>
         );
       case 'teams':
         return (
           <>
             <SectionTitle title="Teams" subtitle="Inspect any team's squad and budget." />
-            <TeamsSection state={state} />
+            <TeamsSection state={state} /><SeasonPanel state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/><PlayerSales state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/>
           </>
         );
       case 'notifications':
         return (
           <>
             <SectionTitle title="Notifications" subtitle={`${state.notifications.filter(n => !n.read).length} unread`} />
-            <NotificationsSection state={state} action={action} busy={busy} />
+            <NotificationsSection state={state} action={action} busy={busy || state.modeStatus === 'ENDED'} />
           </>
         );
       case 'host':
         return (
           <>
             <SectionTitle title="Host Control" subtitle="Manage the tournament lifecycle." />
-            <HostControl state={state} action={action} busy={busy} />
+            {state.isHost&&<><SeasonPanel state={state} action={action} busy={busy || state.modeStatus === 'ENDED'} controls/><SeasonSettings state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/></>}<HostControl state={state} action={action} busy={busy || state.modeStatus === 'ENDED'} />
           </>
         );
       default:
@@ -866,7 +856,7 @@ export function ManagerWorkspace({ section }: { section: string }) {
 
   return (
     <ManagerModeLayout state={state} section={section.split('/')[0]!} connectionStatus={status}>
-      {error && (
+      {state.modeStatus==='ENDED'&&<p className="mb-4 text-amber-300 font-semibold">MANAGER MODE ENDED · READ ONLY</p>}{state.seasonData&&<p className="mb-4 text-slate-400">Current season: {state.seasonData.seasons.find(s=>s.id===state.seasonData?.currentSeasonId)?.number}</p>}{error && (
         <div role="alert" className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-700/50 text-sm text-red-300">
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" /></svg>
           {error}
@@ -880,5 +870,5 @@ export function ManagerWorkspace({ section }: { section: string }) {
 // ─── LegacyTrades: compatibility shim for ManagerTransfers.tsx ───────────────
 // ManagerTransfers.tsx imports this; it renders the inline trade sub-tab content.
 export function LegacyTrades({ state, action, busy }: { state: TournamentState; action: Act; busy: boolean; initialTab?: string }) {
-  return <Transfers state={state} action={action} busy={busy} />;
+  return <Transfers state={state} action={action} busy={busy || state.modeStatus === 'ENDED'} />;
 }

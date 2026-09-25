@@ -1,8 +1,13 @@
 import { z } from 'zod';
 const id = z.string().min(1).max(100);
-export const setupSchema = z.object({ name: z.string().trim().min(2).max(100), startingBudgetUnits: z.number().int().min(0).max(20000).default(200), format: z.enum(['SINGLE_ROUND_ROBIN', 'DOUBLE_ROUND_ROBIN']).default('SINGLE_ROUND_ROBIN'), csv: z.string().max(2000000).default('') }).strict();
+export const setupSchema = z.object({ name: z.string().trim().min(2).max(100), addUnusedAuctionPurse:z.boolean().default(true), startingBudgetUnits: z.number().int().min(0).max(20000).default(200), format: z.enum(['SINGLE_ROUND_ROBIN', 'DOUBLE_ROUND_ROBIN']).default('SINGLE_ROUND_ROBIN'), csv: z.string().max(2000000).default('') }).strict();
 const buyoutTerms={offerType:z.enum(['CASH','CASH_PLUS_PLAYER']),cashAmountUnits:z.number().int().min(0).max(2000000000),includedPlayerId:id.nullable().optional()};
 export const actionSchema = z.discriminatedUnion('type', [
+ z.object({type:z.literal('END_CURRENT_SEASON'),confirmation:z.literal('END SEASON')}).strict(),
+ z.object({type:z.literal('START_NEXT_SEASON')}).strict(),
+ z.object({type:z.literal('END_MANAGER_MODE'),confirmation:z.literal('END MANAGER MODE')}).strict(),
+ z.object({type:z.literal('SEASON_SETTINGS'),resalePercent:z.number().int().min(40).max(60),bonusUnits:z.array(z.number().int().min(0).max(20000)).min(2).max(100)}).strict(),
+ z.object({type:z.literal('SELL_PLAYER'),playerId:id,ownershipToken:id,expectedSaleUnits:z.number().int().min(0)}).strict(),
  z.object({type:z.literal('BUYOUT'),targetPlayerId:id,...buyoutTerms}).strict(),
  z.object({type:z.literal('BUYOUT_COUNTER'),buyoutId:id,...buyoutTerms}).strict(),
  z.object({type:z.literal('BUYOUT_RESPONSE'),buyoutId:id,response:z.enum(['ACCEPT','REJECT','CANCEL'])}).strict(),

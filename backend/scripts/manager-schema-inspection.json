@@ -1,5 +1,627 @@
 {
+  "indexes": [
+    {
+      "tablename": "manager_buyout_cash_movements",
+      "indexname": "manager_buyout_cash_movements_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_buyout_cash_movements_pkey ON public.manager_buyout_cash_movements USING btree (buyout_id)"
+    },
+    {
+      "tablename": "manager_buyout_cash_movements",
+      "indexname": "manager_buyout_cash_tournament",
+      "indexdef": "CREATE INDEX manager_buyout_cash_tournament ON public.manager_buyout_cash_movements USING btree (tournament_id)"
+    },
+    {
+      "tablename": "manager_buyout_cash_movements",
+      "indexname": "manager_buyout_cash_from",
+      "indexdef": "CREATE INDEX manager_buyout_cash_from ON public.manager_buyout_cash_movements USING btree (from_team_id)"
+    },
+    {
+      "tablename": "manager_buyout_cash_movements",
+      "indexname": "manager_buyout_cash_to",
+      "indexdef": "CREATE INDEX manager_buyout_cash_to ON public.manager_buyout_cash_movements USING btree (to_team_id)"
+    },
+    {
+      "tablename": "manager_buyout_offers",
+      "indexname": "manager_buyout_offers_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_buyout_offers_pkey ON public.manager_buyout_offers USING btree (id)"
+    },
+    {
+      "tablename": "manager_buyout_offers",
+      "indexname": "manager_buyouts_tournament",
+      "indexdef": "CREATE INDEX manager_buyouts_tournament ON public.manager_buyout_offers USING btree (tournament_id, created_at)"
+    },
+    {
+      "tablename": "manager_buyout_offers",
+      "indexname": "manager_buyouts_receiver",
+      "indexdef": "CREATE INDEX manager_buyouts_receiver ON public.manager_buyout_offers USING btree (responding_team_id, status)"
+    },
+    {
+      "tablename": "manager_buyout_offers",
+      "indexname": "manager_buyouts_from",
+      "indexdef": "CREATE INDEX manager_buyouts_from ON public.manager_buyout_offers USING btree (from_team_id)"
+    },
+    {
+      "tablename": "manager_buyout_offers",
+      "indexname": "manager_buyouts_to",
+      "indexdef": "CREATE INDEX manager_buyouts_to ON public.manager_buyout_offers USING btree (to_team_id)"
+    },
+    {
+      "tablename": "manager_buyout_offers",
+      "indexname": "manager_buyouts_target",
+      "indexdef": "CREATE INDEX manager_buyouts_target ON public.manager_buyout_offers USING btree (target_player_id)"
+    },
+    {
+      "tablename": "manager_buyout_offers",
+      "indexname": "manager_buyouts_included",
+      "indexdef": "CREATE INDEX manager_buyouts_included ON public.manager_buyout_offers USING btree (included_player_id)"
+    },
+    {
+      "tablename": "manager_buyout_offers",
+      "indexname": "manager_buyouts_parent",
+      "indexdef": "CREATE INDEX manager_buyouts_parent ON public.manager_buyout_offers USING btree (parent_buyout_id)"
+    },
+    {
+      "tablename": "manager_buyout_offers",
+      "indexname": "manager_buyouts_creator",
+      "indexdef": "CREATE INDEX manager_buyouts_creator ON public.manager_buyout_offers USING btree (created_by)"
+    },
+    {
+      "tablename": "manager_buyout_offers",
+      "indexname": "manager_buyouts_pending_pair",
+      "indexdef": "CREATE UNIQUE INDEX manager_buyouts_pending_pair ON public.manager_buyout_offers USING btree (tournament_id, from_team_id, to_team_id, target_player_id) WHERE (status = 'PENDING'::text)"
+    },
+    {
+      "tablename": "manager_external_player_import_rows",
+      "indexname": "manager_external_player_import_rows_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_external_player_import_rows_pkey ON public.manager_external_player_import_rows USING btree (id)"
+    },
+    {
+      "tablename": "manager_external_player_import_rows",
+      "indexname": "idx_mepir_import",
+      "indexdef": "CREATE INDEX idx_mepir_import ON public.manager_external_player_import_rows USING btree (import_id)"
+    },
+    {
+      "tablename": "manager_external_player_import_rows",
+      "indexname": "idx_mepir_status",
+      "indexdef": "CREATE INDEX idx_mepir_status ON public.manager_external_player_import_rows USING btree (import_id, status)"
+    },
+    {
+      "tablename": "manager_external_player_imports",
+      "indexname": "manager_external_player_imports_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_external_player_imports_pkey ON public.manager_external_player_imports USING btree (id)"
+    },
+    {
+      "tablename": "manager_external_player_imports",
+      "indexname": "idx_mepi_tournament",
+      "indexdef": "CREATE INDEX idx_mepi_tournament ON public.manager_external_player_imports USING btree (tournament_id)"
+    },
+    {
+      "tablename": "manager_fixtures",
+      "indexname": "manager_fixtures_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_fixtures_pkey ON public.manager_fixtures USING btree (id)"
+    },
+    {
+      "tablename": "manager_fixtures",
+      "indexname": "idx_mf_tournament",
+      "indexdef": "CREATE INDEX idx_mf_tournament ON public.manager_fixtures USING btree (tournament_id)"
+    },
+    {
+      "tablename": "manager_fixtures",
+      "indexname": "idx_mf_matchday",
+      "indexdef": "CREATE INDEX idx_mf_matchday ON public.manager_fixtures USING btree (tournament_id, matchday)"
+    },
+    {
+      "tablename": "manager_fixtures",
+      "indexname": "idx_mf_home_team",
+      "indexdef": "CREATE INDEX idx_mf_home_team ON public.manager_fixtures USING btree (home_team_id)"
+    },
+    {
+      "tablename": "manager_fixtures",
+      "indexname": "idx_mf_away_team",
+      "indexdef": "CREATE INDEX idx_mf_away_team ON public.manager_fixtures USING btree (away_team_id)"
+    },
+    {
+      "tablename": "manager_fixtures",
+      "indexname": "idx_mf_status",
+      "indexdef": "CREATE INDEX idx_mf_status ON public.manager_fixtures USING btree (tournament_id, status)"
+    },
+    {
+      "tablename": "manager_fixtures",
+      "indexname": "manager_fixture_season",
+      "indexdef": "CREATE INDEX manager_fixture_season ON public.manager_fixtures USING btree (season_id, matchday)"
+    },
+    {
+      "tablename": "manager_fixtures",
+      "indexname": "mf_unique_pairing_per_matchday",
+      "indexdef": "CREATE UNIQUE INDEX mf_unique_pairing_per_matchday ON public.manager_fixtures USING btree (tournament_id, season_id, matchday, LEAST((home_team_id)::text, (away_team_id)::text), GREATEST((home_team_id)::text, (away_team_id)::text))"
+    },
+    {
+      "tablename": "manager_free_agent_offers",
+      "indexname": "manager_free_agent_offers_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_free_agent_offers_pkey ON public.manager_free_agent_offers USING btree (id)"
+    },
+    {
+      "tablename": "manager_free_agent_offers",
+      "indexname": "manager_offers_session",
+      "indexdef": "CREATE INDEX manager_offers_session ON public.manager_free_agent_offers USING btree (session_id, created_at)"
+    },
+    {
+      "tablename": "manager_negotiation_messages",
+      "indexname": "manager_negotiation_messages_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_negotiation_messages_pkey ON public.manager_negotiation_messages USING btree (id)"
+    },
+    {
+      "tablename": "manager_negotiation_messages",
+      "indexname": "manager_messages_session",
+      "indexdef": "CREATE INDEX manager_messages_session ON public.manager_negotiation_messages USING btree (session_id, created_at)"
+    },
+    {
+      "tablename": "manager_negotiation_sessions",
+      "indexname": "manager_negotiation_sessions_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_negotiation_sessions_pkey ON public.manager_negotiation_sessions USING btree (id)"
+    },
+    {
+      "tablename": "manager_negotiation_sessions",
+      "indexname": "manager_negotiation_sessions_tournament_id_team_id_player_i_key",
+      "indexdef": "CREATE UNIQUE INDEX manager_negotiation_sessions_tournament_id_team_id_player_i_key ON public.manager_negotiation_sessions USING btree (tournament_id, team_id, player_id)"
+    },
+    {
+      "tablename": "manager_negotiation_sessions",
+      "indexname": "manager_sessions_player",
+      "indexdef": "CREATE INDEX manager_sessions_player ON public.manager_negotiation_sessions USING btree (player_id, status)"
+    },
+    {
+      "tablename": "manager_negotiation_sessions",
+      "indexname": "manager_sessions_user",
+      "indexdef": "CREATE INDEX manager_sessions_user ON public.manager_negotiation_sessions USING btree (manager_user_id, tournament_id)"
+    },
+    {
+      "tablename": "manager_notifications",
+      "indexname": "manager_notifications_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_notifications_pkey ON public.manager_notifications USING btree (id)"
+    },
+    {
+      "tablename": "manager_notifications",
+      "indexname": "idx_mn_user",
+      "indexdef": "CREATE INDEX idx_mn_user ON public.manager_notifications USING btree (user_id)"
+    },
+    {
+      "tablename": "manager_notifications",
+      "indexname": "idx_mn_tournament_user",
+      "indexdef": "CREATE INDEX idx_mn_tournament_user ON public.manager_notifications USING btree (tournament_id, user_id)"
+    },
+    {
+      "tablename": "manager_notifications",
+      "indexname": "idx_mn_unread",
+      "indexdef": "CREATE INDEX idx_mn_unread ON public.manager_notifications USING btree (user_id, created_at DESC) WHERE (read_at IS NULL)"
+    },
+    {
+      "tablename": "manager_player_negotiation_profiles",
+      "indexname": "manager_player_negotiation_profiles_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_player_negotiation_profiles_pkey ON public.manager_player_negotiation_profiles USING btree (player_id)"
+    },
+    {
+      "tablename": "manager_player_negotiation_profiles",
+      "indexname": "manager_profiles_tournament",
+      "indexdef": "CREATE INDEX manager_profiles_tournament ON public.manager_player_negotiation_profiles USING btree (tournament_id)"
+    },
+    {
+      "tablename": "manager_season_bonuses",
+      "indexname": "manager_season_bonuses_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_season_bonuses_pkey ON public.manager_season_bonuses USING btree (season_id, team_id)"
+    },
+    {
+      "tablename": "manager_season_bonuses",
+      "indexname": "manager_bonus_tournament",
+      "indexdef": "CREATE INDEX manager_bonus_tournament ON public.manager_season_bonuses USING btree (tournament_id)"
+    },
+    {
+      "tablename": "manager_season_bonuses",
+      "indexname": "manager_bonus_team",
+      "indexdef": "CREATE INDEX manager_bonus_team ON public.manager_season_bonuses USING btree (team_id)"
+    },
+    {
+      "tablename": "manager_season_settings",
+      "indexname": "manager_season_settings_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_season_settings_pkey ON public.manager_season_settings USING btree (tournament_id)"
+    },
+    {
+      "tablename": "manager_seasons",
+      "indexname": "manager_seasons_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_seasons_pkey ON public.manager_seasons USING btree (id)"
+    },
+    {
+      "tablename": "manager_seasons",
+      "indexname": "manager_seasons_tournament_id_season_number_key",
+      "indexdef": "CREATE UNIQUE INDEX manager_seasons_tournament_id_season_number_key ON public.manager_seasons USING btree (tournament_id, season_number)"
+    },
+    {
+      "tablename": "manager_seasons",
+      "indexname": "manager_seasons_id_tournament_id_key",
+      "indexdef": "CREATE UNIQUE INDEX manager_seasons_id_tournament_id_key ON public.manager_seasons USING btree (id, tournament_id)"
+    },
+    {
+      "tablename": "manager_seasons",
+      "indexname": "manager_season_champion",
+      "indexdef": "CREATE INDEX manager_season_champion ON public.manager_seasons USING btree (champion_team_id)"
+    },
+    {
+      "tablename": "manager_seasons",
+      "indexname": "manager_one_active_season",
+      "indexdef": "CREATE UNIQUE INDEX manager_one_active_season ON public.manager_seasons USING btree (tournament_id) WHERE (status = 'ACTIVE'::text)"
+    },
+    {
+      "tablename": "manager_tournament_events",
+      "indexname": "manager_tournament_events_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_tournament_events_pkey ON public.manager_tournament_events USING btree (id)"
+    },
+    {
+      "tablename": "manager_tournament_events",
+      "indexname": "idx_mte_tournament",
+      "indexdef": "CREATE INDEX idx_mte_tournament ON public.manager_tournament_events USING btree (tournament_id)"
+    },
+    {
+      "tablename": "manager_tournament_events",
+      "indexname": "idx_mte_tournament_time",
+      "indexdef": "CREATE INDEX idx_mte_tournament_time ON public.manager_tournament_events USING btree (tournament_id, created_at DESC)"
+    },
+    {
+      "tablename": "manager_tournament_events",
+      "indexname": "idx_mte_actor",
+      "indexdef": "CREATE INDEX idx_mte_actor ON public.manager_tournament_events USING btree (actor_user_id)"
+    },
+    {
+      "tablename": "manager_tournament_events",
+      "indexname": "idx_mte_type",
+      "indexdef": "CREATE INDEX idx_mte_type ON public.manager_tournament_events USING btree (event_type)"
+    },
+    {
+      "tablename": "manager_tournament_invitations",
+      "indexname": "manager_tournament_invitations_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_tournament_invitations_pkey ON public.manager_tournament_invitations USING btree (id)"
+    },
+    {
+      "tablename": "manager_tournament_invitations",
+      "indexname": "mti_no_duplicate_pending",
+      "indexdef": "CREATE UNIQUE INDEX mti_no_duplicate_pending ON public.manager_tournament_invitations USING btree (tournament_id, user_id) WHERE (status = 'PENDING'::text)"
+    },
+    {
+      "tablename": "manager_tournament_invitations",
+      "indexname": "idx_mti_tournament",
+      "indexdef": "CREATE INDEX idx_mti_tournament ON public.manager_tournament_invitations USING btree (tournament_id)"
+    },
+    {
+      "tablename": "manager_tournament_invitations",
+      "indexname": "idx_mti_user",
+      "indexdef": "CREATE INDEX idx_mti_user ON public.manager_tournament_invitations USING btree (user_id)"
+    },
+    {
+      "tablename": "manager_tournament_invitations",
+      "indexname": "idx_mti_status",
+      "indexdef": "CREATE INDEX idx_mti_status ON public.manager_tournament_invitations USING btree (status)"
+    },
+    {
+      "tablename": "manager_tournament_members",
+      "indexname": "manager_tournament_members_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_tournament_members_pkey ON public.manager_tournament_members USING btree (id)"
+    },
+    {
+      "tablename": "manager_tournament_members",
+      "indexname": "mtm_user_tournament_unique",
+      "indexdef": "CREATE UNIQUE INDEX mtm_user_tournament_unique ON public.manager_tournament_members USING btree (tournament_id, user_id)"
+    },
+    {
+      "tablename": "manager_tournament_members",
+      "indexname": "idx_mtm_tournament",
+      "indexdef": "CREATE INDEX idx_mtm_tournament ON public.manager_tournament_members USING btree (tournament_id)"
+    },
+    {
+      "tablename": "manager_tournament_members",
+      "indexname": "idx_mtm_user",
+      "indexdef": "CREATE INDEX idx_mtm_user ON public.manager_tournament_members USING btree (user_id)"
+    },
+    {
+      "tablename": "manager_tournament_members",
+      "indexname": "idx_mtm_team",
+      "indexdef": "CREATE INDEX idx_mtm_team ON public.manager_tournament_members USING btree (team_id)"
+    },
+    {
+      "tablename": "manager_tournament_players",
+      "indexname": "idx_mtp_tournament",
+      "indexdef": "CREATE INDEX idx_mtp_tournament ON public.manager_tournament_players USING btree (tournament_id)"
+    },
+    {
+      "tablename": "manager_tournament_players",
+      "indexname": "idx_mtp_current_team",
+      "indexdef": "CREATE INDEX idx_mtp_current_team ON public.manager_tournament_players USING btree (current_team_id)"
+    },
+    {
+      "tablename": "manager_tournament_players",
+      "indexname": "idx_mtp_ownership_status",
+      "indexdef": "CREATE INDEX idx_mtp_ownership_status ON public.manager_tournament_players USING btree (ownership_status)"
+    },
+    {
+      "tablename": "manager_tournament_players",
+      "indexname": "manager_tournament_players_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_tournament_players_pkey ON public.manager_tournament_players USING btree (id)"
+    },
+    {
+      "tablename": "manager_tournament_players",
+      "indexname": "mtp_unique_catalog_player_per_tournament",
+      "indexdef": "CREATE UNIQUE INDEX mtp_unique_catalog_player_per_tournament ON public.manager_tournament_players USING btree (tournament_id, source_player_id) WHERE (source_player_id IS NOT NULL)"
+    },
+    {
+      "tablename": "manager_tournament_players",
+      "indexname": "mtp_unique_external_player_per_tournament",
+      "indexdef": "CREATE UNIQUE INDEX mtp_unique_external_player_per_tournament ON public.manager_tournament_players USING btree (tournament_id, external_source_key) WHERE (external_source_key IS NOT NULL)"
+    },
+    {
+      "tablename": "manager_tournament_players",
+      "indexname": "idx_mtp_source_player",
+      "indexdef": "CREATE INDEX idx_mtp_source_player ON public.manager_tournament_players USING btree (source_player_id)"
+    },
+    {
+      "tablename": "manager_tournament_players",
+      "indexname": "idx_mtp_tournament_status",
+      "indexdef": "CREATE INDEX idx_mtp_tournament_status ON public.manager_tournament_players USING btree (tournament_id, ownership_status)"
+    },
+    {
+      "tablename": "manager_tournament_teams",
+      "indexname": "manager_tournament_teams_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_tournament_teams_pkey ON public.manager_tournament_teams USING btree (id)"
+    },
+    {
+      "tablename": "manager_tournament_teams",
+      "indexname": "mtt_source_team_per_tournament",
+      "indexdef": "CREATE UNIQUE INDEX mtt_source_team_per_tournament ON public.manager_tournament_teams USING btree (tournament_id, source_auction_team_id) WHERE (source_auction_team_id IS NOT NULL)"
+    },
+    {
+      "tablename": "manager_tournament_teams",
+      "indexname": "mtt_one_manager_per_tournament",
+      "indexdef": "CREATE UNIQUE INDEX mtt_one_manager_per_tournament ON public.manager_tournament_teams USING btree (tournament_id, manager_user_id)"
+    },
+    {
+      "tablename": "manager_tournament_teams",
+      "indexname": "idx_mtt_tournament",
+      "indexdef": "CREATE INDEX idx_mtt_tournament ON public.manager_tournament_teams USING btree (tournament_id)"
+    },
+    {
+      "tablename": "manager_tournament_teams",
+      "indexname": "idx_mtt_manager",
+      "indexdef": "CREATE INDEX idx_mtt_manager ON public.manager_tournament_teams USING btree (manager_user_id)"
+    },
+    {
+      "tablename": "manager_tournaments",
+      "indexname": "manager_tournaments_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_tournaments_pkey ON public.manager_tournaments USING btree (id)"
+    },
+    {
+      "tablename": "manager_tournaments",
+      "indexname": "mt_source_auction_unique",
+      "indexdef": "CREATE UNIQUE INDEX mt_source_auction_unique ON public.manager_tournaments USING btree (source_auction_id)"
+    },
+    {
+      "tablename": "manager_tournaments",
+      "indexname": "idx_mt_host",
+      "indexdef": "CREATE INDEX idx_mt_host ON public.manager_tournaments USING btree (host_user_id)"
+    },
+    {
+      "tablename": "manager_tournaments",
+      "indexname": "idx_mt_status",
+      "indexdef": "CREATE INDEX idx_mt_status ON public.manager_tournaments USING btree (status)"
+    },
+    {
+      "tablename": "manager_tournaments",
+      "indexname": "idx_mt_state_user",
+      "indexdef": "CREATE INDEX idx_mt_state_user ON public.manager_tournaments USING btree (((state ->> 'hostUserId'::text))) WHERE (state IS NOT NULL)"
+    },
+    {
+      "tablename": "manager_tournaments",
+      "indexname": "manager_current_season",
+      "indexdef": "CREATE INDEX manager_current_season ON public.manager_tournaments USING btree (current_season_id)"
+    },
+    {
+      "tablename": "manager_trade_offers",
+      "indexname": "manager_trade_offers_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_trade_offers_pkey ON public.manager_trade_offers USING btree (id)"
+    },
+    {
+      "tablename": "manager_trade_offers",
+      "indexname": "idx_mto_tournament",
+      "indexdef": "CREATE INDEX idx_mto_tournament ON public.manager_trade_offers USING btree (tournament_id)"
+    },
+    {
+      "tablename": "manager_trade_offers",
+      "indexname": "idx_mto_from_team",
+      "indexdef": "CREATE INDEX idx_mto_from_team ON public.manager_trade_offers USING btree (from_team_id)"
+    },
+    {
+      "tablename": "manager_trade_offers",
+      "indexname": "idx_mto_to_team",
+      "indexdef": "CREATE INDEX idx_mto_to_team ON public.manager_trade_offers USING btree (to_team_id)"
+    },
+    {
+      "tablename": "manager_trade_offers",
+      "indexname": "idx_mto_status",
+      "indexdef": "CREATE INDEX idx_mto_status ON public.manager_trade_offers USING btree (tournament_id, status)"
+    },
+    {
+      "tablename": "manager_trade_offers",
+      "indexname": "idx_mto_offered_player",
+      "indexdef": "CREATE INDEX idx_mto_offered_player ON public.manager_trade_offers USING btree (offered_player_id)"
+    },
+    {
+      "tablename": "manager_trade_offers",
+      "indexname": "idx_mto_requested_player",
+      "indexdef": "CREATE INDEX idx_mto_requested_player ON public.manager_trade_offers USING btree (requested_player_id)"
+    },
+    {
+      "tablename": "manager_transfer_rules",
+      "indexname": "manager_transfer_rules_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_transfer_rules_pkey ON public.manager_transfer_rules USING btree (tournament_id)"
+    },
+    {
+      "tablename": "manager_transfer_transactions",
+      "indexname": "manager_transfer_transactions_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_transfer_transactions_pkey ON public.manager_transfer_transactions USING btree (id)"
+    },
+    {
+      "tablename": "manager_transfer_transactions",
+      "indexname": "idx_mtt_tx_tournament",
+      "indexdef": "CREATE INDEX idx_mtt_tx_tournament ON public.manager_transfer_transactions USING btree (tournament_id)"
+    },
+    {
+      "tablename": "manager_transfer_transactions",
+      "indexname": "idx_mtt_tx_player",
+      "indexdef": "CREATE INDEX idx_mtt_tx_player ON public.manager_transfer_transactions USING btree (player_id)"
+    },
+    {
+      "tablename": "manager_transfer_transactions",
+      "indexname": "idx_mtt_tx_group",
+      "indexdef": "CREATE INDEX idx_mtt_tx_group ON public.manager_transfer_transactions USING btree (transaction_group_id)"
+    },
+    {
+      "tablename": "manager_transfer_transactions",
+      "indexname": "idx_mtt_tx_trade",
+      "indexdef": "CREATE INDEX idx_mtt_tx_trade ON public.manager_transfer_transactions USING btree (related_trade_id)"
+    },
+    {
+      "tablename": "manager_transfer_transactions",
+      "indexname": "manager_transfer_buyout",
+      "indexdef": "CREATE INDEX manager_transfer_buyout ON public.manager_transfer_transactions USING btree (related_buyout_id)"
+    },
+    {
+      "tablename": "manager_transfer_windows",
+      "indexname": "manager_transfer_windows_pkey",
+      "indexdef": "CREATE UNIQUE INDEX manager_transfer_windows_pkey ON public.manager_transfer_windows USING btree (id)"
+    },
+    {
+      "tablename": "manager_transfer_windows",
+      "indexname": "mtw_one_open_per_tournament",
+      "indexdef": "CREATE UNIQUE INDEX mtw_one_open_per_tournament ON public.manager_transfer_windows USING btree (tournament_id) WHERE (status = 'OPEN'::text)"
+    },
+    {
+      "tablename": "manager_transfer_windows",
+      "indexname": "idx_mtw_tournament",
+      "indexdef": "CREATE INDEX idx_mtw_tournament ON public.manager_transfer_windows USING btree (tournament_id)"
+    }
+  ],
   "constraints": [
+    {
+      "table_name": "manager_buyout_cash_movements",
+      "conname": "manager_buyout_cash_movements_amount_units_check",
+      "definition": "CHECK ((amount_units >= 0))"
+    },
+    {
+      "table_name": "manager_buyout_cash_movements",
+      "conname": "manager_buyout_cash_movements_buyout_id_fkey",
+      "definition": "FOREIGN KEY (buyout_id) REFERENCES manager_buyout_offers(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_buyout_cash_movements",
+      "conname": "manager_buyout_cash_movements_check",
+      "definition": "CHECK ((from_team_id <> to_team_id))"
+    },
+    {
+      "table_name": "manager_buyout_cash_movements",
+      "conname": "manager_buyout_cash_movements_from_team_id_fkey",
+      "definition": "FOREIGN KEY (from_team_id) REFERENCES manager_tournament_teams(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_buyout_cash_movements",
+      "conname": "manager_buyout_cash_movements_pkey",
+      "definition": "PRIMARY KEY (buyout_id)"
+    },
+    {
+      "table_name": "manager_buyout_cash_movements",
+      "conname": "manager_buyout_cash_movements_to_team_id_fkey",
+      "definition": "FOREIGN KEY (to_team_id) REFERENCES manager_tournament_teams(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_buyout_cash_movements",
+      "conname": "manager_buyout_cash_movements_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_cash_amount_units_check",
+      "definition": "CHECK ((cash_amount_units >= 0))"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_check",
+      "definition": "CHECK ((from_team_id <> to_team_id))"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_check1",
+      "definition": "CHECK ((target_player_id IS DISTINCT FROM included_player_id))"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_check2",
+      "definition": "CHECK (((responding_team_id = from_team_id) OR (responding_team_id = to_team_id)))"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_check3",
+      "definition": "CHECK ((((offer_type = 'CASH'::text) AND (cash_amount_units > 0) AND (included_player_id IS NULL)) OR ((offer_type = 'CASH_PLUS_PLAYER'::text) AND (included_player_id IS NOT NULL))))"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_created_by_fkey",
+      "definition": "FOREIGN KEY (created_by) REFERENCES profiles(id)"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_from_team_id_fkey",
+      "definition": "FOREIGN KEY (from_team_id) REFERENCES manager_tournament_teams(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_included_player_id_fkey",
+      "definition": "FOREIGN KEY (included_player_id) REFERENCES manager_tournament_players(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_offer_type_check",
+      "definition": "CHECK ((offer_type = ANY (ARRAY['CASH'::text, 'CASH_PLUS_PLAYER'::text])))"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_parent_buyout_id_fkey",
+      "definition": "FOREIGN KEY (parent_buyout_id) REFERENCES manager_buyout_offers(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_responding_team_id_fkey",
+      "definition": "FOREIGN KEY (responding_team_id) REFERENCES manager_tournament_teams(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_status_check",
+      "definition": "CHECK ((status = ANY (ARRAY['PENDING'::text, 'ACCEPTED'::text, 'REJECTED'::text, 'COUNTERED'::text, 'CANCELLED'::text, 'EXPIRED'::text])))"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_target_player_id_fkey",
+      "definition": "FOREIGN KEY (target_player_id) REFERENCES manager_tournament_players(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_to_team_id_fkey",
+      "definition": "FOREIGN KEY (to_team_id) REFERENCES manager_tournament_teams(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "conname": "manager_buyout_offers_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
     {
       "table_name": "manager_external_player_import_rows",
       "conname": "manager_external_player_import_rows_import_id_fkey",
@@ -39,6 +661,11 @@
       "table_name": "manager_external_player_imports",
       "conname": "mepi_status_values",
       "definition": "CHECK ((status = ANY (ARRAY['PROCESSING'::text, 'COMPLETED'::text, 'FAILED'::text])))"
+    },
+    {
+      "table_name": "manager_fixtures",
+      "conname": "manager_fixture_season_scope",
+      "definition": "FOREIGN KEY (season_id, tournament_id) REFERENCES manager_seasons(id, tournament_id) ON DELETE CASCADE"
     },
     {
       "table_name": "manager_fixtures",
@@ -336,6 +963,101 @@
       "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
     },
     {
+      "table_name": "manager_season_bonuses",
+      "conname": "manager_season_bonuses_amount_units_check",
+      "definition": "CHECK ((amount_units >= 0))"
+    },
+    {
+      "table_name": "manager_season_bonuses",
+      "conname": "manager_season_bonuses_pkey",
+      "definition": "PRIMARY KEY (season_id, team_id)"
+    },
+    {
+      "table_name": "manager_season_bonuses",
+      "conname": "manager_season_bonuses_position_check",
+      "definition": "CHECK ((\"position\" > 0))"
+    },
+    {
+      "table_name": "manager_season_bonuses",
+      "conname": "manager_season_bonuses_season_id_fkey",
+      "definition": "FOREIGN KEY (season_id) REFERENCES manager_seasons(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_season_bonuses",
+      "conname": "manager_season_bonuses_season_id_tournament_id_fkey",
+      "definition": "FOREIGN KEY (season_id, tournament_id) REFERENCES manager_seasons(id, tournament_id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_season_bonuses",
+      "conname": "manager_season_bonuses_team_id_fkey",
+      "definition": "FOREIGN KEY (team_id) REFERENCES manager_tournament_teams(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_season_bonuses",
+      "conname": "manager_season_bonuses_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_season_settings",
+      "conname": "manager_season_settings_bonus_units_check",
+      "definition": "CHECK ((jsonb_typeof(bonus_units) = 'array'::text))"
+    },
+    {
+      "table_name": "manager_season_settings",
+      "conname": "manager_season_settings_pkey",
+      "definition": "PRIMARY KEY (tournament_id)"
+    },
+    {
+      "table_name": "manager_season_settings",
+      "conname": "manager_season_settings_resale_percent_check",
+      "definition": "CHECK (((resale_percent >= 40) AND (resale_percent <= 60)))"
+    },
+    {
+      "table_name": "manager_season_settings",
+      "conname": "manager_season_settings_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_seasons",
+      "conname": "manager_seasons_champion_team_id_fkey",
+      "definition": "FOREIGN KEY (champion_team_id) REFERENCES manager_tournament_teams(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_seasons",
+      "conname": "manager_seasons_final_standings_check",
+      "definition": "CHECK ((jsonb_typeof(final_standings) = 'array'::text))"
+    },
+    {
+      "table_name": "manager_seasons",
+      "conname": "manager_seasons_id_tournament_id_key",
+      "definition": "UNIQUE (id, tournament_id)"
+    },
+    {
+      "table_name": "manager_seasons",
+      "conname": "manager_seasons_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "manager_seasons",
+      "conname": "manager_seasons_season_number_check",
+      "definition": "CHECK ((season_number > 0))"
+    },
+    {
+      "table_name": "manager_seasons",
+      "conname": "manager_seasons_status_check",
+      "definition": "CHECK ((status = ANY (ARRAY['ACTIVE'::text, 'COMPLETED'::text, 'ARCHIVED'::text])))"
+    },
+    {
+      "table_name": "manager_seasons",
+      "conname": "manager_seasons_tournament_id_fkey",
+      "definition": "FOREIGN KEY (tournament_id) REFERENCES manager_tournaments(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "manager_seasons",
+      "conname": "manager_seasons_tournament_id_season_number_key",
+      "definition": "UNIQUE (tournament_id, season_number)"
+    },
+    {
       "table_name": "manager_tournament_events",
       "conname": "manager_tournament_events_actor_user_id_fkey",
       "definition": "FOREIGN KEY (actor_user_id) REFERENCES profiles(id) ON DELETE SET NULL"
@@ -557,6 +1279,11 @@
     },
     {
       "table_name": "manager_tournaments",
+      "conname": "manager_tournaments_current_season_id_fkey",
+      "definition": "FOREIGN KEY (current_season_id) REFERENCES manager_seasons(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_tournaments",
       "conname": "manager_tournaments_host_user_id_fkey",
       "definition": "FOREIGN KEY (host_user_id) REFERENCES profiles(id) ON DELETE RESTRICT"
     },
@@ -588,7 +1315,7 @@
     {
       "table_name": "manager_tournaments",
       "conname": "mt_status_values",
-      "definition": "CHECK ((status = ANY (ARRAY['SETUP'::text, 'INVITING'::text, 'ACTIVE'::text, 'COMPLETED'::text, 'ARCHIVED'::text])))"
+      "definition": "CHECK ((status = ANY (ARRAY['SETUP'::text, 'INVITING'::text, 'ACTIVE'::text, 'COMPLETED'::text, 'ARCHIVED'::text, 'ENDED'::text])))"
     },
     {
       "table_name": "manager_trade_offers",
@@ -692,6 +1419,11 @@
     },
     {
       "table_name": "manager_transfer_transactions",
+      "conname": "manager_transfer_transactions_related_buyout_id_fkey",
+      "definition": "FOREIGN KEY (related_buyout_id) REFERENCES manager_buyout_offers(id) ON DELETE SET NULL"
+    },
+    {
+      "table_name": "manager_transfer_transactions",
       "conname": "manager_transfer_transactions_related_trade_id_fkey",
       "definition": "FOREIGN KEY (related_trade_id) REFERENCES manager_trade_offers(id) ON DELETE SET NULL"
     },
@@ -713,7 +1445,7 @@
     {
       "table_name": "manager_transfer_transactions",
       "conname": "mtt_type_values",
-      "definition": "CHECK ((type = ANY (ARRAY['AUCTION_IMPORT'::text, 'FREE_AGENT_SIGNING'::text, 'TRADE'::text, 'RELEASE'::text])))"
+      "definition": "CHECK ((type = ANY (ARRAY['AUCTION_IMPORT'::text, 'FREE_AGENT_SIGNING'::text, 'TRADE'::text, 'RELEASE'::text, 'BUYOUT'::text])))"
     },
     {
       "table_name": "manager_transfer_windows",
@@ -761,6 +1493,167 @@
     }
   ],
   "columns": [
+    {
+      "table_name": "manager_buyout_cash_movements",
+      "column_name": "buyout_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_cash_movements",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_cash_movements",
+      "column_name": "from_team_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_cash_movements",
+      "column_name": "to_team_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_cash_movements",
+      "column_name": "amount_units",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_cash_movements",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "from_team_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "to_team_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "target_player_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "offer_type",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "cash_amount_units",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "included_player_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": "'PENDING'::text"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "parent_buyout_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "responding_team_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "created_by",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "target_ownership_token",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "included_ownership_token",
+      "data_type": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_buyout_offers",
+      "column_name": "resolved_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
     {
       "table_name": "manager_external_player_import_rows",
       "column_name": "id",
@@ -962,6 +1855,13 @@
       "column_name": "completed_at",
       "data_type": "timestamp with time zone",
       "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_fixtures",
+      "column_name": "season_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
       "column_default": null
     },
     {
@@ -1411,6 +2311,139 @@
       "data_type": "timestamp with time zone",
       "is_nullable": "NO",
       "column_default": "now()"
+    },
+    {
+      "table_name": "manager_season_bonuses",
+      "column_name": "season_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_season_bonuses",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_season_bonuses",
+      "column_name": "team_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_season_bonuses",
+      "column_name": "position",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_season_bonuses",
+      "column_name": "amount_units",
+      "data_type": "bigint",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_season_bonuses",
+      "column_name": "awarded_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_season_settings",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_season_settings",
+      "column_name": "resale_percent",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": "50"
+    },
+    {
+      "table_name": "manager_season_settings",
+      "column_name": "bonus_units",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[60, 48, 40, 32, 24, 20, 16, 12, 8, 4]'::jsonb"
+    },
+    {
+      "table_name": "manager_seasons",
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "table_name": "manager_seasons",
+      "column_name": "tournament_id",
+      "data_type": "uuid",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_seasons",
+      "column_name": "season_number",
+      "data_type": "integer",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_seasons",
+      "column_name": "status",
+      "data_type": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_seasons",
+      "column_name": "champion_team_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_seasons",
+      "column_name": "started_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "manager_seasons",
+      "column_name": "completed_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_seasons",
+      "column_name": "ended_early",
+      "data_type": "boolean",
+      "is_nullable": "NO",
+      "column_default": "false"
+    },
+    {
+      "table_name": "manager_seasons",
+      "column_name": "bonuses_awarded_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "manager_seasons",
+      "column_name": "final_standings",
+      "data_type": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'[]'::jsonb"
     },
     {
       "table_name": "manager_tournament_events",
@@ -1917,6 +2950,13 @@
       "column_default": null
     },
     {
+      "table_name": "manager_tournaments",
+      "column_name": "current_season_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
       "table_name": "manager_trade_offers",
       "column_name": "id",
       "data_type": "uuid",
@@ -2106,6 +3146,13 @@
       "column_default": "now()"
     },
     {
+      "table_name": "manager_transfer_transactions",
+      "column_name": "related_buyout_id",
+      "data_type": "uuid",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
       "table_name": "manager_transfer_windows",
       "column_name": "id",
       "data_type": "uuid",
@@ -2164,8 +3211,8 @@
   ],
   "counts": [
     {
-      "completed_auctions": "1",
-      "tournaments": "2"
+      "completed_auctions": "2",
+      "tournaments": "3"
     }
   ]
 }

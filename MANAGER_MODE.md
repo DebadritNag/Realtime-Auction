@@ -20,9 +20,11 @@ Immutable creation metadata and command receipts/sequences live in `manager_tour
 - `/manager-mode/create/[auctionId]`: completed auction setup and external CSV preview.
 - `/manager-mode/[id]`: dashboard, squad, fixtures, standings, teams, notifications and host controls.
 - `/manager-mode/[id]/transfers`: overview and host transfer rules.
-- Transfer child routes: `free-agents`, `free-agents/[playerId]`, `trades`, `offers`, `history`.
+- Transfer child routes: `free-agents`, `free-agents/[playerId]`, `trades`, `buyout`, `offers`, `history`.
 
-Teams receive equal transfer budgets, default 200 half-crore units (₹100 Cr), independent of auction purses. Host joins automatically; other managers accept their own invitations. Single/double round robin and odd-team byes are supported. Standings derive from recorded completed fixtures: 3/1/0 points, goal difference, goals scored, then stable team ID.
+New teams receive the configured base transfer budget (default 200 half-crore units / ₹100 Cr) plus their unused auction purse by default. Set `addUnusedAuctionPurse: false` for equal base-only budgets, or set `startingBudgetUnits: 0` for remainder-only budgets. Fastify calculates actual spending from the purchase ledger. Existing tournaments are not retroactively credited. Host joins automatically; other managers accept their own invitations. Single/double round robin and odd-team byes are supported. Standings derive from recorded completed fixtures: 3/1/0 points, goal difference, goals scored, then stable team ID.
+
+See [MANAGER_SEASONS.md](MANAGER_SEASONS.md) for multi-season lifecycle, player sales, buyouts, rewards, migrations and verification.
 
 ## REST and realtime
 

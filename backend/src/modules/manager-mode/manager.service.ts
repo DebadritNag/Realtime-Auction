@@ -1,3 +1,4 @@
+import {ensureSeasons,currentSeason,seasonFixtures,completeSeason,seasonAction,quoteSale} from './seasons/season.engine.js';
 import {buyoutAction,synchronizeBuyouts} from './buyout/buyout.engine.js';
 import {describeOffer} from './negotiation/offer-reaction.js';
 import {SafeDialogueProvider,type NegotiationDialogueProvider} from './negotiation/dialogue.provider.js';
@@ -23,7 +24,7 @@ export class ManagerModeService {
     } }
     private notify(t: Tournament, type: string, message: string, users = t.teams.map(x => x.managerUserId)) { for (const userId of users)
         t.notifications.push({ id: randomUUID(), userId, type, title: type.replaceAll('_', ' '), message, read: false, createdAt: Date.now(), metadata: { tournamentId: t.id } }); }
-    view(t: Tournament, userId: string): TournamentState { const team = t.teams.find(x => x.managerUserId === userId); requireThat(team, 'NOT_TOURNAMENT_MEMBER', 'You are not invited to this tournament.', 403); const { startingSnapshot, receipts, negotiation, ...state } = structuredClone(t); return { ...state,buyouts:(state.buyouts??[]).filter(o=>o.fromTeamId===team.id||o.toTeamId===team.id||o.status==='ACCEPTED'), negotiation:publicNegotiations(t,team.id), audit:state.audit.map(a=>({...a,detail:'',userId:a.userId===userId?userId:''})), notifications: state.notifications.filter(n => n.userId === userId), trades: state.trades.filter(x => x.fromTeamId === team.id || x.toTeamId === team.id || t.hostUserId === userId), standings: standings(t.teams, t.fixtures), myTeamId: team.id, isHost: t.hostUserId === userId }; }
+    view(t: Tournament, userId: string): TournamentState { ensureSeasons(t); const team = t.teams.find(x => x.managerUserId === userId); requireThat(team, 'NOT_TOURNAMENT_MEMBER', 'You are not invited to this tournament.', 403); const { startingSnapshot, receipts, negotiation, ...state } = structuredClone(t); return { ...state,seasonFixturesById:Object.fromEntries(t.seasonData!.seasons.map(s=>[s.id,t.fixtures.filter(f=>f.seasonId===s.id)])),modeStatus:t.status==='ENDED'||t.status==='ARCHIVED'?'ENDED':'ACTIVE',fixtures:seasonFixtures(t),saleQuotes:Object.fromEntries(t.players.filter(p=>p.currentTeamId===team.id).map(p=>[p.id,quoteSale(t,p)])),buyouts:(state.buyouts??[]).filter(o=>o.fromTeamId===team.id||o.toTeamId===team.id||o.status==='ACCEPTED'), negotiation:publicNegotiations(t,team.id), audit:state.audit.map(a=>({...a,detail:'',userId:a.userId===userId?userId:''})), notifications: state.notifications.filter(n => n.userId === userId), trades: state.trades.filter(x => x.fromTeamId === team.id || x.toTeamId === team.id || t.hostUserId === userId), standings: currentSeason(t).status==='ACTIVE'?standings(t.teams,seasonFixtures(t)):currentSeason(t).finalStandings.length?currentSeason(t).finalStandings:standings(t.teams,seasonFixtures(t)), myTeamId: team.id, isHost: t.hostUserId === userId }; }
     async state(id: string, user: string) { const t = await this.repository.find(id); requireThat(t, 'TOURNAMENT_NOT_FOUND', 'Tournament not found.', 404); return this.view(t, user); }
     async list(user: string) { return (await this.repository.listForUser(user)).map(t => { const team = t.teams.find(x => x.managerUserId === user)!; return { id: t.id, name: t.name, sourceAuctionId: t.sourceAuctionId, sourceAuctionCode: t.sourceAuctionCode, status: t.status, teamName: team.name, invitation: team.invitation, unread: t.notifications.filter(n => n.userId === user && !n.read).length, sequence: t.sequence }; }); }
     async preview(id: string, user: string, csv = '') { const room = await this.auction(id); requireThat(room, 'ROOM_NOT_FOUND', 'Auction not found.', 404); requireThat(room.hostUserId === user, 'HOST_ONLY', 'Only the auction host may configure Manager Mode.', 403); requireThat(room.status === 'COMPLETED', 'AUCTION_NOT_COMPLETED', 'Complete the auction first.'); assertRoom(room); const usernames=await this.identities?.findUsernames(room.teams.map(t=>t.userId))??{}; return { room:{...room,teams:room.teams.map(t=>({...t,managerUsername:usernames[t.userId]??t.managerUsername}))}, existing: await this.repository.findByAuction(room.id), importReport: importExternalCsv(csv, room.players.flatMap(p => [p.id,...(p.externalId?[p.externalId]:[])])) }; }
@@ -37,11 +38,12 @@ export class ManagerModeService {
         requireThat(room.teams.length >= 2, 'NOT_ENOUGH_TEAMS', 'At least two teams are required.');
         requireThat(importReport.invalidRows.length === 0, 'INVALID_IMPORT', 'Correct invalid CSV rows before importing.', 400, { rows: importReport.invalidRows });
         const names = await this.identities?.findUsernames(room.teams.map(t => t.userId)) ?? {};
-        const teams = room.teams.map(t => ({ id: t.id, sourceAuctionTeamId: t.id, name: t.name, logoUrl: t.logoUrl ?? '', logoEmoji: t.logoEmoji ?? '', managerUserId: t.userId, managerUsername: names[t.userId] ?? t.managerUsername ?? null, invitation: t.userId === user ? 'JOINED' as const : 'PENDING' as const, auctionBudgetUnits: t.startingBudgetUnits, auctionSpentUnits: t.spentUnits, auctionRemainingUnits: t.startingBudgetUnits - t.spentUnits, transferBudgetUnits: settings.startingBudgetUnits }));
+        const teams = room.teams.map(t => ({ id: t.id, sourceAuctionTeamId: t.id, name: t.name, logoUrl: t.logoUrl ?? '', logoEmoji: t.logoEmoji ?? '', managerUserId: t.userId, managerUsername: names[t.userId] ?? t.managerUsername ?? null, invitation: t.userId === user ? 'JOINED' as const : 'PENDING' as const, auctionBudgetUnits: t.startingBudgetUnits, auctionSpentUnits: t.spentUnits, auctionRemainingUnits: t.startingBudgetUnits - t.spentUnits, transferBudgetUnits: settings.startingBudgetUnits+(settings.addUnusedAuctionPurse?t.startingBudgetUnits-room.purchases.filter(p=>p.teamId===t.id).reduce((sum,p)=>sum+p.priceUnits,0):0) }));
         const players: ManagerPlayer[] = room.players.filter(p => p.status === 'SOLD' || p.status === 'UNSOLD').map(p => { const purchase = room.purchases.find(x => x.playerId === p.id); requireThat(p.status !== 'SOLD' || purchase, 'INVALID_AUCTION_SNAPSHOT', 'A sold player has no purchase record.'); return { id: p.id, name: p.name, overall: p.ovr, position: p.subPosition ?? p.position, category: p.position, secondaryPositions: p.secondaryPositions ?? '', club: p.club ?? '', nationality: p.nationality ?? '', imageUrl: p.photoUrl ?? '', ...(p.age !== undefined ? { age: p.age } : {}), stats: p.stats, tier: p.ratingTier ?? '', source: purchase ? 'AUCTION_SQUAD' : 'AUCTION_UNSOLD', currentTeamId: purchase?.teamId ?? null, ownershipStatus: purchase ? 'OWNED' : 'FREE_AGENT', availability: purchase ? 'SIGNED' : 'AVAILABLE', auctionPurchasePriceUnits: purchase?.priceUnits ?? null, acquisitionType: purchase ? 'AUCTION_PURCHASE' : null, acquisitionPriceUnits: purchase?.priceUnits ?? null, metadata: { potId: p.potId } }; });
         players.push(...importReport.players);
         const now = Date.now();
-        const t: Tournament = { id: randomUUID(), sourceAuctionId: room.id, sourceAuctionCode: room.code, sourceAuctionName: room.auctionName, name: settings.name, hostUserId: user, status: 'INVITING', format: settings.format, budgetMode: 'EQUAL', startingBudgetUnits: settings.startingBudgetUnits, createdAt: now, updatedAt: now, sequence: 1, transferWindowOpen: false, teams, players, fixtures: [], trades: [], transactions: room.purchases.map(p => ({ id: randomUUID(), playerId: p.playerId, fromTeamId: null, toTeamId: p.teamId, type: 'AUCTION_PURCHASE', amountUnits: p.priceUnits, tradeId: null, at: p.at })), notifications: [], audit: [], startingSnapshot: structuredClone({ teams, players, auctionSequence: room.sequence, importReport }), receipts: {} };
+        const t: Tournament = { id: randomUUID(), sourceAuctionId: room.id, sourceAuctionCode: room.code, sourceAuctionName: room.auctionName, name: settings.name, hostUserId: user, status: 'INVITING', format: settings.format, budgetMode: settings.addUnusedAuctionPurse?'CARRY_OVER':'EQUAL', startingBudgetUnits: settings.startingBudgetUnits, createdAt: now, updatedAt: now, sequence: 1, transferWindowOpen: false, teams, players, fixtures: [], trades: [], transactions: room.purchases.map(p => ({ id: randomUUID(), playerId: p.playerId, fromTeamId: null, toTeamId: p.teamId, type: 'AUCTION_PURCHASE', amountUnits: p.priceUnits, tradeId: null, at: p.at })), notifications: [], audit: [], startingSnapshot: structuredClone({ teams, players, auctionSequence: room.sequence, importReport }), receipts: {} };
+        ensureSeasons(t);
         ensureNegotiations(t);
         this.notify(t, 'INVITATION', 'Your auction team has been invited to ' + t.name);
         const result = await this.repository.createUnique(t);
@@ -63,10 +65,12 @@ export class ManagerModeService {
             }
             const host = () => requireThat(t.hostUserId === user, 'HOST_ONLY', 'Only the host may perform this action.', 403);
             if (action.type !== 'READ_NOTIFICATION')
-                requireThat(t.status !== 'ARCHIVED', 'TOURNAMENT_ARCHIVED', 'Tournament is archived.');
+                requireThat(t.status !== 'ARCHIVED'&&t.status!=='ENDED', 'MANAGER_MODE_ENDED', 'Manager Mode has ended and is read-only.',409);
             if (action.type !== 'INVITATION' && action.type !== 'READ_NOTIFICATION')
                 requireThat(team.invitation === 'JOINED', 'INVITATION_NOT_ACCEPTED', 'Accept your invitation first.', 403);
+            ensureSeasons(t);
             switch (action.type) {
+ case 'END_CURRENT_SEASON':case 'START_NEXT_SEASON':case 'END_MANAGER_MODE':case 'SEASON_SETTINGS':case 'SELL_PLAYER':seasonAction(t,user,action);break;
  case 'BUYOUT':case 'BUYOUT_COUNTER':case 'BUYOUT_RESPONSE':{const offer=buyoutAction(t,user,action);const parties=t.teams.filter(x=>x.id===offer.fromTeamId||x.id===offer.toTeamId);const target=t.players.find(p=>p.id===offer.targetPlayerId)!;const event=action.type==='BUYOUT'?'BUYOUT_CREATED':action.type==='BUYOUT_COUNTER'?'BUYOUT_COUNTERED':'BUYOUT_'+offer.status;this.notify(t,event,target.name+' · ₹'+offer.cashAmountUnits/2+' Cr'+(offer.includedPlayerId?' + '+t.players.find(p=>p.id===offer.includedPlayerId)!.name:'')+' · '+offer.status.toLowerCase(),parties.map(x=>x.managerUserId));if(offer.status==='ACCEPTED'){this.notify(t,'PLAYER_ACQUIRED','Acquired '+target.name,[t.teams.find(x=>x.id===offer.fromTeamId)!.managerUserId]);this.notify(t,'PLAYER_SOLD','Sold '+target.name,[t.teams.find(x=>x.id===offer.toTeamId)!.managerUserId]);}break;}
  case 'START_NEGOTIATION':case 'OFFER_FREE_AGENT':case 'END_NEGOTIATION':case 'CONFIRM_SIGNING':case 'TRANSFER_RULES':negotiationAction(t,user,action);break;
                 case 'INVITATION':
@@ -77,9 +81,9 @@ export class ManagerModeService {
                     break;
                 case 'GENERATE_FIXTURES':
                     host();
-                    requireThat(!t.fixtures.length, 'FIXTURES_EXIST', 'Fixtures have already been generated.', 409);
+                    requireThat(!seasonFixtures(t).length&&currentSeason(t).status==='ACTIVE', 'FIXTURES_EXIST', 'Fixtures have already been generated.', 409);
                     requireThat(t.teams.every(x => x.invitation === 'JOINED'), 'INVITATIONS_PENDING', 'All teams must accept before fixtures are generated.');
-                    t.fixtures = generateFixtures(t.teams.map(x => x.id), t.format === 'DOUBLE_ROUND_ROBIN');
+                    t.fixtures = generateFixtures(t.teams.map(x => x.id), t.format === 'DOUBLE_ROUND_ROBIN').map(f=>({...f,seasonId:currentSeason(t).id}));
                     t.status = 'ACTIVE';
                     break;
                 case 'SCORE':
@@ -88,6 +92,7 @@ export class ManagerModeService {
                     requireThat(t.status === 'ACTIVE', 'INVALID_STATE', 'Scores can only change during an active tournament.');
                     const f = t.fixtures.find(x => x.id === action.fixtureId);
                     requireThat(f, 'FIXTURE_NOT_FOUND', 'Fixture not found.', 404);
+                    requireThat(currentSeason(t).status==='ACTIVE'&&f.seasonId===currentSeason(t).id,'HISTORICAL_SEASON','Closed seasons and historical results are read-only.',409);
                     f.homeScore = action.type === 'SCORE' ? action.homeScore : null;
                     f.awayScore = action.type === 'SCORE' ? action.awayScore : null;
                     f.status = action.type === 'SCORE' ? 'COMPLETED' : 'SCHEDULED';
@@ -96,7 +101,7 @@ export class ManagerModeService {
                 }
                 case 'WINDOW':
                     host();
-                    requireThat(t.status === 'ACTIVE', 'INVALID_STATE', 'Start the tournament first.');
+                    requireThat(t.status === 'ACTIVE'&&currentSeason(t).status==='ACTIVE', 'INVALID_STATE', 'Start an active season first.');
                     t.transferWindowOpen = action.open;
                     if (!action.open)
                         for (const trade of t.trades)
@@ -111,6 +116,9 @@ export class ManagerModeService {
                         requireThat(t.fixtures.length && t.fixtures.every(f => f.status === 'COMPLETED'), 'MATCHES_PENDING', 'Complete all fixtures first.');
                     if (action.status === 'ACTIVE')
                         requireThat(t.fixtures.length && t.status !== 'ARCHIVED', 'INVALID_STATE', 'Generate fixtures first.');
+                    requireThat(action.status!=='ARCHIVED','CONFIRMATION_REQUIRED','Use End Manager Mode with explicit confirmation.');
+                    if(action.status==='COMPLETED'){completeSeason(t);break;}
+                    requireThat(currentSeason(t).status==='ACTIVE','SEASON_COMPLETED','Closed seasons cannot be reopened. Start the next season.');
                     t.status = action.status;
                     if (action.status !== 'ACTIVE') {
                         t.transferWindowOpen = false;
@@ -175,6 +183,8 @@ export class ManagerModeService {
                     this.notify(t, 'INVITATION', 'Please respond to your tournament invitation.', t.teams.filter(x => x.invitation === 'PENDING').map(x => x.managerUserId));
                     break;
             }
+            if(action.type==='SCORE'&&currentSeason(t).status==='ACTIVE'&&seasonFixtures(t).length&&seasonFixtures(t).every(f=>f.status==='COMPLETED'))completeSeason(t);
+            ensureNegotiations(t);
             synchronizeBuyouts(t);
             synchronizeWindow(t);
             t.receipts[key] = { fingerprint };
@@ -183,7 +193,7 @@ export class ManagerModeService {
             t.audit.push({ id: randomUUID(), type: action.type, userId: user, at: t.updatedAt, detail: JSON.stringify(action) });
             if (['START_NEGOTIATION','OFFER_FREE_AGENT','END_NEGOTIATION'].includes(action.type)) this.notify(t,action.type,'Your negotiation has been updated.',[user]);
             else if(action.type==='CONFIRM_SIGNING'){const session=t.negotiation!.sessions.find(s=>s.id===action.sessionId)!;this.notify(t,'PLAYER_TRANSFERRED',t.players.find(p=>p.id===session.playerId)!.name+' has signed for '+team.name+'.');}
-            else if (!['BUYOUT','BUYOUT_COUNTER','BUYOUT_RESPONSE','READ_NOTIFICATION', 'ANNOUNCE', 'RESEND_INVITATIONS', 'INVITATION'].includes(action.type))
+            else if (!['END_CURRENT_SEASON','START_NEXT_SEASON','END_MANAGER_MODE','SEASON_SETTINGS','SELL_PLAYER','BUYOUT','BUYOUT_COUNTER','BUYOUT_RESPONSE','READ_NOTIFICATION', 'ANNOUNCE', 'RESEND_INVITATIONS', 'INVITATION'].includes(action.type))
                 this.notify(t, action.type, 'Tournament updated: ' + action.type.replaceAll('_', ' ').toLowerCase());
             changed = true;
         });
@@ -194,10 +204,14 @@ export class ManagerModeService {
  const player=result.players.find(p=>p.id===session.playerId)!;
  const publicSession=publicNegotiations(result,session.teamId).sessions.find(s=>s.id===session.id)!;
  const reply=await new SafeDialogueProvider(this.dialogue).generateResponse({reaction:describeOffer(result,session),player:{name:player.name,position:player.position,overall:player.overall},personality:result.negotiation!.profiles.find(p=>p.playerId===player.id)!.archetype,emotion:message.emotion!,decision:message.decision!,counterUnits:session.lastCounterUnits,offerUnits:session.lastOfferUnits,club:{name:result.teams.find(t=>t.id===session.teamId)!.name},competition:publicSession.competition,fallback:message.message});
- if(reply.message!==message.message){try{result=await this.repository.mutate(id,draft=>{const target=draft.negotiation?.messages.find(m=>m.id===message.id);if(!target)return;target.message=reply.message;target.provider=reply.provider??'LLM';draft.sequence++;draft.updatedAt=Date.now();draft.audit.push({id:randomUUID(),type:'DIALOGUE_GENERATED',userId:user,at:Date.now(),detail:JSON.stringify({type:'DIALOGUE_GENERATED'})});});}catch{/* The committed deterministic template remains available. */}}
+ if(reply.message!==message.message){try{result=await this.repository.mutate(id,draft=>{if(draft.status==='ENDED'||draft.status==='ARCHIVED')return;const target=draft.negotiation?.messages.find(m=>m.id===message.id);if(!target)return;target.message=reply.message;target.provider=reply.provider??'LLM';draft.sequence++;draft.updatedAt=Date.now();draft.audit.push({id:randomUUID(),type:'DIALOGUE_GENERATED',userId:user,at:Date.now(),detail:JSON.stringify({type:'DIALOGUE_GENERATED'})});});}catch{/* The committed deterministic template remains available. */}}
  }
  if (changed) {
  this.emit(result,'MANAGER_MODE_UPDATED');
+ if(action.type==='END_CURRENT_SEASON'||(action.type==='SCORE'||action.type==='STATUS'&&action.status==='COMPLETED')&&currentSeason(result).status==='COMPLETED'){this.emit(result,'SEASON_COMPLETED');this.emit(result,'LEAGUE_SHIELD_AWARDED');this.emit(result,'SEASON_BONUSES_AWARDED');this.emit(result,'TEAM_BUDGET_UPDATED');}
+ if(action.type==='START_NEXT_SEASON')this.emit(result,'NEXT_SEASON_STARTED');
+ if(action.type==='END_MANAGER_MODE')this.emit(result,'MANAGER_MODE_ENDED');
+ if(action.type==='SELL_PLAYER'){this.emit(result,'MANAGER_PLAYER_SOLD');this.emit(result,'TEAM_BUDGET_UPDATED');}
  if(action.type==='BUYOUT'||action.type==='BUYOUT_COUNTER'||action.type==='BUYOUT_RESPONSE'){const offer=action.type==='BUYOUT_RESPONSE'?result.buyouts!.find(o=>o.id===action.buyoutId)!:result.buyouts!.at(-1)!;const audience=result.teams.filter(x=>x.id===offer.fromTeamId||x.id===offer.toTeamId).map(x=>x.managerUserId);this.emit(result,action.type==='BUYOUT'?'BUYOUT_CREATED':action.type==='BUYOUT_COUNTER'?'BUYOUT_COUNTERED':offer.status==='ACCEPTED'?'BUYOUT_ACCEPTED':offer.status==='REJECTED'?'BUYOUT_REJECTED':'BUYOUT_UPDATED',audience);if(offer.status==='ACCEPTED'){this.emit(result,'PLAYER_TRANSFERRED');this.emit(result,'TEAM_BUDGET_UPDATED');}}
  if(action.type==='START_NEGOTIATION')this.emit(result,'NEGOTIATION_STARTED',[user]);
  if(action.type==='OFFER_FREE_AGENT'||action.type==='END_NEGOTIATION')this.emit(result,'NEGOTIATION_UPDATED',[user]);

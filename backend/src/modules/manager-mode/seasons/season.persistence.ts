@@ -1,0 +1,24 @@
+import type {Db} from '../auction-snapshot.repository.js';
+import type {Tournament} from '../manager.types.js';
+import type {SeasonData,Season} from './season.types.js';
+import {ensureSeasons} from './season.engine.js';
+import {requireThat} from '../../../domain/errors.js';
+import type {Json} from '../../../types/database.generated.js';
+const json=(db:Db,value:unknown)=>db.json(JSON.parse(JSON.stringify(value)) as Json);
+export async function loadSeasons(db:Db,id:string,current:string|null):Promise<SeasonData>{
+ const [seasons,bonuses,settings]=await Promise.all([db`select * from public.manager_seasons where tournament_id=${id} order by season_number`,db`select * from public.manager_season_bonuses where tournament_id=${id} order by season_id,position`,db`select * from public.manager_season_settings where tournament_id=${id}`]);
+ requireThat(seasons.length,'SEASON_MISSING','Season migration or initialization is missing.',409);
+ return {currentSeasonId:current??seasons.at(-1)!.id,seasons:seasons.map(s=>({id:s.id,number:s.season_number,status:s.status as Season['status'],championTeamId:s.champion_team_id,startedAt:new Date(s.started_at).getTime(),completedAt:s.completed_at?new Date(s.completed_at).getTime():null,endedEarly:s.ended_early,bonusesAwardedAt:s.bonuses_awarded_at?new Date(s.bonuses_awarded_at).getTime():null,finalStandings:s.final_standings})),bonuses:bonuses.map(b=>({seasonId:b.season_id,teamId:b.team_id,position:b.position,amountUnits:Number(b.amount_units),awardedAt:new Date(b.awarded_at).getTime()})),settings:{resalePercent:settings[0]?.resale_percent??50,bonusUnits:settings[0]?.bonus_units??[]}};
+}
+/** Same transaction as results, budgets, ownership, receipts and notifications. */
+export async function persistSeasons(db:Db,t:Tournament,before?:Tournament){
+ const data=ensureSeasons(t),previous=before?.seasonData;
+ for(const s of data.seasons){const old=previous?.seasons.find(x=>x.id===s.id);if(JSON.stringify(s)===JSON.stringify(old))continue;const row={id:s.id,tournament_id:t.id,season_number:s.number,status:s.status,champion_team_id:s.championTeamId,started_at:new Date(s.startedAt),completed_at:s.completedAt?new Date(s.completedAt):null,ended_early:s.endedEarly,bonuses_awarded_at:s.bonusesAwardedAt?new Date(s.bonusesAwardedAt):null,final_standings:json(db,s.finalStandings)};if(!old)await db`insert into public.manager_seasons ${db(row)}`;else await db`update public.manager_seasons set ${db(row)} where id=${s.id} and tournament_id=${t.id}`;}
+ if(!previous||data.currentSeasonId!==previous.currentSeasonId)await db`update public.manager_tournaments set current_season_id=${data.currentSeasonId} where id=${t.id}`;
+ if(!previous||JSON.stringify(previous.settings)!==JSON.stringify(data.settings))await db`insert into public.manager_season_settings(tournament_id,resale_percent,bonus_units) values(${t.id},${data.settings.resalePercent},${json(db,data.settings.bonusUnits)}) on conflict(tournament_id) do update set resale_percent=excluded.resale_percent,bonus_units=excluded.bonus_units`;
+ const credits=new Map<string,number>();const bonuses=data.bonuses.filter(b=>!previous?.bonuses.some(x=>x.seasonId===b.seasonId&&x.teamId===b.teamId));
+ if(bonuses.length){await db`insert into public.manager_season_bonuses ${db(bonuses.map(b=>({season_id:b.seasonId,tournament_id:t.id,team_id:b.teamId,position:b.position,amount_units:b.amountUnits,awarded_at:new Date(b.awardedAt)})))}`;for(const b of bonuses)credits.set(b.teamId,(credits.get(b.teamId)??0)+b.amountUnits);}
+ const sales=t.transactions.filter(x=>x.type==='RELEASE'&&!before?.transactions.some(y=>y.id===x.id));
+ for(const sale of sales){const [p]=await db<{current_team_id:string|null}[]>`select current_team_id from public.manager_tournament_players where id=${sale.playerId} and tournament_id=${t.id} for update`;requireThat(p?.current_team_id===sale.fromTeamId,'INVALID_OWNERSHIP','Player ownership changed before sale.',409);await db`update public.manager_tournament_players set current_team_id=null,ownership_status='FREE_AGENT',manager_mode_acquisition_price_units=null,updated_at=now() where id=${sale.playerId} and tournament_id=${t.id}`;await db`insert into public.manager_transfer_transactions ${db({id:sale.id,tournament_id:t.id,player_id:sale.playerId,from_team_id:sale.fromTeamId,to_team_id:null,type:'RELEASE',amount_units:sale.amountUnits,created_at:new Date(sale.at)})}`;credits.set(sale.fromTeamId!,(credits.get(sale.fromTeamId!)??0)+sale.amountUnits);}
+ if(credits.size){const ids=[...credits.keys()].sort();await db`select id from public.manager_tournament_teams where tournament_id=${t.id} and id in ${db(ids)} order by id for update`;for(const [teamId,amount] of credits)await db`update public.manager_tournament_teams set current_transfer_budget_units=current_transfer_budget_units+${amount},updated_at=now() where id=${teamId} and tournament_id=${t.id}`;}
+}

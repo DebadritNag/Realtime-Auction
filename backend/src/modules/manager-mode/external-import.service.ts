@@ -12,7 +12,7 @@ export function importExternalCsv(csv: string, excludedIds: string[]): ImportRep
     requireThat(rows.length <= 2000, 'IMPORT_TOO_LARGE', 'External CSV may contain at most 2000 rows.');
     requireThat(!csv.trim() || rows.length > 0, 'INVALID_IMPORT', 'CSV must contain a header and at least one player row.');
     rows.forEach((r, i) => {
-        const parsed = rowSchema.safeParse({ id: r.player_id || r.sofifa_id || r.ea_id, name: r.name || r.short_name, overall: r.overall, position: (r.position || r.player_positions || '').split(',')[0]?.trim().toUpperCase() });
+        const parsed = rowSchema.safeParse({ id: r.player_id || r.sofifa_id || r.ea_id, name: r.name || r.short_name, overall: r.overall, position: (r.primary_position || r.position || r.player_positions || '').split(',')[0]?.trim().toUpperCase() });
         if (!parsed.success) {
             report.invalidRows.push({ row: i + 2, reason: parsed.error.issues.map(e => e.path.join('.') + ': ' + e.message).join('; ') });
             return;
@@ -44,7 +44,7 @@ export function importExternalCsv(csv: string, excludedIds: string[]): ImportRep
             return;
         }
         seen.add(p.id);
-        report.players.push({ ...p, category: group(p.position), secondaryPositions: (r.secondary_positions || '').slice(0, 100), club: (r.club || '').slice(0, 100), nationality: (r.nationality || r.nation || '').slice(0, 100), imageUrl: image, age, stats, tier: r.rating_tier || '', source: 'EXTERNAL_POOL', currentTeamId: null, ownershipStatus: 'FREE_AGENT', availability: 'AVAILABLE', auctionPurchasePriceUnits: null, acquisitionType: null, acquisitionPriceUnits: null, metadata: {} } satisfies ManagerPlayer);
+        report.players.push({ ...p, category: group(p.position), secondaryPositions: (r.secondary_positions || '').slice(0, 100), club: (r.club || '').slice(0, 100), nationality: (r.nationality || r.nation || '').slice(0, 100), imageUrl: image, age, stats, tier: r.tier || r.rating_tier || '', source: 'EXTERNAL_POOL', currentTeamId: null, ownershipStatus: 'FREE_AGENT', availability: 'AVAILABLE', auctionPurchasePriceUnits: null, acquisitionType: null, acquisitionPriceUnits: null, metadata: {league:(r.league||'').slice(0,100),preferredFoot:(r.preferred_foot||'').slice(0,20)} } satisfies ManagerPlayer);
     });
     report.validPlayers = report.players.length;
     const used=new Set(excludedIds);

@@ -1,8 +1,9 @@
+import type {SeasonAction} from '@/types/manager-season';
 import type {BuyoutAction} from '@/types/manager-buyout';
 import { api } from './api';
 import type { TournamentState, TournamentSummary, ImportReport } from '@/types/manager-mode';
 import type { PlayerDTO } from '@/types/backend';
-export type ManagerAction = BuyoutAction | {type:'START_NEGOTIATION';playerId:string}|{type:'OFFER_FREE_AGENT';sessionId:string;amountUnits:number}|{type:'END_NEGOTIATION';sessionId:string}|{type:'CONFIRM_SIGNING';sessionId:string}|{type:'TRANSFER_RULES';difficulty:'RELAXED'|'NORMAL'|'HARD';visibility:'PRIVATE'|'SEMI_TRANSPARENT'|'TRANSPARENT';walkAwayCooldownMs:number}| {
+export type ManagerAction = SeasonAction | BuyoutAction | {type:'START_NEGOTIATION';playerId:string}|{type:'OFFER_FREE_AGENT';sessionId:string;amountUnits:number}|{type:'END_NEGOTIATION';sessionId:string}|{type:'CONFIRM_SIGNING';sessionId:string}|{type:'TRANSFER_RULES';difficulty:'RELAXED'|'NORMAL'|'HARD';visibility:'PRIVATE'|'SEMI_TRANSPARENT'|'TRANSPARENT';walkAwayCooldownMs:number}| {
     type: 'INVITATION';
     accept: boolean;
 } | {
@@ -69,6 +70,7 @@ export const managerService = {
     create: (id: string, input: {
         name: string;
         startingBudgetUnits: number;
+        addUnusedAuctionPurse?: boolean;
         csv: string;
         format: string;
     }) => api.post<TournamentState>(base + '/from-auction/' + encodeURIComponent(id), input),
