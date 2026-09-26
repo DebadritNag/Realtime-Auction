@@ -1,9 +1,10 @@
+import {isFormation,type Formation} from '../../domain/formations.js';
 import { z } from 'zod';
 const id = z.string().min(1).max(100);
 export const setupSchema = z.object({ name: z.string().trim().min(2).max(100), addUnusedAuctionPurse:z.boolean().default(true), startingBudgetUnits: z.number().int().min(0).max(20000).default(200), format: z.enum(['SINGLE_ROUND_ROBIN', 'DOUBLE_ROUND_ROBIN']).default('SINGLE_ROUND_ROBIN'), csv: z.string().max(2000000).default('') }).strict();
 const buyoutTerms={offerType:z.enum(['CASH','CASH_PLUS_PLAYER']),cashAmountUnits:z.number().int().min(0).max(2000000000),includedPlayerId:id.nullable().optional()};
 export const actionSchema = z.discriminatedUnion('type', [
- z.object({type:z.literal('SAVE_TEAM_SHEET'),formation:z.enum(['4-3-3','4-2-3-1','4-4-2','3-5-2','4-1-2-1-2','5-3-2']),slots:z.array(id.nullable()).length(11),bench:z.array(id).max(12),captainId:id.nullable()}).strict(),
+ z.object({type:z.literal('SAVE_TEAM_SHEET'),formation:z.custom<Formation>((value)=>typeof value==='string'&&isFormation(value),{message:'Unsupported formation'}),slots:z.array(id.nullable()).length(11),bench:z.array(id).max(12),captainId:id.nullable()}).strict(),
  z.object({type:z.literal('RENEW_CONTRACT'),playerId:id}).strict(),
  z.object({type:z.literal('END_CURRENT_SEASON'),confirmation:z.literal('END SEASON')}).strict(),
  z.object({type:z.literal('START_NEXT_SEASON')}).strict(),
@@ -34,3 +35,4 @@ export const actionSchema = z.discriminatedUnion('type', [
 ]);
 export const mutationSchema = z.object({ requestId: z.string().uuid(), action: actionSchema }).strict();
 export type ManagerAction = z.infer<typeof actionSchema>;
+
