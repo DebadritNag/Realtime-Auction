@@ -17,13 +17,14 @@ const json=(db:Db,value:unknown)=>db.json(JSON.parse(JSON.stringify(value)) as J
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 interface EventMetadata {sequence?:number;receipt?:{key:string;fingerprint:string};action?:Partial<ManagerAction>;initial?:{startingSnapshot:Tournament['startingSnapshot'];code:string;name:string;budgetMode:Tournament['budgetMode']}}
 export function managerDbError(error:unknown):never{
- if(error instanceof DomainError)throw error;const e=error as {code?:string;message?:string};
- if(e.code==='23503')throw new DomainError('INVALID_REFERENCE','A referenced auction, profile, team or player is missing.',409);
- if(e.code==='23505')throw new DomainError('DUPLICATE_MANAGER_RESOURCE','This tournament resource already exists.',409);
- if(e.code==='23514'||e.code==='22P02')throw new DomainError('INVALID_MANAGER_DATA','The submitted data does not match the tournament rules.',400);
+ if(error instanceof DomainError)throw error;const e=error as {code?:string;message?:string;constraint_name?:string;constraint?:string};const details={postgresCode:e.code,constraint:e.constraint_name??e.constraint};
+ if(e.code==='23503')throw new DomainError('INVALID_REFERENCE','A referenced auction, profile, team or player is missing.',409,details);
+ if(e.code==='23505')throw new DomainError('DUPLICATE_MANAGER_RESOURCE','This tournament resource already exists.',409,details);
+ if(e.code==='23502')throw new DomainError('INCOMPLETE_MANAGER_DATA','Required tournament data is missing.',409,details);
+ if(e.code==='23514'||e.code==='22P02')throw new DomainError('INVALID_MANAGER_DATA','The submitted data does not match the tournament rules.',400,details);
  if(e.code==='P0001'&&e.message?.includes('ownership changed'))throw new DomainError('TRADE_OWNERSHIP_CHANGED','Player ownership changed before this trade completed.',409);
  if(e.code==='P0001'&&e.message?.includes('not PENDING'))throw new DomainError('TRADE_NOT_PENDING','The trade is no longer pending.',409);
- throw new DomainError('MANAGER_DATABASE_UNAVAILABLE','Tournament storage is temporarily unavailable. Retry with the same request ID.',503);
+ throw new DomainError('MANAGER_DATABASE_UNAVAILABLE','Tournament storage is temporarily unavailable. Retry with the same request ID.',503,details);
 }
 export class PostgresManagerIdentityRepository implements ManagerIdentityRepository{
  constructor(private db:Sql){}

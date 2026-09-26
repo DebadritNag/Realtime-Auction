@@ -1,3 +1,4 @@
+import {setupStep,type SetupLogger} from './setup-diagnostics.js';
 import {unseenOffers} from './notifications.js';
 import {combinedImport,hydrateReleaseOrigins} from './free-agent-pool.js';
 import {ensureSquad,squadAction,synchronizeSheets,recordMatch,playerSeasonStats} from './squad/squad.engine.js';
@@ -17,7 +18,7 @@ import { importExternalCsv } from './external-import.service.js';
 import { setupSchema, actionSchema, type ManagerAction } from './manager.schemas.js';
 export class ManagerModeService {
     private listeners = new Set<(t: Tournament, event: string, audience?: string[]) => void>();
-    constructor(readonly repository: ManagerTournamentRepository, private auction: (id: string) => Promise<Room | null>, private identities?: ManagerIdentityRepository, private prepareAuction?: (id:string,user:string)=>Promise<void>,private dialogue:NegotiationDialogueProvider=new SafeDialogueProvider(),private logger?:{info:(data:object,message:string)=>void}) { }
+    constructor(readonly repository: ManagerTournamentRepository, private auction: (id: string) => Promise<Room | null>, private identities?: ManagerIdentityRepository, private prepareAuction?: (id:string,user:string)=>Promise<void>,private dialogue:NegotiationDialogueProvider=new SafeDialogueProvider(),private logger?:SetupLogger) { }
     subscribe(fn: (t: Tournament, event: string, audience?: string[]) => void) { this.listeners.add(fn); return () => { this.listeners.delete(fn); }; }
     private emit(t: Tournament, event: string, audience?: string[]) { for (const fn of this.listeners) {
         try {
@@ -38,11 +39,24 @@ export class ManagerModeService {
  }
     async notifications(id:string,user:string,before?:string){const t=await this.repository.find(id);requireThat(t,'TOURNAMENT_NOT_FOUND','Tournament not found.',404);requireThat(t.teams.some(x=>x.managerUserId===user),'NOT_TOURNAMENT_MEMBER','Membership required.',403);const all=t.notifications.filter(n=>n.userId===user).reverse();const index=before?all.findIndex(n=>n.id===before):-1;requireThat(!before||index>=0,'INVALID_CURSOR','Notification cursor not found.',400);const rows=all.slice(index+1);return {items:rows.slice(0,50),nextBefore:rows.length>50?rows[49]!.id:null};}
     async list(user: string) { if(this.repository.listSummaries)return this.repository.listSummaries(user);return (await this.repository.listForUser(user)).map(t => { const team = t.teams.find(x => x.managerUserId === user)!; return { id: t.id, name: t.name, sourceAuctionId: t.sourceAuctionId, sourceAuctionCode: t.sourceAuctionCode, status: t.status, teamName: team.name, invitation: team.invitation, unread: t.notifications.filter(n => n.userId === user && !n.read).length, sequence: t.sequence }; }); }
-    async preview(id: string, user: string, csv = '') { const room = await this.auction(id); requireThat(room, 'ROOM_NOT_FOUND', 'Auction not found.', 404); requireThat(room.hostUserId === user, 'HOST_ONLY', 'Only the auction host may configure Manager Mode.', 403); requireThat(room.status === 'COMPLETED', 'AUCTION_NOT_COMPLETED', 'Complete the auction first.'); assertRoom(room); const usernames=await this.identities?.findUsernames(room.teams.map(t=>t.userId))??{}; return { room:{...room,teams:room.teams.map(t=>({...t,managerUsername:usernames[t.userId]??t.managerUsername}))}, existing: await this.repository.findByAuction(room.id), importReport: await combinedImport(csv, room.players.flatMap(p => [p.id,...(p.externalId?[p.externalId]:[])])) }; }
+    async preview(id:string,user:string,csv=''){
+ const room=await setupStep(this.logger,id,'LOAD_AUCTION',()=>this.auction(id));
+ requireThat(room,'ROOM_NOT_FOUND','Completed auction not found.',404,{step:'LOAD_AUCTION'});
+ requireThat(room.hostUserId===user,'HOST_ONLY','Only the auction host may configure Manager Mode.',403);
+ requireThat(room.status==='COMPLETED','AUCTION_NOT_COMPLETED','Complete the auction first.',409,{step:'LOAD_AUCTION'});
+ await setupStep(this.logger,id,'BUILD_MANAGER_MODE_SETUP',()=>assertRoom(room));
+ const [usernames,existing,importReport]=await Promise.all([
+ setupStep<Record<string,string>>(this.logger,id,'LOAD_MEMBERS',()=>this.identities?.findUsernames(room.teams.map(t=>t.userId))??{}),
+ setupStep(this.logger,id,'LOAD_EXISTING_MANAGER_MODE',()=>this.repository.findByAuction(room.id)),
+ setupStep(this.logger,id,'LOAD_EXTERNAL_PLAYERS',()=>combinedImport(csv,room.players.flatMap(p=>[p.id,...(p.externalId?[p.externalId]:[])])))
+ ]);
+ this.logger?.info({event:'MANAGER_MODE_SETUP',auctionId:id,step:'RETURN_RESPONSE',teamCount:room.teams.length,playerCount:room.players.length,purchaseCount:room.purchases.length},'Manager Mode setup loaded');
+ return {room:{...room,teams:room.teams.map(t=>({...t,managerUsername:usernames[t.userId]??t.managerUsername}))},existing,importReport};
+ }
     async create(id: string, user: string, input: unknown) {
         const settings = setupSchema.parse(input);
         await this.preview(id,user,settings.csv);
-        await this.prepareAuction?.(id,user);
+        await setupStep(this.logger,id,'PERSIST_AUCTION_SNAPSHOT',()=>this.prepareAuction?.(id,user));
         const { room, existing, importReport } = await this.preview(id, user, settings.csv);
         if (existing)
             return this.view(existing, user);
@@ -58,7 +72,7 @@ export class ManagerModeService {
         ensureSeasons(t);
         ensureNegotiations(t);
         this.notify(t, 'INVITATION', 'Your auction team has been invited to ' + t.name,t.teams.map(x=>x.managerUserId));
-        const result = await this.repository.createUnique(t);
+        const result = await setupStep(this.logger,id,'CREATE_MANAGER_MODE',()=>this.repository.createUnique(t));
         if (result.created)
             this.emit(result.tournament, 'MANAGER_MODE_CREATED');
         return this.view(result.tournament, user);
@@ -218,7 +232,7 @@ export class ManagerModeService {
  }else if(action.type==='OFFER_FREE_AGENT'||action.type==='CONFIRM_SIGNING'){
  const session=t.negotiation!.sessions.find(s=>s.id===action.sessionId)!;const player=t.players.find(p=>p.id===session.playerId)!;
  this.notify(t,action.type==='CONFIRM_SIGNING'?'PLAYER_SIGNED':'FREE_AGENT_OFFER_UPDATED',player.name+' · '+session.status,[user],{entityType:'negotiation',entityId:session.id,playerId:player.id});
- for(const rival of t.negotiation!.sessions.filter(s=>s.playerId===player.id&&s.teamId!==team.id&&['ACTIVE','ACCEPTED','CLOSED_LOST_PLAYER'].includes(s.status)))this.notify(t,'NEGOTIATION_COMPETITION_UPDATED',player.name+(player.currentTeamId?' has signed for another club.':' has an updated offer from another club.'),[rival.managerUserId],{entityType:'negotiation',entityId:rival.id,playerId:player.id});
+ for(const rival of t.negotiation!.sessions.filter(s=>s.playerId===player.id&&s.teamId!==team.id&&(action.type==='CONFIRM_SIGNING'?s.status==='CLOSED_LOST_PLAYER'&&s.closedAt===session.closedAt:['ACTIVE','ACCEPTED'].includes(s.status))))this.notify(t,'NEGOTIATION_COMPETITION_UPDATED',player.name+(player.currentTeamId?' has signed for another club.':' has an updated offer from another club.'),[rival.managerUserId],{entityType:'negotiation',entityId:rival.id,playerId:player.id});
  }else if(['SAVE_TEAM_SHEET','RENEW_CONTRACT'].includes(action.type))this.notify(t,action.type,'Your squad has been updated.',[user]);
             changed = true;
         });

@@ -1,7 +1,7 @@
 # External free-agent pool and practical pricing
 
 Generated file: `backend/data/manager-mode/external-players.csv`.
-Upload this CSV in **Create Manager Mode → External player CSV**, review the preview, then create the tournament. It is not automatically inserted into existing tournaments. All 357 rows pass the existing Manager Mode importer and appear as unowned EXTERNAL_POOL free agents.
+This CSV is automatically imported when a new Manager Mode is created. The optional upload adds additional players, with stable-ID deduplication against the auction and default seed. Existing tournaments are not automatically backfilled. All 357 default rows pass validation and become unowned EXTERNAL_POOL free agents. See [Manager Mode updates](MANAGER_MODE_UPDATES.md) for release cooldowns, realtime notifications, and the setup deployment fix.
 
 ## Reproducible extraction
 

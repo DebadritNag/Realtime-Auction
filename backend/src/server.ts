@@ -1,5 +1,5 @@
 import {SafeDialogueProvider,LLMNegotiationDialogueProvider,GroqNegotiationDialogueProvider} from './modules/manager-mode/negotiation/dialogue.provider.js';
-import { readCompletedAuction } from './modules/manager-mode/auction-snapshot.repository.js';
+import { loadManagerAuction } from './modules/manager-mode/auction-snapshot.repository.js';
 import { archiveCompletedAuction } from './modules/manager-mode/completed-auction-archive.js';
 import { MemoryManagerRepository } from './modules/manager-mode/manager.repository.js';
 import { PostgresManagerRepository, PostgresManagerIdentityRepository } from './modules/manager-mode/postgres-manager.repository.js';
@@ -56,7 +56,7 @@ if (managerDb) {
 }
 
 const auctionRepository=env.STORAGE==='file'?new FileRoomRepository(env.DATA_DIR):new MemoryRoomRepository();
-const auctionSource=async(id:string)=>managerDb ? (await readCompletedAuction(managerDb,id)) ?? (await auctionRepository.listRecoverable()).find(r=>r.id===id)??null : (await auctionRepository.listRecoverable()).find(r=>r.id===id)??null;
+const auctionSource=(id:string)=>loadManagerAuction(managerDb,auctionRepository,id,app.log);
 const { app } = await buildApp({
   managerAuctionSource: auctionSource,
   managerPrepareAuction: managerDb ? async(id,user)=>{const room=(await auctionRepository.listRecoverable()).find(r=>r.id===id);if(room)await archiveCompletedAuction(managerDb,room,user);} : undefined,

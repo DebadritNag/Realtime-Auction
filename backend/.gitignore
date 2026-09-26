@@ -4,3 +4,8 @@ dist/
 data/*
 !data/default-pool/
 coverage/
+
+# Versioned default Manager Mode seed; keep runtime snapshots ignored.
+!data/manager-mode/
+data/manager-mode/*
+!data/manager-mode/external-players.csv

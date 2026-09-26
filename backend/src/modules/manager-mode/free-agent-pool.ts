@@ -1,15 +1,18 @@
 import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {importExternalCsv} from './external-import.service.js';
-import {requireThat} from '../../domain/errors.js';
+import {DomainError,requireThat} from '../../domain/errors.js';
 import type {ManagerPlayer,Tournament} from './manager.types.js';
-let seed:Promise<string>|undefined;
+let seed:Promise<string>|undefined;let seedPath='';
 export async function defaultExternalPool(){
- seed??=readFile(process.env.MANAGER_MODE_EXTERNAL_PLAYERS_PATH?resolve(process.env.MANAGER_MODE_EXTERNAL_PLAYERS_PATH):new URL('../../../data/manager-mode/external-players.csv',import.meta.url),'utf8').catch(error=>{seed=undefined;throw error;});
+ const path=process.env.MANAGER_MODE_EXTERNAL_PLAYERS_PATH?resolve(process.env.MANAGER_MODE_EXTERNAL_PLAYERS_PATH):new URL('../../../data/manager-mode/external-players.csv',import.meta.url);
+ if(seedPath!==String(path)){seed=undefined;seedPath=String(path);}
+ seed??=readFile(path,'utf8').catch(error=>{seed=undefined;throw new DomainError('EXTERNAL_PLAYER_POOL_UNAVAILABLE','The default external player CSV is unavailable on the server. Deploy backend/data/manager-mode/external-players.csv or configure MANAGER_MODE_EXTERNAL_PLAYERS_PATH.',503,{step:'LOAD_EXTERNAL_PLAYERS',fileCode:typeof error?.code==='string'?error.code:'READ_FAILED'});});
  return seed;
 }
 export async function combinedImport(csv:string,excluded:string[]){
- const defaults=importExternalCsv(await defaultExternalPool(),excluded);
+ let defaults;try{defaults=importExternalCsv(await defaultExternalPool(),excluded);}catch(error){if(error instanceof DomainError&&error.code==='EXTERNAL_PLAYER_POOL_UNAVAILABLE')throw error;throw new DomainError('INVALID_EXTERNAL_PLAYER_POOL','The default external player CSV is malformed. Correct the deployed CSV.',503,{step:'LOAD_EXTERNAL_PLAYERS'});}
+ requireThat(defaults.players.length+defaults.duplicates>0&&defaults.invalidRows.length===0,'INVALID_EXTERNAL_PLAYER_POOL','The default external player CSV contains invalid or empty data. Correct the deployed CSV.',503,{step:'LOAD_EXTERNAL_PLAYERS',invalidRowCount:defaults.invalidRows.length});
  const extra=importExternalCsv(csv,[...excluded,...defaults.players.map(p=>p.id)]);
  return {rowsDetected:defaults.rowsDetected+extra.rowsDetected,validPlayers:defaults.validPlayers+extra.validPlayers,duplicates:defaults.duplicates+extra.duplicates,invalidRows:[...defaults.invalidRows,...extra.invalidRows],players:[...defaults.players,...extra.players],auditRows:[...(defaults.auditRows??[]),...(extra.auditRows??[]).map(r=>({...r,row:r.row+defaults.rowsDetected}))]};
 }
