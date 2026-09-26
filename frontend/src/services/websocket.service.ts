@@ -32,7 +32,7 @@ export class WebSocketService {
    socket.onopen=()=>{
     if(generation!==this.generation)return socket.close();
     useConnectionStore.getState().setStatus('CONNECTED');
-    socket.send(JSON.stringify(this.room?.startsWith('@manager:') ? {type:'SUBSCRIBE_MANAGER_MODE',requestId:crypto.randomUUID(),payload:{...(this.room.slice(9)?{tournamentId:this.room.slice(9)}:{})}} : {type:'REJOIN_ROOM',requestId:crypto.randomUUID(),payload:{roomCode:this.room}}));
+    socket.send(JSON.stringify(this.room?.startsWith('@manager:') ? {type:'SUBSCRIBE_MANAGER_MODE',requestId:crypto.randomUUID(),payload:{deltaUpdates:true,...(this.room.slice(9)?{tournamentId:this.room.slice(9)}:{})}} : {type:'REJOIN_ROOM',requestId:crypto.randomUUID(),payload:{roomCode:this.room}}));
    };
    socket.onmessage=message=>{
     if(generation!==this.generation||socket!==this.socket)return;
@@ -74,6 +74,7 @@ export class WebSocketService {
   this.socket?.close();this.socket=null;this.room=null;this.rejectPending();
   useConnectionStore.getState().setStatus('DISCONNECTED');
  }
+ requestManagerState(id:string){if(this.socket?.readyState===WebSocket.OPEN)this.socket.send(JSON.stringify({type:'SUBSCRIBE_MANAGER_MODE',payload:{tournamentId:id,deltaUpdates:true}}));}
  refreshAuth(){const room=this.room;if(room){this.disconnect();this.connect(room);}}
  send(command:ClientCommand):Promise<void>{
   const socket=this.socket;

@@ -1,0 +1,2 @@
+'use client';
+export function HistoryMore({history}:{history:{more:boolean;loading:boolean;error:string;load:()=>Promise<void>}}){return <>{history.error&&<p role="alert" className="text-red-300">{history.error}</p>}{history.more&&<button className="rounded-lg border border-slate-700 px-3 py-2 text-sm text-emerald-300" disabled={history.loading} onClick={()=>void history.load()}>{history.loading?'Loading…':'Load older records'}</button>}</>;}

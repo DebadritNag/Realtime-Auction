@@ -26,6 +26,8 @@ export const actionSchema = z.discriminatedUnion('type', [
     z.object({ type: z.literal('STATUS'), status: z.enum(['ACTIVE', 'COMPLETED', 'ARCHIVED']) }),
     z.object({ type: z.literal('TRADE'), offeredPlayerId: id, requestedPlayerId: id, parentTradeId: id.optional() }),
     z.object({ type: z.literal('TRADE_RESPONSE'), tradeId: id, response: z.enum(['ACCEPT', 'REJECT', 'CANCEL']) }),
+    z.object({type:z.literal('READ_OFFER'),entityType:z.enum(['trade','buyout','negotiation']),entityId:id}).strict(),
+ z.object({type:z.literal('READ_ALL_NOTIFICATIONS')}).strict(),
     z.object({ type: z.literal('READ_NOTIFICATION'), notificationId: id }),
     z.object({ type: z.literal('ANNOUNCE'), message: z.string().trim().min(1).max(500) }),
     z.object({ type: z.literal('RESEND_INVITATIONS') })

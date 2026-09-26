@@ -1,4 +1,4 @@
-import type { Tournament } from './manager.types.js';
+import type { Tournament,TournamentSummary } from './manager.types.js';
 import { SerialQueue } from '../../utils/serial-queue.js';
 import { DomainError, requireThat } from '../../domain/errors.js';
 /** Production adapters implement this aggregate transaction boundary.
@@ -6,6 +6,7 @@ import { DomainError, requireThat } from '../../domain/errors.js';
  * Never retain a draft when callback or persistence fails. Return detached values.
  */
 export interface ManagerTournamentRepository {
+    listSummaries?(userId:string):Promise<TournamentSummary[]>;
     find(id: string): Promise<Tournament | null>;
     findByAuction(auctionId: string): Promise<Tournament | null>;
     listForUser(userId: string): Promise<Tournament[]>;

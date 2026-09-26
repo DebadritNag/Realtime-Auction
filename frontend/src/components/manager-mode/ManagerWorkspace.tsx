@@ -1,4 +1,6 @@
 'use client';
+import {api} from '@/services/api';
+import {notificationHref} from '@/lib/manager-notifications';
 import {ManagerSquad} from './ManagerSquad';
 import {PlayerImage} from '@/components/shared/PlayerImage';
 import {SeasonPanel,SeasonSettings} from './ManagerSeasons';
@@ -42,7 +44,7 @@ function Dashboard({ state, action, busy }: { state: TournamentState; action: Ac
   const next = state.fixtures.find(f => f.status === 'SCHEDULED' && (f.homeTeamId === mine.id || f.awayTeamId === mine.id));
   const recent = state.fixtures.filter(f => f.status === 'COMPLETED' && (f.homeTeamId === mine.id || f.awayTeamId === mine.id)).slice(-3);
   const pendingOffers = state.trades.filter(t => t.status === 'PENDING' && (t.fromTeamId === mine.id || t.toTeamId === mine.id)).length;
-  const unread = state.notifications.filter(n => !n.read).length;
+  const unread = (state.notificationUnread??state.notifications.filter(n => !n.read).length);
 
   return (
     <div className="grid xl:grid-cols-[1fr_320px] gap-6">
@@ -93,7 +95,7 @@ function Dashboard({ state, action, busy }: { state: TournamentState; action: Ac
           {recent.length > 0 && (
             <div className="space-y-2">
               {!next && <p className="text-xs text-slate-500 uppercase tracking-widest mb-2">Recent Results</p>}
-              {recent.map(f => <FixtureMatchCard key={f.id} fixture={f} state={state} onAction={action} busy={busy || state.modeStatus === 'ENDED'} />)}
+              {recent.map(f => <FixtureMatchCard key={f.id} fixture={f} state={state} onAction={action} busy={busy} />)}
             </div>
           )}
           {!next && recent.length === 0 && (
@@ -523,9 +525,13 @@ function TeamsSection({ state }: { state: TournamentState }) {
 
 // ─── Section: Notifications ───────────────────────────────────────────────────
 function NotificationsSection({ state, action, busy }: { state: TournamentState; action: Act; busy: boolean }) {
-  const sorted = [...state.notifications].reverse();
+  const [older,setOlder]=useState<TournamentState['notifications']>([]),[loading,setLoading]=useState(false),[error,setError]=useState(''),[more,setMore]=useState(true);
+  const sorted=[...new Map([...older,...state.notifications].map(n=>[n.id,n])).values()].sort((a,b)=>b.createdAt-a.createdAt);
+  async function loadMore(){setLoading(true);setError('');try{const cursor=older.at(-1)?.id??state.notifications[0]?.id;const page=await api.get<{items:TournamentState['notifications'];nextBefore:string|null}>('/api/manager-mode/'+state.id+'/notifications'+(cursor?'?before='+encodeURIComponent(cursor):''));setOlder([...older,...page.items]);setMore(Boolean(page.nextBefore));}catch(e){setError(e instanceof Error?e.message:'Unable to load notifications.');}finally{setLoading(false);}}
+
   return (
     <div className="space-y-3">
+      <button className={button} disabled={busy||!(state.notificationUnread??sorted.filter(n=>!n.read).length)} onClick={()=>{void action({type:'READ_ALL_NOTIFICATIONS'});setOlder(older.map(n=>({...n,read:true})));}}>Mark all my notifications read</button>
       {sorted.length === 0 && <p className="text-sm text-slate-500 italic">No notifications yet.</p>}
       {sorted.map(n => (
         <article key={n.id} className={`${panel} !space-y-2 ${!n.read ? 'border-emerald-700/30' : ''}`}>
@@ -533,17 +539,18 @@ function NotificationsSection({ state, action, busy }: { state: TournamentState;
             <h3 className={`font-semibold text-sm ${n.read ? 'text-slate-300' : 'text-white'}`}>{n.title}</h3>
             {!n.read && <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 mt-1" />}
           </div>
-          <p className="text-xs text-slate-400">{n.message}</p>
+          <p className="text-xs text-slate-400">{n.message}</p><Link className="text-xs text-emerald-300" href={notificationHref(state.id,n)}>View update</Link>
           <div className="flex items-center justify-between">
             <span className="text-xs text-slate-600">{new Date(n.createdAt).toLocaleString()}</span>
             {!n.read && (
-              <button className="cursor-pointer text-xs text-emerald-400 hover:text-emerald-300 transition-colors" disabled={busy} onClick={() => void action({ type: 'READ_NOTIFICATION', notificationId: n.id })}>
+              <button className="cursor-pointer text-xs text-emerald-400 hover:text-emerald-300 transition-colors" disabled={busy} onClick={() => {void action({ type: 'READ_NOTIFICATION', notificationId: n.id });setOlder(older.map(row=>row.id===n.id?{...row,read:true}:row));}}>
                 Mark read
               </button>
             )}
           </div>
         </article>
       ))}
+      {error&&<p role="alert">{error}</p>}{more&&<button className={button} disabled={loading} onClick={()=>void loadMore()}>{loading?'Loading…':'Load older notifications'}</button>}
     </div>
   );
 }
@@ -788,7 +795,7 @@ function WorkspaceLoader({ error, status }: { error: string | null; status: stri
 
 // ─── Root export ──────────────────────────────────────────────────────────────
 export function ManagerWorkspace({ section }: { section: string }) {
-  const { state, error, busy, action } = useManagerStore();
+  const state=useManagerStore(s=>s.state),error=useManagerStore(s=>s.error),busy=useManagerStore(s=>s.busy),action=useManagerStore(s=>s.action);
   const status = useConnectionStore(s => s.status);
 
   if (!state) return <WorkspaceLoader error={error} status={status} />;
@@ -835,7 +842,7 @@ export function ManagerWorkspace({ section }: { section: string }) {
       case 'notifications':
         return (
           <>
-            <SectionTitle title="Notifications" subtitle={`${state.notifications.filter(n => !n.read).length} unread`} />
+            <SectionTitle title="Notifications" subtitle={`${(state.notificationUnread??state.notifications.filter(n => !n.read).length)} unread`} />
             <NotificationsSection state={state} action={action} busy={busy || state.modeStatus === 'ENDED'} />
           </>
         );

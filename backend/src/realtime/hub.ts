@@ -1,3 +1,4 @@
+import type {TournamentState} from '../modules/manager-mode/manager.types.js';
 import type { ManagerModeService } from '../modules/manager-mode/manager.service.js';
 import { randomUUID } from 'node:crypto';
 import type { FastifyBaseLogger } from 'fastify';
@@ -14,8 +15,8 @@ import { commandSchema } from '../modules/auction/auction.schemas.js';
 import { UserThrottle } from '../utils/throttle.js';
 
 interface Connection {
-  managerTournament?: string; managerInbox?: boolean; id: string; socket: WebSocket; auth: AuthContext; rooms: Set<string>; lastSeen: number;
-  alive: boolean; pending: number; chain: Promise<void>;
+  managerState?:TournamentState; managerTournament?: string; managerInbox?: boolean; id: string; socket: WebSocket; auth: AuthContext; rooms: Set<string>; lastSeen: number;
+  deltaUpdates?:boolean; connectedAt:number;notified:Set<string>; alive: boolean; pending: number; chain: Promise<void>;
 }
 export class RealtimeHub {
   private readonly connections = new Map<string, Connection>();
@@ -27,7 +28,17 @@ export class RealtimeHub {
     this.unsubscribeManager = managerMode.subscribe((t,event,audience) => {
       for(const c of this.connections.values()) {
         if(!t.teams.some(team=>team.managerUserId===c.auth.userId)||audience&&!audience.includes(c.auth.userId)) continue;
-        if(c.managerTournament===t.id&&['MANAGER_MODE_CREATED','MANAGER_MODE_UPDATED'].includes(event)) this.send(c,{...this.envelope('MANAGER_MODE_STATE',managerMode.view(t,c.auth.userId)),sequence:t.sequence});
+        if(['MANAGER_MODE_CREATED','MANAGER_MODE_UPDATED'].includes(event)) {
+ const team=t.teams.find(x=>x.managerUserId===c.auth.userId)!;
+ if(c.deltaUpdates){for(const n of t.notifications)if(n.userId===c.auth.userId&&!n.read&&n.createdAt>=c.connectedAt&&!c.notified.has(n.id)){c.notified.add(n.id);this.send(c,{...this.envelope('NOTIFICATION_CREATED',n),sequence:t.sequence});}
+ this.send(c,{...this.envelope('MANAGER_MODE_SUMMARY',{id:t.id,name:t.name,sourceAuctionId:t.sourceAuctionId,sourceAuctionCode:t.sourceAuctionCode,status:t.status,teamName:team.name,invitation:team.invitation,unread:t.notifications.filter(n=>n.userId===c.auth.userId&&!n.read).length,sequence:t.sequence}),sequence:t.sequence});}
+ if(c.managerTournament===t.id){const next=managerMode.view(t,c.auth.userId),previous=c.managerState;
+ if(c.deltaUpdates&&previous&&previous.id===next.id){if(next.sequence>previous.sequence){const changes=Object.fromEntries(Object.entries(next).filter(([key,value])=>JSON.stringify(value)!==JSON.stringify(previous[key as keyof TournamentState])));this.send(c,{...this.envelope('MANAGER_MODE_PATCH',{tournamentId:t.id,baseSequence:previous.sequence,changes}),sequence:t.sequence});}}
+ else this.send(c,{...this.envelope('MANAGER_MODE_STATE',next),sequence:t.sequence});
+ c.managerState=next;
+ }
+ }
+        if(!c.deltaUpdates&&['PLAYER_RELEASED','FREE_AGENT_POOL_UPDATED'].includes(event))continue;
         this.send(c,{...this.envelope(event,{tournamentId:t.id}),sequence:t.sequence});
       }
     });
@@ -90,7 +101,7 @@ export class RealtimeHub {
   }
   attach(socket: WebSocket, auth: AuthContext): void {
     const connection: Connection = { id: randomUUID(), socket, auth, rooms: new Set(), lastSeen: Date.now(),
-      alive: true, pending: 0, chain: Promise.resolve() };
+      connectedAt:Date.now(),notified:new Set(),alive: true, pending: 0, chain: Promise.resolve() };
     this.connections.set(connection.id, connection);
     socket.on('pong', () => { connection.alive = true; connection.lastSeen = Date.now(); });
     socket.on('error', () => socket.terminate());
@@ -128,8 +139,9 @@ export class RealtimeHub {
   private async handle(connection: Connection, command: ClientMessage): Promise<void> {
     if (command.type === 'PING') { this.send(connection, this.envelope('PONG', {}, command.requestId)); return; }
     if(command.type === 'SUBSCRIBE_MANAGER_MODE') {
+      connection.deltaUpdates=command.payload.deltaUpdates===true;
       const id=command.payload.tournamentId;
-      if(id) {const state=await this.managerMode.state(id,connection.auth.userId);connection.managerTournament=id;this.send(connection,{...this.envelope('MANAGER_MODE_STATE',state,command.requestId),sequence:state.sequence});}
+      if(id) {const state=await this.managerMode.state(id,connection.auth.userId);connection.managerTournament=id;connection.managerState=state;this.send(connection,{...this.envelope('MANAGER_MODE_STATE',state,command.requestId),sequence:state.sequence});if(connection.deltaUpdates)this.send(connection,this.envelope('MANAGER_MODE_INBOX',await this.managerMode.list(connection.auth.userId)));}
       else {connection.managerInbox=true;this.send(connection,this.envelope('MANAGER_MODE_INBOX',await this.managerMode.list(connection.auth.userId),command.requestId));}
       return;
     }

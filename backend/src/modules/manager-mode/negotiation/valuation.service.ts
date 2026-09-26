@@ -10,7 +10,7 @@ export function freeAgentValues(p:ManagerPlayer,personality:Archetype):Values {
  const variation=createHash('sha256').update(p.id).digest()[0]!/255;
  const fraction=Math.max(.15,Math.min(.95,.35+(p.overall%2===0?.12:0)+(p.age&&p.age<25?.08:p.age&&p.age>32?-.08:0)+(['ST','LW','RW'].includes(p.position)?.06:0)+Math.max(-.1,Math.min(.1,(quality-75)/100))+variation*.16));
  const personalityFactor=personality==='MONEY_DRIVEN'||personality==='OPPORTUNISTIC'?1.1:personality==='STUBBORN'?1.05:personality==='RELAXED'||personality==='LOYAL'?.9:1;
- const discount=p.source==='AUCTION_UNSOLD'?(p.overall>=87?.9:personality==='STUBBORN'?.85:.8):1;
+ const discount=p.metadata.freeAgentReason==='TEAM_RELEASE'?.75:p.source==='AUCTION_UNSOLD'?(p.overall>=87?.9:personality==='STUBBORN'?.85:.8):1;
  const market=Math.max(2,Math.round((low+(high-low)*fraction)*discount));
  const preferred=Math.max(2,Math.min(Math.round(high*discount),Math.round(market*personalityFactor)));
  return {marketValueUnits:market,minimumValueUnits:Math.max(2,Math.min(preferred,Math.round(preferred*.75))),preferredValueUnits:preferred,idealValueUnits:Math.max(preferred,Math.round(preferred*1.2))};

@@ -7,5 +7,5 @@ const subscription = z.object({
 }).strict();
 const ping = z.object({ type: z.literal('PING'), requestId: z.string().min(1).max(100).optional(),
   payload: z.object({}).strict().optional() }).strict();
-export const clientMessageSchema = z.union([commandSchema, subscription, ping, z.object({type:z.literal('SUBSCRIBE_MANAGER_MODE'),requestId:z.string().max(100).optional(),payload:z.object({tournamentId:z.string().min(1).max(100).optional()}).strict()}).strict()]);
+export const clientMessageSchema = z.union([commandSchema, subscription, ping, z.object({type:z.literal('SUBSCRIBE_MANAGER_MODE'),requestId:z.string().max(100).optional(),payload:z.object({deltaUpdates:z.boolean().optional(),tournamentId:z.string().min(1).max(100).optional()}).strict()}).strict()]);
 export type ClientMessage = z.infer<typeof clientMessageSchema>;

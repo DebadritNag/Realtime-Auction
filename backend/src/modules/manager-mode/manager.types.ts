@@ -141,6 +141,10 @@ export interface Tournament {
     }>;
 }
 export type TournamentState = Omit<Tournament, 'startingSnapshot' | 'receipts' | 'negotiation'> & {
+    notificationUnread?:number;
+    unseenOffers?:string[];
+    teamSaleReturns?:Record<string,number>;
+    historyCursors?:{transactions:string|null;trades:string|null;buyouts:string|null};
     negotiation: NegotiationView;
     playerStats?:Record<string,PlayerSeasonStats>;
     saleQuotes?: Record<string,SaleQuote>;

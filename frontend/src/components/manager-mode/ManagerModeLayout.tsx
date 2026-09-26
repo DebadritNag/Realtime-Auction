@@ -11,7 +11,7 @@ interface Props {
 }
 
 export function ManagerModeLayout({ state, section, connectionStatus, children }: Props) {
-  const unread = state.notifications.filter(n => !n.read).length;
+  const unread = (state.notificationUnread??state.notifications.filter(n => !n.read).length);
 
   return (
     <>

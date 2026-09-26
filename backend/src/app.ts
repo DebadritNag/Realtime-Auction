@@ -45,7 +45,7 @@ export async function buildApp(options: AppOptions) {
   await app.register(websocket, { options: { maxPayload: 16 * 1024, perMessageDeflate: false } });
   const clock = options.clock ?? systemClock;
   const auctionRepository = options.repository ?? new MemoryRoomRepository();
-  const managerMode = new ManagerModeService(options.managerRepository ?? new UnavailableManagerRepository(), options.managerAuctionSource ?? (async id => (await auctionRepository.listRecoverable()).find(r => r.id === id) ?? null), options.managerIdentities, options.managerPrepareAuction, options.negotiationDialogue);
+  const managerMode = new ManagerModeService(options.managerRepository ?? new UnavailableManagerRepository(), options.managerAuctionSource ?? (async id => (await auctionRepository.listRecoverable()).find(r => r.id === id) ?? null), options.managerIdentities, options.managerPrepareAuction, options.negotiationDialogue,app.log);
   const manager = new RoomManager(auctionRepository,
     options.playerRepository ?? await CatalogPlayerRepository.fromDefaultPool(), clock);
   const engine = new AuctionEngine(manager);

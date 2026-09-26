@@ -1,5 +1,7 @@
 "use client";
 
+import {useManagerStore} from '@/stores/manager-mode.store';
+import {ManagerToasts} from '@/components/manager-mode/ManagerToasts';
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -12,6 +14,8 @@ const PUBLIC_ROUTES = ["/", "/auth/signin", "/auth/signup"];
 
 export const AppHeader: React.FC = () => {
   const pathname = usePathname();
+  const managerId=useManagerStore(s=>s.state?.id);
+  const unread=useManagerStore(s=>s.state?(s.state.notificationUnread??s.state.notifications.filter(n=>!n.read).length):s.inbox.reduce((sum,t)=>sum+t.unread,0));
   const { user, isAuthenticated, isRestoring, signOut } = useAuthStore();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -184,15 +188,15 @@ export const AppHeader: React.FC = () => {
 
         {/* Notification bell — authenticated only */}
         {showAppNav && (
-          <button
+          <Link href={managerId?`/manager-mode/${managerId}/notifications`:"/manager-mode"}
             aria-label="Notifications"
             className="relative p-1.5 text-[#8CA0B3] hover:text-white transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#00F5A0] ring-2 ring-[#020D15]" />
-          </button>
+            {unread>0&&<span className="absolute -top-1 -right-2 min-w-4 rounded-full bg-emerald-400 px-1 text-xs text-slate-950">{unread}</span>}
+          </Link>
         )}
 
         {/* User profile pill + dropdown — authenticated only */}
@@ -274,6 +278,6 @@ export const AppHeader: React.FC = () => {
           <button onClick={handleSignOut} className="block py-1.5 text-sm text-[#ef4444] text-left w-full">Sign Out</button>
         </div>
       )}
-    </header>
+    <ManagerToasts/></header>
   );
 };

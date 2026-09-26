@@ -1,0 +1,21 @@
+/** Offline regression for authoritative patches, shared notification state and reconnects. */
+import {build} from '../../backend/node_modules/esbuild/lib/main.js';
+import assert from 'node:assert/strict';
+import {fileURLToPath} from 'node:url';
+const root=fileURLToPath(new URL('../',import.meta.url));
+let listener;const calls={connect:0,refresh:0,list:0};
+globalThis.socketMock={subscribe(fn){listener=fn;return()=>{listener=undefined;};},connectManager(){calls.connect++;},disconnect(){},requestManagerState(){calls.refresh++;}};
+globalThis.managerMock={list:async()=>{calls.list++;return [];},action:async()=>globalThis.updated};
+const result=await build({entryPoints:[root+'src/stores/manager-mode.store.ts'],bundle:true,write:false,platform:'node',format:'cjs',alias:{'@':root+'src'},plugins:[{name:'services',setup(b){b.onResolve({filter:/(websocket|manager-mode)\.service$/},args=>({path:args.path.includes('websocket')?'socket':'manager',namespace:'stub'}));b.onLoad({filter:/.*/,namespace:'stub'},args=>({contents:args.path==='socket'?'export const webSocketService=globalThis.socketMock':'export const managerService=globalThis.managerMock',loader:'js'}));}}]});
+const module={exports:{}};new Function('module','exports',result.outputFiles[0].text)(module,module.exports);const store=module.exports.useManagerStore;const stop=store.getState().start('t');
+const initial={id:'t',sequence:1,players:[{id:'p'}],teams:[],trades:[],notifications:[],notificationUnread:0,unseenOffers:[]};
+const emit=(type,payload,sequence=1)=>listener({type,payload,sequence,serverTime:Date.now()});emit('MANAGER_MODE_STATE',initial);const players=store.getState().state.players;
+const n={id:'n',userId:'u',type:'BUYOUT_CREATED',title:'Buyout offer',message:'Offer',read:false,createdAt:1,metadata:{tournamentId:'t',entityType:'buyout',entityId:'b'}};
+emit('NOTIFICATION_CREATED',n,2);emit('NOTIFICATION_CREATED',n,2);assert.equal(store.getState().toasts.length,1);
+emit('MANAGER_MODE_PATCH',{tournamentId:'t',baseSequence:1,changes:{sequence:2,notifications:[n],notificationUnread:1,unseenOffers:['buyout:b']}},2);assert.equal(store.getState().state.players,players);assert.equal(store.getState().state.notificationUnread,1);assert.equal(calls.list,0);
+emit('MANAGER_MODE_PATCH',{tournamentId:'t',baseSequence:0,changes:{sequence:1,notificationUnread:99}},1);assert.equal(store.getState().state.notificationUnread,1);
+emit('MANAGER_MODE_PATCH',{tournamentId:'t',baseSequence:3,changes:{sequence:4}},4);assert.equal(calls.refresh,1);assert.equal(store.getState().state.sequence,2);
+store.getState().dismissToast('n');emit('MANAGER_MODE_STATE',{...initial,sequence:4,notifications:[n],notificationUnread:1,unseenOffers:['buyout:b']},4);assert.equal(store.getState().toasts.length,0);
+globalThis.updated={...store.getState().state,sequence:5,notifications:[{...n,read:true}],notificationUnread:0,unseenOffers:[]};const pending=store.getState().action({type:'READ_OFFER',entityType:'buyout',entityId:'b'});assert.equal(store.getState().state.notificationUnread,0);assert.deepEqual(store.getState().state.unseenOffers,[]);await pending;assert.equal(store.getState().busy,false);
+emit('MANAGER_MODE_SUMMARY',{id:'t',sequence:5,unread:0},5);assert.equal(store.getState().inbox[0].unread,0);stop();assert.equal(store.getState().state,null);assert.equal(listener,undefined);
+console.log('PASS: patch ordering, gap recovery, unchanged player references, shared unread counts, optimistic review, toast deduplication, reconnect baseline, single socket, no per-event REST reload.');

@@ -27,9 +27,9 @@ export function seasonAction(t:Tournament,user:string,a:SeasonAction,now=Date.no
  requireThat(t.status!=='ENDED'&&t.status!=='ARCHIVED','MANAGER_MODE_ENDED','Manager Mode has ended and is read-only.',409);const d=ensureSeasons(t),s=currentSeason(t);
  if(a.type==='SELL_PLAYER'){
  requireThat(t.status==='ACTIVE'&&t.transferWindowOpen,'TRANSFER_WINDOW_CLOSED','Open the transfer window to sell a player.');const team=t.teams.find(x=>x.managerUserId===user)!;const p=t.players.find(x=>x.id===a.playerId);requireThat(p?.currentTeamId===team.id,'INVALID_OWNERSHIP','You do not own this player.',403);const quote=quoteSale(t,p);requireThat(a.ownershipToken===quote.ownershipToken&&a.expectedSaleUnits===quote.saleValueUnits,'STALE_SALE_QUOTE','Ownership or sale value changed. Review the new quote.',409);
- team.transferBudgetUnits+=quote.saleValueUnits;t.transactions.push({id:randomUUID(),playerId:p.id,fromTeamId:team.id,toTeamId:null,type:'RELEASE',amountUnits:quote.saleValueUnits,tradeId:null,at:now});p.currentTeamId=null;p.ownershipStatus='FREE_AGENT';p.availability='AVAILABLE';p.acquisitionType=null;p.acquisitionPriceUnits=null;
+ team.transferBudgetUnits+=quote.saleValueUnits;t.transactions.push({id:randomUUID(),playerId:p.id,fromTeamId:team.id,toTeamId:null,type:'RELEASE',amountUnits:quote.saleValueUnits,tradeId:null,at:now});p.currentTeamId=null;p.ownershipStatus='FREE_AGENT';p.availability='AVAILABLE';p.acquisitionType=null;p.acquisitionPriceUnits=null;p.metadata={...p.metadata,freeAgentReason:'TEAM_RELEASE',releasedByTeamId:team.id,releasedAt:now};
  for(const trade of t.trades)if(trade.status==='PENDING'&&[trade.offeredPlayerId,trade.requestedPlayerId].includes(p.id)){trade.status='EXPIRED';trade.updatedAt=now;}
- notice(t,'PLAYER_SOLD',p.name+' was released by '+team.name+' and is now a Free Agent.');return;
+ notice(t,'PLAYER_SOLD',p.name+' was released by '+team.name+' and is now a Free Agent.',[team.managerUserId]);return;
  }
  requireThat(t.hostUserId===user,'HOST_ONLY','Only the host can manage seasons.',403);
  if(a.type==='SEASON_SETTINGS'){requireThat(a.bonusUnits.length===t.teams.length&&a.bonusUnits.every((n,i)=>Number.isSafeInteger(n)&&n>0&&(i===0||a.bonusUnits[i-1]!>=n)),'INVALID_BONUSES','Set one positive, non-increasing bonus per league position.');d.settings={resalePercent:a.resalePercent,bonusUnits:a.bonusUnits};return;}
