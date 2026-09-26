@@ -1,3 +1,4 @@
+import type {SquadData,PlayerSeasonStats} from './squad/squad.types.js';
 import type {SeasonData,SaleQuote} from './seasons/season.types.js';
 import type {BuyoutOffer} from './buyout/buyout.types.js';
 import type {NegotiationData,NegotiationView} from './negotiation/negotiation.types.js';
@@ -104,6 +105,7 @@ export interface ManagerAudit {
     detail: string;
 }
 export interface Tournament {
+    squadData?:SquadData;
     seasonData?: SeasonData;
     buyouts?: BuyoutOffer[];
     negotiation?: NegotiationData;
@@ -140,6 +142,7 @@ export interface Tournament {
 }
 export type TournamentState = Omit<Tournament, 'startingSnapshot' | 'receipts' | 'negotiation'> & {
     negotiation: NegotiationView;
+    playerStats?:Record<string,PlayerSeasonStats>;
     saleQuotes?: Record<string,SaleQuote>;
     seasonFixturesById?: Record<string,Fixture[]>;
     modeStatus?: "ACTIVE" | "ENDED";

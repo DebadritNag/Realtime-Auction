@@ -1,15 +1,17 @@
+import type {SquadAction} from '@/types/manager-squad';
 import type {SeasonAction} from '@/types/manager-season';
 import type {BuyoutAction} from '@/types/manager-buyout';
 import { api } from './api';
 import type { TournamentState, TournamentSummary, ImportReport } from '@/types/manager-mode';
 import type { PlayerDTO } from '@/types/backend';
-export type ManagerAction = SeasonAction | BuyoutAction | {type:'START_NEGOTIATION';playerId:string}|{type:'OFFER_FREE_AGENT';sessionId:string;amountUnits:number}|{type:'END_NEGOTIATION';sessionId:string}|{type:'CONFIRM_SIGNING';sessionId:string}|{type:'TRANSFER_RULES';difficulty:'RELAXED'|'NORMAL'|'HARD';visibility:'PRIVATE'|'SEMI_TRANSPARENT'|'TRANSPARENT';walkAwayCooldownMs:number}| {
+export type ManagerAction = SquadAction | SeasonAction | BuyoutAction | {type:'START_NEGOTIATION';playerId:string}|{type:'OFFER_FREE_AGENT';sessionId:string;amountUnits:number}|{type:'END_NEGOTIATION';sessionId:string}|{type:'CONFIRM_SIGNING';sessionId:string}|{type:'TRANSFER_RULES';difficulty:'RELAXED'|'NORMAL'|'HARD';visibility:'PRIVATE'|'SEMI_TRANSPARENT'|'TRANSPARENT';walkAwayCooldownMs:number}| {
     type: 'INVITATION';
     accept: boolean;
 } | {
     type: 'GENERATE_FIXTURES';
 } | {
     type: 'SCORE';
+    scorers?:Record<string,{playerId:string;goals:number}[]>;
     fixtureId: string;
     homeScore: number;
     awayScore: number;

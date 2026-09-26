@@ -1,5 +1,7 @@
 'use client';
-import {SeasonPanel,SeasonSettings,PlayerSales} from './ManagerSeasons';
+import {ManagerSquad} from './ManagerSquad';
+import {PlayerImage} from '@/components/shared/PlayerImage';
+import {SeasonPanel,SeasonSettings} from './ManagerSeasons';
 import {ManagerTransfers} from './ManagerTransfers';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -139,7 +141,7 @@ export function PlayerCard({ p }: { p: ManagerPlayer }) {
   return (
     <article className={panel + ' !space-y-2'}>
       <div className="flex items-center gap-3">
-        {p.imageUrl && <img src={p.imageUrl} alt="" className="w-14 h-14 object-contain rounded-lg bg-white/5" />}
+        <PlayerImage player={p} className="w-14 h-14 object-contain rounded-lg bg-white/5"/>
         <div className="min-w-0">
           <h3 className="font-bold text-white truncate">{p.name}</h3>
           <p className="text-sm text-emerald-300">{p.overall} OVR · {p.position}</p>
@@ -801,12 +803,7 @@ export function ManagerWorkspace({ section }: { section: string }) {
       case 'dashboard':
         return <><SeasonPanel state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/><Dashboard state={state} action={action} busy={busy || state.modeStatus === 'ENDED'} /></>;
       case 'squad':
-        return (
-          <>
-            <SectionTitle title="Squad" subtitle={`${state.players.filter(p => p.currentTeamId === state.myTeamId).length} players in your squad`} />
-            <Squad players={state.players.filter(p => p.currentTeamId === mine.id)} /><PlayerSales state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/>
-          </>
-        );
+        return <ManagerSquad state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/>;
       case 'fixtures':
         return (
           <>
@@ -832,7 +829,7 @@ export function ManagerWorkspace({ section }: { section: string }) {
         return (
           <>
             <SectionTitle title="Teams" subtitle="Inspect any team's squad and budget." />
-            <TeamsSection state={state} /><SeasonPanel state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/><PlayerSales state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/>
+            <TeamsSection state={state} /><SeasonPanel state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/>
           </>
         );
       case 'notifications':

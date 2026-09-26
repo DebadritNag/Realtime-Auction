@@ -28,6 +28,9 @@ export function FixtureMatchCard({ fixture: f, state, onAction, busy }: Props) {
   const [editing, setEditing] = useState(false);
   const [home, setHome] = useState(String(f.homeScore ?? 0));
   const [away, setAway] = useState(String(f.awayScore ?? 0));
+  const savedScorers=()=>Object.fromEntries([f.homeTeamId,f.awayTeamId].map(id=>[id,Object.fromEntries((state.squadData?.lineups.find(x=>x.fixtureId===f.id&&x.teamId===id)?.scorers??[]).map(x=>[x.playerId,x.goals]))]));
+  const [scorers,setScorers]=useState<Record<string,Record<string,number>>>(savedScorers);
+  const tooMany=Object.values(scorers[f.homeTeamId]??{}).reduce((a,b)=>a+b,0)>Number(home)||Object.values(scorers[f.awayTeamId]??{}).reduce((a,b)=>a+b,0)>Number(away);
 
   const homeTeam = state.teams.find(t => t.id === f.homeTeamId);
   const awayTeam = state.teams.find(t => t.id === f.awayTeamId);
@@ -36,7 +39,7 @@ export function FixtureMatchCard({ fixture: f, state, onAction, busy }: Props) {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onAction({ type: 'SCORE', fixtureId: f.id, homeScore: Number(home), awayScore: Number(away) });
+    await onAction({ type: 'SCORE', fixtureId: f.id, homeScore: Number(home), awayScore: Number(away),scorers:Object.fromEntries(Object.entries(scorers).map(([teamId,counts])=>[teamId,Object.entries(counts).filter(([,goals])=>goals>0).map(([playerId,goals])=>({playerId,goals}))])) });
     setEditing(false);
   };
 
@@ -103,7 +106,7 @@ export function FixtureMatchCard({ fixture: f, state, onAction, busy }: Props) {
         <div className="px-5 pb-4">
           {!editing ? (
             <button
-              onClick={() => { setHome(String(f.homeScore ?? 0)); setAway(String(f.awayScore ?? 0)); setEditing(true); }}
+              onClick={() => { setHome(String(f.homeScore ?? 0)); setAway(String(f.awayScore ?? 0));setScorers(savedScorers()); setEditing(true); }}
               className="cursor-pointer text-[12px] font-semibold text-emerald-400 hover:text-emerald-300 border border-emerald-700/50 hover:border-emerald-500 bg-emerald-500/5 hover:bg-emerald-500/10 px-4 py-1.5 rounded-lg transition-colors"
             >
               {f.status === 'COMPLETED' ? 'Correct Result' : 'Enter Result'}
@@ -128,7 +131,7 @@ export function FixtureMatchCard({ fixture: f, state, onAction, busy }: Props) {
                 <label className="text-xs text-slate-400 whitespace-nowrap">{awayTeam?.name ?? 'Away'}</label>
               </div>
               <button
-                type="submit" disabled={busy}
+                type="submit" disabled={busy||tooMany}
                 className="cursor-pointer text-[12px] font-semibold text-slate-950 bg-emerald-400 hover:bg-emerald-300 px-4 py-1.5 rounded-lg transition-colors disabled:opacity-50"
               >
                 Save
@@ -147,6 +150,7 @@ export function FixtureMatchCard({ fixture: f, state, onAction, busy }: Props) {
               >
                 Cancel
               </button>
+              <div className="w-full grid gap-4 pt-3 sm:grid-cols-2">{[f.homeTeamId,f.awayTeamId].map(teamId=>{const team=state.teams.find(t=>t.id===teamId)!;const snapshot=state.squadData?.lineups.find(x=>x.fixtureId===f.id&&x.teamId===teamId);const eligible=state.players.filter(p=>snapshot?snapshot.eligiblePlayerIds.includes(p.id):p.currentTeamId===teamId);const entries=scorers[teamId]??{};const count=Object.values(entries).reduce((a,b)=>a+b,0);const score=Number(teamId===f.homeTeamId?home:away);const setCount=(id:string,goals:number)=>setScorers(old=>({...old,[teamId]:{...old[teamId],[id]:goals}}));return <fieldset key={teamId} className="min-w-0 rounded-xl border border-slate-700 p-3"><legend className="px-1 text-xs text-slate-200">{team.name} goalscorers</legend><label className="text-xs text-slate-300">Add scorer for {team.name}<select disabled={busy} className="mt-1 w-full rounded border border-slate-600 bg-slate-950 p-2 text-sm text-white" value="" onChange={e=>{if(e.target.value)setCount(e.target.value,(entries[e.target.value]??0)+1);}}><option value="">Choose player</option>{eligible.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label>{Object.entries(entries).filter(([,goals])=>goals>0).map(([id,goals])=><label key={id} className="mt-2 flex items-center justify-between gap-2 text-xs text-slate-200">{state.players.find(p=>p.id===id)?.name}<input aria-label={'Goals for '+state.players.find(p=>p.id===id)?.name} type="number" min="0" max="99" step="1" required disabled={busy} value={goals} onChange={e=>setCount(id,Number(e.target.value))} className="w-14 rounded border border-slate-600 bg-slate-950 p-2 text-white"/></label>)}<p className={'mt-2 text-xs '+(count>score?'text-red-300':'text-slate-300')}>{count} assigned · {Math.max(0,score-count)} unassigned goals</p></fieldset>;})}</div><p className="text-xs text-slate-400">Use repeated selection or goal counts for braces and hat-tricks. Unassigned goals are allowed. Starting appearances use the saved team sheet when this result is first recorded.</p>
             </form>
           )}
         </div>
