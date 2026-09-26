@@ -40,7 +40,7 @@ export async function buildApp(options: AppOptions) {
     bodyLimit: 16 * 1024, requestTimeout: 15_000, trustProxy: false,
   });
   const origins = options.origins ?? ['http://localhost:3000', 'http://localhost:5173'];
-  await app.register(cors, { origin: origins, methods: ['GET', 'POST', 'PATCH', 'OPTIONS'] });
+  await app.register(cors, { origin: origins, methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'] });
   await app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
   await app.register(websocket, { options: { maxPayload: 16 * 1024, perMessageDeflate: false } });
   const clock = options.clock ?? systemClock;

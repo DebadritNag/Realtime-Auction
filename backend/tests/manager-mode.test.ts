@@ -87,3 +87,14 @@ it('fails clearly when production persistence has not been injected',async()=>{
  const {app}=await buildApp({authService:new StaticTokenAuthService(new Map([['host',{userId:'host'}]])),logger:false,timersEnabled:false});
  try{const result=await app.inject({url:'/api/manager-mode',headers:{authorization:'Bearer host'}});expect(result.statusCode).toBe(503);expect(result.json().error.code).toBe('MANAGER_PERSISTENCE_UNAVAILABLE');}finally{await app.close();}
 });
+it('allows browser DELETE preflight and host-only deletion without a JSON body',async()=>{
+ const room=source(),rooms=new MemoryRoomRepository();await rooms.create(room);const repository=new MemoryManagerRepository();
+ const {app}=await buildApp({authService:new StaticTokenAuthService(new Map(room.teams.map(t=>[t.userId,{userId:t.userId}]))),repository:rooms,managerRepository:repository,logger:false,timersEnabled:false});
+ try{const created=await app.inject({method:'POST',url:'/api/manager-mode/from-auction/'+room.id,headers:{authorization:'Bearer user0'},payload:{name:'Delete check'}});expect(created.statusCode).toBe(200);const url='/api/manager-mode/'+created.json().id;
+ const preflight=await app.inject({method:'OPTIONS',url,headers:{origin:'http://localhost:3000','access-control-request-method':'DELETE','access-control-request-headers':'authorization'}});
+ expect(preflight.statusCode).toBe(204);expect(preflight.headers['access-control-allow-methods']).toContain('DELETE');expect(preflight.headers['access-control-allow-origin']).toBe('http://localhost:3000');
+ expect((await app.inject({method:'DELETE',url,headers:{origin:'http://localhost:3000',authorization:'Bearer user1'}})).statusCode).toBe(403);
+ expect((await app.inject({method:'DELETE',url,headers:{origin:'http://localhost:3000',authorization:'Bearer user0'}})).statusCode).toBe(204);
+ expect((await app.inject({url,headers:{authorization:'Bearer user0'}})).statusCode).toBe(404);expect(await rooms.findByCode(room.code)).not.toBeNull();
+ }finally{await app.close();}
+});

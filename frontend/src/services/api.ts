@@ -43,7 +43,8 @@ export async function apiFetch<T>(
   // that surfaces as "server didn't respond."
 
   const headers = new Headers(options.headers);
-  headers.set("Content-Type", "application/json");
+  headers.set("Accept", "application/json");
+  if (options.body != null && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
   const url = base + (path.startsWith("/") ? path : `/${path}`);
@@ -53,7 +54,7 @@ export async function apiFetch<T>(
     response = await fetch(url, { ...options, headers, cache: "no-store" });
   } catch {
     throw new ApiError(
-      "Cannot reach the server — check your internet connection or try again shortly.",
+      "The request could not reach the backend. The server may be unavailable or may have blocked this request. Please try again.",
       "NETWORK_ERROR"
     );
   }

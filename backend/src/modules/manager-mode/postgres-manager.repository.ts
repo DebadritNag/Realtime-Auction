@@ -126,6 +126,12 @@ export class PostgresManagerTournamentRepository implements ManagerTournamentRep
    await this.db.begin(async tx=>{
     const [row]=await tx<{id:string}[]>`select id from public.manager_tournaments where id=${id} for update`;
     requireThat(row,'TOURNAMENT_NOT_FOUND','Tournament not found.',404);
+    // Remove dependent ledgers/offers first: their player FKs deliberately restrict deletion.
+    await tx`delete from public.manager_transfer_transactions where tournament_id=${id}`;
+    await tx`delete from public.manager_buyout_offers where tournament_id=${id}`;
+    await tx`delete from public.manager_trade_offers where tournament_id=${id}`;
+    await tx`delete from public.manager_free_agent_offers where session_id in (select id from public.manager_negotiation_sessions where tournament_id=${id})`;
+    await tx`delete from public.manager_negotiation_sessions where tournament_id=${id}`;
     await tx`delete from public.manager_tournaments where id=${id}`;
    });
   }catch(e){return managerDbError(e);}

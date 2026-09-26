@@ -6,7 +6,7 @@ export const actionSchema = z.discriminatedUnion('type', [
  z.object({type:z.literal('END_CURRENT_SEASON'),confirmation:z.literal('END SEASON')}).strict(),
  z.object({type:z.literal('START_NEXT_SEASON')}).strict(),
  z.object({type:z.literal('END_MANAGER_MODE'),confirmation:z.literal('END MANAGER MODE')}).strict(),
- z.object({type:z.literal('SEASON_SETTINGS'),resalePercent:z.number().int().min(40).max(60),bonusUnits:z.array(z.number().int().min(0).max(20000)).min(2).max(100)}).strict(),
+ z.object({type:z.literal('SEASON_SETTINGS'),resalePercent:z.number().int().min(40).max(60),bonusUnits:z.array(z.number().int().min(1).max(20000)).min(2).max(100)}).strict(),
  z.object({type:z.literal('SELL_PLAYER'),playerId:id,ownershipToken:id,expectedSaleUnits:z.number().int().min(0)}).strict(),
  z.object({type:z.literal('BUYOUT'),targetPlayerId:id,...buyoutTerms}).strict(),
  z.object({type:z.literal('BUYOUT_COUNTER'),buyoutId:id,...buyoutTerms}).strict(),

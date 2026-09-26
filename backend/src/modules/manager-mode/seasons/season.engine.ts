@@ -6,7 +6,9 @@ import {ownershipToken} from '../buyout/buyout.engine.js';
 import {profileFor} from '../negotiation/negotiation.engine.js';
 import type {SeasonData,SeasonAction,SaleQuote} from './season.types.js';
 export function ensureSeasons(t:Tournament):SeasonData{
- if(!t.seasonData){const id=randomUUID();t.seasonData={currentSeasonId:id,seasons:[{id,number:1,status:t.status==='COMPLETED'?'COMPLETED':t.status==='ARCHIVED'||t.status==='ENDED'?'ARCHIVED':'ACTIVE',championTeamId:null,startedAt:t.createdAt,completedAt:null,endedEarly:false,bonusesAwardedAt:null,finalStandings:[]}],bonuses:[],settings:{resalePercent:50,bonusUnits:t.teams.map((_,i)=>[60,48,40,32,24,20,16,12,8,4][i]??0)}};}
+ if(!t.seasonData){const id=randomUUID();t.seasonData={currentSeasonId:id,seasons:[{id,number:1,status:t.status==='COMPLETED'?'COMPLETED':t.status==='ARCHIVED'||t.status==='ENDED'?'ARCHIVED':'ACTIVE',championTeamId:null,startedAt:t.createdAt,completedAt:null,endedEarly:false,bonusesAwardedAt:null,finalStandings:[]}],bonuses:[],settings:{resalePercent:50,bonusUnits:t.teams.map((_,i)=>[60,48,40,32,24,20,16,12,8,4][i]??2)}};}
+ // Legacy zero/missing rewards become a positive floor; awarded history stays immutable.
+ t.seasonData.settings.bonusUnits=t.teams.map((_,i)=>Math.max(1,t.seasonData!.settings.bonusUnits[i]??2));
  for(const f of t.fixtures)f.seasonId??=t.seasonData.seasons[0]!.id;
  return t.seasonData;
 }
@@ -17,7 +19,7 @@ function notice(t:Tournament,type:string,message:string,users=t.teams.map(x=>x.m
 export function completeSeason(t:Tournament,rewards=true,now=Date.now()){
  const d=ensureSeasons(t),s=currentSeason(t);requireThat(s.status==='ACTIVE','SEASON_NOT_ACTIVE','This season is already closed.',409);
  s.finalStandings=standings(t.teams,seasonFixtures(t));s.status=rewards?'COMPLETED':'ARCHIVED';s.completedAt=now;s.endedEarly=seasonFixtures(t).some(f=>f.status!=='COMPLETED')||!seasonFixtures(t).length;
- if(rewards){s.championTeamId=s.finalStandings[0]?.teamId??null;for(const row of s.finalStandings){requireThat(!d.bonuses.some(b=>b.seasonId===s.id&&b.teamId===row.teamId),'BONUS_ALREADY_AWARDED','Season bonus already awarded.',409);const amount=d.settings.bonusUnits[row.position-1]??0;const team=t.teams.find(x=>x.id===row.teamId)!;team.transferBudgetUnits+=amount;d.bonuses.push({seasonId:s.id,teamId:team.id,position:row.position,amountUnits:amount,awardedAt:now});notice(t,'SEASON_BONUS','Season '+s.number+' performance reward: ₹'+amount/2+' Cr.',[team.managerUserId]);}s.bonusesAwardedAt=now;notice(t,'LEAGUE_SHIELD_AWARDED',(t.teams.find(x=>x.id===s.championTeamId)?.name??'Champion')+' won the Season '+s.number+' League Shield.');}
+ if(rewards){s.championTeamId=s.finalStandings[0]?.teamId??null;for(const row of s.finalStandings){requireThat(!d.bonuses.some(b=>b.seasonId===s.id&&b.teamId===row.teamId),'BONUS_ALREADY_AWARDED','Season bonus already awarded.',409);const amount=d.settings.bonusUnits[row.position-1]!;const team=t.teams.find(x=>x.id===row.teamId)!;team.transferBudgetUnits+=amount;d.bonuses.push({seasonId:s.id,teamId:team.id,position:row.position,amountUnits:amount,awardedAt:now});notice(t,'SEASON_BONUS','Season '+s.number+' performance reward: ₹'+amount/2+' Cr.',[team.managerUserId]);}s.bonusesAwardedAt=now;notice(t,'LEAGUE_SHIELD_AWARDED',(t.teams.find(x=>x.id===s.championTeamId)?.name??'Champion')+' won the Season '+s.number+' League Shield.');}
  for(const trade of t.trades)if(trade.status==='PENDING'){trade.status='EXPIRED';trade.updatedAt=now;}
  t.transferWindowOpen=false;notice(t,'SEASON_COMPLETED','Season '+s.number+' has closed.');
 }
@@ -30,7 +32,7 @@ export function seasonAction(t:Tournament,user:string,a:SeasonAction,now=Date.no
  notice(t,'PLAYER_SOLD',p.name+' was released by '+team.name+' and is now a Free Agent.');return;
  }
  requireThat(t.hostUserId===user,'HOST_ONLY','Only the host can manage seasons.',403);
- if(a.type==='SEASON_SETTINGS'){requireThat(a.bonusUnits.length===t.teams.length&&a.bonusUnits.every((n,i)=>Number.isSafeInteger(n)&&n>=0&&(i===0||a.bonusUnits[i-1]!>=n)),'INVALID_BONUSES','Set one non-increasing bonus per league position.');d.settings={resalePercent:a.resalePercent,bonusUnits:a.bonusUnits};return;}
+ if(a.type==='SEASON_SETTINGS'){requireThat(a.bonusUnits.length===t.teams.length&&a.bonusUnits.every((n,i)=>Number.isSafeInteger(n)&&n>0&&(i===0||a.bonusUnits[i-1]!>=n)),'INVALID_BONUSES','Set one positive, non-increasing bonus per league position.');d.settings={resalePercent:a.resalePercent,bonusUnits:a.bonusUnits};return;}
  if(a.type==='END_CURRENT_SEASON'){requireThat(t.status==='ACTIVE','INVALID_STATE','Generate fixtures and start the tournament first.');completeSeason(t,true,now);return;}
  if(a.type==='END_MANAGER_MODE'){if(s.status==='ACTIVE')completeSeason(t,false,now);t.status='ENDED';t.transferWindowOpen=false;notice(t,'MANAGER_MODE_ENDED','Manager Mode has ended. All history is read-only.');return;}
  requireThat(s.status==='COMPLETED','SEASON_NOT_COMPLETED','Complete the current season before starting another.');
