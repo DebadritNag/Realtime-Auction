@@ -1,8 +1,11 @@
+import {ensureHeroPool} from './heroes/hero.engine.js';
+import type {SetupLogger} from './setup-diagnostics.js';
 import {loadSquad,persistSquad} from './squad/squad.persistence.js';
 import {loadTransferWindows,persistTransferWindows} from './reports/window.persistence.js';
 import {loadSeasons,persistSeasons} from './seasons/season.persistence.js';
 import {loadBuyouts,persistBuyouts} from './buyout/buyout.persistence.js';
 import {loadNegotiations,persistNegotiations} from './negotiation/negotiation.persistence.js';
+import {loadSecretHeroes,persistSecretHeroes} from './heroes/hero.persistence.js';
 import {ensureNegotiations} from './negotiation/negotiation.engine.js';
 import {randomUUID} from 'node:crypto';
 import type {Sql,TransactionSql} from 'postgres';
@@ -18,7 +21,7 @@ const json=(db:Db,value:unknown)=>db.json(JSON.parse(JSON.stringify(value)) as J
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 interface EventMetadata {sequence?:number;receipt?:{key:string;fingerprint:string};action?:Partial<ManagerAction>;initial?:{startingSnapshot:Tournament['startingSnapshot'];code:string;name:string;budgetMode:Tournament['budgetMode']}}
 export function managerDbError(error:unknown):never{
- if(error instanceof DomainError)throw error;const e=error as {code?:string;message?:string;constraint_name?:string;constraint?:string};const details={postgresCode:e.code,constraint:e.constraint_name??e.constraint};
+ if(error instanceof DomainError)throw error;const e=error as {code?:string;message?:string;constraint_name?:string;constraint?:string;heroStage?:string;heroTeamId?:string;heroSlotId?:string};const details={postgresCode:e.code,constraint:e.constraint_name??e.constraint,...(e.heroStage?{stage:e.heroStage,teamId:e.heroTeamId,secretSlotId:e.heroSlotId}:{})};
  if(e.code==='23503')throw new DomainError('INVALID_REFERENCE','A referenced auction, profile, team or player is missing.',409,details);
  if(e.code==='23505')throw new DomainError('DUPLICATE_MANAGER_RESOURCE','This tournament resource already exists.',409,details);
  if(e.code==='23502')throw new DomainError('INCOMPLETE_MANAGER_DATA','Required tournament data is missing.',409,details);
@@ -33,7 +36,9 @@ export class PostgresManagerIdentityRepository implements ManagerIdentityReposit
 }
 /** Normalized durable aggregate; every writer first locks the tournament row. */
 export class PostgresManagerTournamentRepository implements ManagerTournamentRepository{
- constructor(readonly db:Sql){}
+ constructor(readonly db:Sql,private logger?:SetupLogger){}
+ setLogger(logger:SetupLogger){this.logger=logger;}
+ async initializeHeroes(id:string){await this.db.begin(async tx=>{await tx`select id from public.manager_tournaments where id=${id} for update`;const before=await this.load(tx,id);requireThat(before,'TOURNAMENT_NOT_FOUND','Tournament not found.',404);if(before.secretHeroes?.length)return;const draft=structuredClone(before);ensureHeroPool(draft);await persistSecretHeroes(tx,draft,before);});}
  async find(id:string){if(!uuid.test(id))return null;try{return await this.db.begin('isolation level repeatable read read only',tx=>this.load(tx,id));}catch(e){return managerDbError(e);}}
  async findByAuction(id:string){if(!uuid.test(id))return null;try{const [row]=await this.db<{id:string}[]>`select id from public.manager_tournaments where source_auction_id=${id}`;return row?this.find(row.id):null;}catch(e){return managerDbError(e);}}
  async listSummaries(user:string):Promise<TournamentSummary[]>{
@@ -61,10 +66,10 @@ export class PostgresManagerTournamentRepository implements ManagerTournamentRep
  const initial=(events.find(e=>e.event_type==='MANAGER_MODE_CREATED')?.metadata as unknown as EventMetadata)?.initial;
  requireThat(initial,'MANAGER_SNAPSHOT_MISSING','This tournament lacks the application snapshot metadata.',409);
  const receipts:Tournament['receipts']={};let sequence=1;for(const e of events){const m=e.metadata as unknown as EventMetadata|null;if(m?.receipt)receipts[m.receipt.key]={fingerprint:m.receipt.fingerprint};sequence=Math.max(sequence,m?.sequence??1);}
- const [squadData,seasonData,buyouts,negotiation]=await Promise.all([loadSquad(db,id),loadSeasons(db,id,t.current_season_id),loadBuyouts(db,id),loadNegotiations(db,id)]);
- return {transferWindows:windows,squadData,seasonData,buyouts,negotiation,id:t.id,sourceAuctionId:t.source_auction_id,sourceAuctionCode:initial.code,sourceAuctionName:initial.name,name:t.name,hostUserId:t.host_user_id,status:t.status as Tournament['status'],format:t.fixture_format as Tournament['format'],budgetMode:initial.budgetMode,startingBudgetUnits:Number(t.starting_transfer_budget_units),createdAt:ms(t.created_at),updatedAt:ms(t.updated_at),sequence,transferWindowOpen:windows.some(w=>w.status==='OPEN'),startingSnapshot:initial.startingSnapshot,receipts,
+ const [squadData,seasonData,buyouts,negotiation,secretHeroes]=await Promise.all([loadSquad(db,id),loadSeasons(db,id,t.current_season_id),loadBuyouts(db,id),loadNegotiations(db,id),loadSecretHeroes(db,id)]);
+ return {transferWindows:windows,squadData,seasonData,buyouts,negotiation,secretHeroes,id:t.id,sourceAuctionId:t.source_auction_id,sourceAuctionCode:initial.code,sourceAuctionName:initial.name,name:t.name,hostUserId:t.host_user_id,status:t.status as Tournament['status'],format:t.fixture_format as Tournament['format'],budgetMode:initial.budgetMode,startingBudgetUnits:Number(t.starting_transfer_budget_units),createdAt:ms(t.created_at),updatedAt:ms(t.updated_at),sequence,transferWindowOpen:windows.some(w=>w.status==='OPEN'),startingSnapshot:initial.startingSnapshot,receipts,
  teams:teams.map(r=>{const original=initial.startingSnapshot.teams.find(x=>x.id===r.id);requireThat(original,'INVALID_MANAGER_DATA','Team snapshot is missing.',409);const status=members.find(m=>m.team_id===r.id&&m.user_id===r.manager_user_id)?.status;return {...original,name:r.team_name,logoUrl:r.team_logo_url??'',managerUserId:r.manager_user_id,invitation:status==='INVITED'?'PENDING':status as 'JOINED'|'DECLINED',transferBudgetUnits:Number(r.current_transfer_budget_units)};}),
- players:players.map(r=>{const original=initial.startingSnapshot.players.find(p=>p.id===r.id);const last=transactions.filter(x=>x.player_id===r.id).at(-1);return {id:r.id,name:r.name,overall:r.overall,position:r.primary_position,category:r.auction_category,secondaryPositions:r.secondary_positions?.join(',')??'',club:r.club??'',nationality:r.nationality??'',imageUrl:r.image_url??'',...(r.age!==null?{age:r.age}:{}),stats:Object.fromEntries(['pace','shooting','passing','dribbling','defending','physical'].flatMap(k=>{const value=r[k as keyof typeof r];return typeof value==='number'?[[k,value]]:[];})),tier:r.tier??'',source:r.source as ManagerPlayer['source'],currentTeamId:r.current_team_id,ownershipStatus:r.ownership_status as ManagerPlayer['ownershipStatus'],availability:r.current_team_id?'SIGNED':'AVAILABLE',auctionPurchasePriceUnits:r.auction_purchase_price_units===null?null:Number(r.auction_purchase_price_units),acquisitionType:last?.type==='RELEASE'?null:last?.type==='AUCTION_IMPORT'?'AUCTION_PURCHASE':last?.type as ManagerPlayer['acquisitionType']??null,acquisitionPriceUnits:last&&last.type!=='RELEASE'?Number(last.amount_units??0):null,metadata:{...original?.metadata,sourcePlayerId:r.source_player_id,sourceAuctionPlayerId:r.source_auction_player_id,externalSourceKey:r.external_source_key}};}),
+ players:players.map(r=>{const original=initial.startingSnapshot.players.find(p=>p.id===r.id);const last=transactions.filter(x=>x.player_id===r.id).at(-1);return {id:r.id,name:r.name,overall:r.overall,position:r.primary_position,category:r.auction_category,secondaryPositions:r.secondary_positions?.join(',')??'',club:r.club??'',nationality:r.nationality??'',imageUrl:r.image_url??'',...(r.age!==null?{age:r.age}:{}),stats:Object.fromEntries(['pace','shooting','passing','dribbling','defending','physical'].flatMap(k=>{const value=r[k as keyof typeof r];return typeof value==='number'?[[k,value]]:[];})),tier:r.tier??'',source:r.source as ManagerPlayer['source'],currentTeamId:r.current_team_id,ownershipStatus:r.ownership_status as ManagerPlayer['ownershipStatus'],availability:r.current_team_id?'SIGNED':'AVAILABLE',auctionPurchasePriceUnits:r.auction_purchase_price_units===null?null:Number(r.auction_purchase_price_units),acquisitionType:last?.type==='RELEASE'?null:last?.type==='AUCTION_IMPORT'?'AUCTION_PURCHASE':last?.type as ManagerPlayer['acquisitionType']??null,acquisitionPriceUnits:last&&last.type!=='RELEASE'?Number(last.amount_units??0):null,...(r.source==='SECRET_HERO'?{isSecretHero:true,isTradeable:false,isSellable:false}:{}),metadata:{...original?.metadata,sourcePlayerId:r.source_player_id,sourceAuctionPlayerId:r.source_auction_player_id,externalSourceKey:r.external_source_key}};}),
  fixtures:fixtures.map(f=>({id:f.id,seasonId:f.season_id,matchday:f.matchday,homeTeamId:f.home_team_id,awayTeamId:f.away_team_id,homeScore:f.home_score,awayScore:f.away_score,status:f.status as Tournament['fixtures'][number]['status'],scheduledAt:null,completedAt:f.completed_at?ms(f.completed_at):null})),
  trades:trades.map(r=>({id:r.id,fromTeamId:r.from_team_id,toTeamId:r.to_team_id,offeredPlayerId:r.offered_player_id,requestedPlayerId:r.requested_player_id,status:r.status as Tournament['trades'][number]['status'],parentTradeId:r.parent_trade_id,createdBy:r.created_by,createdAt:ms(r.created_at),updatedAt:ms(r.updated_at)})),
  transactions:transactions.map(r=>({transferWindowId:r.transfer_window_id,id:r.id,playerId:r.player_id,fromTeamId:r.from_team_id,toTeamId:r.to_team_id!,type:r.type==='AUCTION_IMPORT'?'AUCTION_PURCHASE':r.type as Tournament['transactions'][number]['type'],amountUnits:Number(r.amount_units??0),tradeId:r.related_trade_id,buyoutId:r.related_buyout_id,at:ms(r.created_at)})),
@@ -134,6 +139,7 @@ export class PostgresManagerTournamentRepository implements ManagerTournamentRep
  await tx`select public.change_player_ownership(${session.playerId}::uuid,${session.teamId}::uuid,'FREE_AGENT_SIGNING',${session.lastOfferUnits!}::bigint,${actor}::uuid)`;
  await tx`update public.manager_tournament_players set manager_mode_acquisition_price_units=${session.lastOfferUnits!} where id=${session.playerId}`;
  }
+ await persistSecretHeroes(tx,draft,before,(stage,data)=>this.logger?.info({event:'secret-player-action',actionType:action.type,tournamentId:id,stage,...data},'Secret Player persistence'));
  await persistSquad(tx,draft,before);
  await persistBuyouts(tx,draft,before);
  await persistNegotiations(tx,draft,before);
@@ -143,12 +149,13 @@ export class PostgresManagerTournamentRepository implements ManagerTournamentRep
  else await tx`insert into public.manager_tournament_events(tournament_id,event_type,actor_user_id,metadata) values(${id},${this.eventType(action)},${actor},${json(tx,meta)})`;
  return (await this.load(tx,id))!;
  });}catch(e){return managerDbError(e);}}
- private eventType(a:ManagerAction){switch(a.type){case 'INVITATION':return a.accept?'MEMBER_JOINED':'MEMBER_DECLINED';case 'GENERATE_FIXTURES':return 'FIXTURES_GENERATED';case 'RESET_SCORE':return 'RESULT_EDITED';case 'WINDOW':return a.open?'TRANSFER_WINDOW_OPENED':'TRANSFER_WINDOW_CLOSED';case 'TRADE':return a.parentTradeId?'TRADE_COUNTERED':'TRADE_CREATED';case 'TRADE_RESPONSE':return a.response==='REJECT'?'TRADE_REJECTED':'TRADE_CANCELLED';case 'STATUS':return a.status==='COMPLETED'?'TOURNAMENT_COMPLETED':'TOURNAMENT_STATUS_CHANGED';default:return 'TOURNAMENT_STATUS_CHANGED';}}
+ private eventType(a:ManagerAction){switch(a.type){case 'BUY_SECRET_PLAYER':return 'SECRET_PLAYER_CLAIMED';case 'REVEAL_SECRET_PLAYER':return 'SECRET_PLAYER_REVEALED';case 'INVITATION':return a.accept?'MEMBER_JOINED':'MEMBER_DECLINED';case 'GENERATE_FIXTURES':return 'FIXTURES_GENERATED';case 'RESET_SCORE':return 'RESULT_EDITED';case 'WINDOW':return a.open?'TRANSFER_WINDOW_OPENED':'TRANSFER_WINDOW_CLOSED';case 'TRADE':return a.parentTradeId?'TRADE_COUNTERED':'TRADE_CREATED';case 'TRADE_RESPONSE':return a.response==='REJECT'?'TRADE_REJECTED':'TRADE_CANCELLED';case 'STATUS':return a.status==='COMPLETED'?'TOURNAMENT_COMPLETED':'TOURNAMENT_STATUS_CHANGED';default:return 'TOURNAMENT_STATUS_CHANGED';}}
  async delete(id:string):Promise<void>{
   try{
    await this.db.begin(async tx=>{
     const [row]=await tx<{id:string}[]>`select id from public.manager_tournaments where id=${id} for update`;
     requireThat(row,'TOURNAMENT_NOT_FOUND','Tournament not found.',404);
+    await tx`delete from public.manager_secret_heroes where tournament_id=${id}`;
     // Remove dependent ledgers/offers first: their player FKs deliberately restrict deletion.
     await tx`delete from public.manager_transfer_transactions where tournament_id=${id}`;
     await tx`delete from public.manager_buyout_offers where tournament_id=${id}`;

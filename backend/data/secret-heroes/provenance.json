@@ -1,0 +1,206 @@
+{
+  "Joe Cole": {
+    "source": "frontend/male_players.csv",
+    "playerId": "27",
+    "edition": "15.0"
+  },
+  "Robbie Keane": {
+    "source": "frontend/male_players.csv",
+    "playerId": "330",
+    "edition": "15.0"
+  },
+  "Lars Ricken": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Jay-Jay Okocha": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Rui Costa": {
+    "source": "https://www.fourfourtwo.com/features/ea-sports-fc-24-icons-and-heroes-every-legend-card-in-ultimate-team"
+  },
+  "Ludovic Giuly": {
+    "source": "https://www.fourfourtwo.com/features/ea-sports-fc-24-icons-and-heroes-every-legend-card-in-ultimate-team"
+  },
+  "Ole Gunnar Solskjær": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Ricardo Carvalho": {
+    "source": "frontend/male_players.csv",
+    "playerId": "3622",
+    "edition": "15.0"
+  },
+  "Bixente Lizarazu": {
+    "source": "https://www.fourfourtwo.com/features/ea-sports-fc-24-icons-and-heroes-every-legend-card-in-ultimate-team"
+  },
+  "Fernando Morientes": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Jari Litmanen": {
+    "source": "https://www.fourfourtwo.com/features/ea-sports-fc-24-icons-and-heroes-every-legend-card-in-ultimate-team"
+  },
+  "Nwankwo Kanu": {
+    "source": "https://www.fourfourtwo.com/features/ea-sports-fc-24-icons-and-heroes-every-legend-card-in-ultimate-team"
+  },
+  "Freddie Ljungberg": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Landon Donovan": {
+    "source": "frontend/male_players.csv",
+    "playerId": "7743",
+    "edition": "15.0"
+  },
+  "Aleksandr Mostovoi": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Tomáš Rosický": {
+    "source": "frontend/male_players.csv",
+    "playerId": "8473",
+    "edition": "15.0"
+  },
+  "Dirk Kuyt": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Iván Córdoba": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Yaya Touré": {
+    "source": "frontend/male_players.csv",
+    "playerId": "20289",
+    "edition": "15.0"
+  },
+  "Capdevila": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Rafael Márquez": {
+    "source": "frontend/male_players.csv",
+    "playerId": "26709",
+    "edition": "15.0"
+  },
+  "Dimitar Berbatov": {
+    "source": "frontend/male_players.csv",
+    "playerId": "30110",
+    "edition": "15.0"
+  },
+  "DaMarcus Beasley": {
+    "source": "frontend/male_players.csv",
+    "playerId": "39386",
+    "edition": "15.0"
+  },
+  "Sidney Govou": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Jerzy Dudek": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Tim Cahill": {
+    "source": "frontend/male_players.csv",
+    "playerId": "51412",
+    "edition": "15.0"
+  },
+  "Antonio Di Natale": {
+    "source": "frontend/male_players.csv",
+    "playerId": "120274",
+    "edition": "15.0"
+  },
+  "Javier Mascherano": {
+    "source": "frontend/male_players.csv",
+    "playerId": "142754",
+    "edition": "15.0"
+  },
+  "Mario Gomez": {
+    "source": "frontend/male_players.csv",
+    "playerId": "150418",
+    "edition": "15.0"
+  },
+  "Clint Dempsey": {
+    "source": "frontend/male_players.csv",
+    "playerId": "155897",
+    "edition": "15.0"
+  },
+  "Rudi Völler": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Jean-Pierre Papin": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Abedi Pelé": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Sami Al Jaber": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Claudio Marchisio": {
+    "source": "frontend/male_players.csv",
+    "playerId": "173210",
+    "edition": "15.0"
+  },
+  "Ramires": {
+    "source": "frontend/male_players.csv",
+    "playerId": "184943",
+    "edition": "15.0"
+  },
+  "Jorge Campos": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "David Ginola": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Paulo Futre": {
+    "source": "https://www.fourfourtwo.com/features/ea-sports-fc-24-icons-and-heroes-every-legend-card-in-ultimate-team"
+  },
+  "Gianluca Vialli": {
+    "source": "https://www.fourfourtwo.com/features/ea-sports-fc-24-icons-and-heroes-every-legend-card-in-ultimate-team"
+  },
+  "Vincent Kompany": {
+    "source": "frontend/male_players.csv",
+    "playerId": "139720",
+    "edition": "15.0"
+  },
+  "Jürgen Kohler": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Diego Milito": {
+    "source": "frontend/male_players.csv",
+    "playerId": "142708",
+    "edition": "15.0"
+  },
+  "Park Ji Sung": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Lúcio": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Diego Forlán": {
+    "source": "frontend/male_players.csv",
+    "playerId": "49072",
+    "edition": "15.0"
+  },
+  "Saeed Al Owairan": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Tomas Brolin": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Harry Kewell": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Włodzimierz Smolarek": {
+    "source": "https://www.pcgamesn.com/fifa-23/heroes"
+  },
+  "Steve McManaman": {
+    "source": "https://www.fourfourtwo.com/features/ea-sports-fc-24-icons-and-heroes-every-legend-card-in-ultimate-team"
+  },
+  "Wesley Sneijder": {
+    "source": "frontend/male_players.csv",
+    "playerId": "139869",
+    "edition": "15.0"
+  },
+  "Carlos Tévez": {
+    "source": "frontend/male_players.csv",
+    "playerId": "143001",
+    "edition": "15.0"
+  },
+  "John Arne Riise": {
+    "source": "https://www.fourfourtwo.com/features/ea-sports-fc-24-icons-and-heroes-every-legend-card-in-ultimate-team"
+  }
+}

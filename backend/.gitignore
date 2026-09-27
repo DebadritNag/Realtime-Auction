@@ -13,3 +13,8 @@ data/manager-mode/*
 !data/secret-heroes/
 data/secret-heroes/*
 !data/secret-heroes/hero-player-data.csv
+
+# Server-private Hero source and reproducible position provenance.
+!data/secret-heroes/heroes.csv
+!data/secret-heroes/web-overrides.json
+!data/secret-heroes/provenance.json

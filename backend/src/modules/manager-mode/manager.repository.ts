@@ -1,3 +1,4 @@
+import {ensureHeroPool} from './heroes/hero.engine.js';
 import type { Tournament,TournamentSummary } from './manager.types.js';
 import { SerialQueue } from '../../utils/serial-queue.js';
 import { DomainError, requireThat } from '../../domain/errors.js';
@@ -6,6 +7,7 @@ import { DomainError, requireThat } from '../../domain/errors.js';
  * Never retain a draft when callback or persistence fails. Return detached values.
  */
 export interface ManagerTournamentRepository {
+    initializeHeroes?(id:string):Promise<void>;
     listSummaries?(userId:string):Promise<TournamentSummary[]>;
     find(id: string): Promise<Tournament | null>;
     findByAuction(auctionId: string): Promise<Tournament | null>;
@@ -24,6 +26,7 @@ export interface ManagerIdentityRepository {
 /** Explicit development/test adapter. Not a production persistence substitute. */
 export class MemoryManagerRepository implements ManagerTournamentRepository {
     private rooms = new Map<string, Tournament>();
+    async initializeHeroes(id:string){await this.mutate(id,t=>{ensureHeroPool(t);});}
     private lock = new SerialQueue();
     async find(id: string) { return structuredClone(this.rooms.get(id) ?? null); }
     async findByAuction(id: string) { return structuredClone([...this.rooms.values()].find(t => t.sourceAuctionId === id) ?? null); }

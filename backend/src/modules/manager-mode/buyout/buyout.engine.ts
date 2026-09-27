@@ -1,3 +1,4 @@
+import {assertTransferable} from '../heroes/hero.engine.js';
 import {randomUUID} from 'node:crypto';
 import {requireThat} from '../../../domain/errors.js';
 import type {Tournament} from '../manager.types.js';
@@ -11,6 +12,7 @@ function terms(t:Tournament,buyer:string,seller:string,target:string,a:BuyoutTer
  requireThat(buyer!==seller,'INVALID_RECIPIENT','Choose another team.');
  requireThat(t.teams.some(x=>x.id===seller&&x.invitation==='JOINED'),'INVALID_RECIPIENT','The selling manager must have joined.');
  requireThat(t.players.some(p=>p.id===target&&p.currentTeamId===seller),'STALE_OWNERSHIP','Target player ownership changed.',409);
+ assertTransferable(t.players.find(p=>p.id===target)!);if(a.includedPlayerId){const included=t.players.find(p=>p.id===a.includedPlayerId);if(included)assertTransferable(included);}
  requireThat(Number.isSafeInteger(a.cashAmountUnits)&&a.cashAmountUnits>=0,'INVALID_BUYOUT','Use nonnegative integer half-crore units.');
  requireThat(a.offerType==='CASH'?a.cashAmountUnits>0&&!a.includedPlayerId:Boolean(a.includedPlayerId),'INVALID_BUYOUT','Cash offers need positive cash only; cash plus player offers need a player.');
  requireThat(!a.includedPlayerId||a.includedPlayerId!==target&&t.players.some(p=>p.id===a.includedPlayerId&&p.currentTeamId===buyer),'INVALID_OWNERSHIP','Included player must belong to the buying team.');

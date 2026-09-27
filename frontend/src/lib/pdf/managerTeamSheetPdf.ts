@@ -25,7 +25,7 @@ export async function createTeamSheetPdf(state:TournamentState,sheet:TeamSheet){
   const img=p?images.get(p.id):null,portraitSize=Math.min(14,h-11);
   if(img)doc.addImage(img,'PNG',x+(w-portraitSize)/2,y+1,portraitSize,portraitSize,undefined,'FAST');
   else{doc.setFillColor(106,146,143);doc.circle(x+w/2,y+5,2,'F');doc.roundedRect(x+w/2-4,y+8,8,4,1,1,'F');}
-  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.text(fit(p?.name??'Unassigned',w-3,8),x+w/2,y+h-6,{align:'center'});doc.setFont('helvetica','normal');doc.setTextColor(141,230,196);doc.setFontSize(7);doc.text(role+(p?' | '+p.overall+' OVR':'')+(p?.id===sheet.captainId?' | C':''),x+w/2,y+h-2,{align:'center'});
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.text(fit(p?.name??'Unassigned',w-3,8),x+w/2,y+h-6,{align:'center'});doc.setFont('helvetica','normal');doc.setTextColor(141,230,196);doc.setFontSize(7);doc.text(role+(p?(p.overall!==null?' | '+p.overall+' OVR':' | HERO'):'')+(p?.id===sheet.captainId?' | C':''),x+w/2,y+h-2,{align:'center'});
  }
  header();const pitch={x:10,y:36,w:177,h:161};
  doc.setFillColor(17,77,57);doc.roundedRect(pitch.x,pitch.y,pitch.w,pitch.h,2,2,'F');doc.setDrawColor(98,164,125);doc.setLineWidth(0.3);

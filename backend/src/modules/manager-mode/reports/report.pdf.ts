@@ -37,10 +37,10 @@ export function allTeamLineupsPdf(t:Tournament,generated=Date.now()){
   const pitch={x:12,y:45,w:177,h:149};doc.setFillColor(20,79,60);doc.roundedRect(pitch.x,pitch.y,pitch.w,pitch.h,2,2,'F');doc.setDrawColor(120,176,148);doc.setLineWidth(.3);doc.rect(15,48,171,143);doc.line(15,119.5,186,119.5);doc.circle(100.5,119.5,15);doc.rect(56,48,89,22);doc.rect(56,169,89,22);doc.rect(79,48,43,8);doc.rect(79,183,43,8);
   const fit=(value:string,width:number,size:number)=>{doc.setFontSize(size);let text=value;while(doc.getTextWidth(text)>width&&text.length>1)text=text.slice(0,-1);return text===value?text:text.slice(0,-1)+'…';};
   layout.slots.forEach((slot,i)=>{const p=t.players.find(p=>p.id===sheet.slots[i]&&p.currentTeamId===team.id),x=pitch.x+pitch.w*slot.x/100-15,y=pitch.y+pitch.h*slot.y/100-8;
-   doc.setFillColor(10,32,43);doc.roundedRect(x,y,30,16,1.5,1.5,'F');doc.setTextColor(255,255,255);doc.text(fit(p?.name??'Unassigned',27,8),x+15,y+6,{align:'center'});doc.setTextColor(130,240,198);doc.setFontSize(7);doc.text(slot.role+(p?' | '+p.overall+' OVR':'')+(p?.id===sheet.captainId?' | C':''),x+15,y+12,{align:'center'});
+   doc.setFillColor(10,32,43);doc.roundedRect(x,y,30,16,1.5,1.5,'F');doc.setTextColor(255,255,255);doc.text(fit(p?.name??'Unassigned',27,8),x+15,y+6,{align:'center'});doc.setTextColor(130,240,198);doc.setFontSize(7);doc.text(slot.role+(p?(p.overall!==null?' | '+p.overall+' OVR':' | HERO'):'')+(p?.id===sheet.captainId?' | C':''),x+15,y+12,{align:'center'});
   });
   doc.setTextColor(20,37,51);doc.setFontSize(12);doc.text('STARTING XI',12,43);doc.text('BENCH / '+sheet.bench.length,197,48);
-  sheet.bench.forEach((id,i)=>{const p=t.players.find(p=>p.id===id&&p.currentTeamId===team.id);if(!p)return;const x=197+(i%2)*44,y=55+Math.floor(i/2)*23;doc.setFillColor(237,244,243);doc.roundedRect(x,y,41,20,1.5,1.5,'F');doc.setTextColor(20,37,51);doc.text(fit(p.name,37,9),x+2,y+8);doc.setFontSize(8);doc.text(p.position+' | '+p.overall+' OVR',x+2,y+15);});
+  sheet.bench.forEach((id,i)=>{const p=t.players.find(p=>p.id===id&&p.currentTeamId===team.id);if(!p)return;const x=197+(i%2)*44,y=55+Math.floor(i/2)*23;doc.setFillColor(237,244,243);doc.roundedRect(x,y,41,20,1.5,1.5,'F');doc.setTextColor(20,37,51);doc.text(fit(p.name,37,9),x+2,y+8);doc.setFontSize(8);doc.text(p.position+(p.overall!==null?' | '+p.overall+' OVR':' | HERO'),x+2,y+15);});
   if(!sheet.bench.length){doc.setFontSize(9);doc.text('No substitutes selected.',197,61);}
  });return footer(doc,generated);
 }

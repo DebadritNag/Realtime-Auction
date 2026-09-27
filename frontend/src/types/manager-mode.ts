@@ -149,15 +149,8 @@ export interface Tournament {
 }
 /** Anonymous view of the Secret Players pool — sent to every client.
  *  Deliberately omits Hero identity (name, position, playerId) before purchase. */
-export interface SecretPlayersView {
-    availableCount: number;
-    priceUnits: 90;
-    teamEligible: boolean;
-    claimed: boolean;
-    revealed: boolean;
-    /** playerId of the claimed Hero — only present after the team reveals. */
-    playerId: string | null;
-}
+export type {SecretPlayersView} from '../../../backend/src/modules/manager-mode/heroes/hero.types';
+import type {SecretPlayersView} from '../../../backend/src/modules/manager-mode/heroes/hero.types';
 
 export type TournamentState = Omit<Tournament, 'startingSnapshot' | 'receipts' | 'negotiation'> & {
     secretPlayers?:SecretPlayersView;

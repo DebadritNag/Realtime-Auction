@@ -1,10 +1,10 @@
 import type {SquadAction} from '@/types/manager-squad';
 import type {SeasonAction} from '@/types/manager-season';
 import type {BuyoutAction} from '@/types/manager-buyout';
-import { api } from './api';
+import { api,apiFetch } from './api';
 import type { TournamentState, TournamentSummary, ImportReport } from '@/types/manager-mode';
 import type { PlayerDTO } from '@/types/backend';
-export type ManagerAction = {type:'BUY_SECRET_PLAYER'} | {type:'REVEAL_SECRET_PLAYER'} | {type:'READ_OFFER';entityType:'trade'|'buyout'|'negotiation';entityId:string} | {type:'READ_ALL_NOTIFICATIONS'} | SquadAction | SeasonAction | BuyoutAction | {type:'START_NEGOTIATION';playerId:string}|{type:'OFFER_FREE_AGENT';sessionId:string;amountUnits:number}|{type:'END_NEGOTIATION';sessionId:string}|{type:'CONFIRM_SIGNING';sessionId:string}|{type:'TRANSFER_RULES';difficulty:'RELAXED'|'NORMAL'|'HARD';visibility:'PRIVATE'|'SEMI_TRANSPARENT'|'TRANSPARENT';walkAwayCooldownMs:number}| {
+export type ManagerAction = {type:'BUY_SECRET_PLAYER';secretSlotId:string} | {type:'REVEAL_SECRET_PLAYER'} | {type:'READ_OFFER';entityType:'trade'|'buyout'|'negotiation';entityId:string} | {type:'READ_ALL_NOTIFICATIONS'} | SquadAction | SeasonAction | BuyoutAction | {type:'START_NEGOTIATION';playerId:string}|{type:'OFFER_FREE_AGENT';sessionId:string;amountUnits:number}|{type:'END_NEGOTIATION';sessionId:string}|{type:'CONFIRM_SIGNING';sessionId:string}|{type:'TRANSFER_RULES';difficulty:'RELAXED'|'NORMAL'|'HARD';visibility:'PRIVATE'|'SEMI_TRANSPARENT'|'TRANSPARENT';walkAwayCooldownMs:number}| {
     type: 'INVITATION';
     accept: boolean;
 } | {
@@ -66,6 +66,8 @@ export interface SetupPreview {
 }
 const base = '/manager-mode';
 export const managerService = {
+ purchaseHero:(id:string,secretSlotId:string,requestId:string)=>apiFetch<TournamentState>(base+'/'+encodeURIComponent(id)+'/actions',{method:'POST',body:JSON.stringify({requestId,action:{type:'BUY_SECRET_PLAYER',secretSlotId}}),signal:AbortSignal.timeout(45000)}),
+ reveal:(id:string,purchaseId:string)=>api.get<import('@/types/manager-mode').ManagerPlayer>(base+'/'+encodeURIComponent(id)+'/secret-player-purchases/'+encodeURIComponent(purchaseId)+'/reveal',{signal:AbortSignal.timeout(15000)}),
     list: () => api.get<TournamentSummary[]>(base), state: (id: string) => api.get<TournamentState>(base + '/' + encodeURIComponent(id)),
     preview: (id: string) => api.get<SetupPreview>(base + '/from-auction/' + encodeURIComponent(id)),
     importPreview: (id: string, csv: string) => api.post<ImportReport>(base + '/from-auction/' + encodeURIComponent(id) + '/preview', { csv }),

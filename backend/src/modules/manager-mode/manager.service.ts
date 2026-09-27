@@ -1,4 +1,4 @@
-import {heroAction,heroView,visiblePlayers,assertTransferable} from './heroes/hero.engine.js';
+import {ensureHeroPool,heroAction,heroView,visiblePlayers,assertTransferable} from './heroes/hero.engine.js';
 import {setupStep,type SetupLogger} from './setup-diagnostics.js';
 import {setTransferWindow,tagWindowTransactions} from './reports/window.engine.js';
 import {unseenOffers} from './notifications.js';
@@ -32,8 +32,10 @@ export class ManagerModeService {
     private notify(t: Tournament, type: string, message: string, users = [t.hostUserId], metadata:Record<string,string> = {}) { for (const userId of users)
         t.notifications.push({ id: randomUUID(), userId, type, title: type.replaceAll('_', ' '), message, read: false, createdAt: Date.now(), metadata: { tournamentId: t.id,...metadata } }); }
     view(t: Tournament, userId: string): TournamentState { hydrateReleaseOrigins(t); ensureSeasons(t);ensureSquad(t);synchronizeSheets(t); const team = t.teams.find(x => x.managerUserId === userId); requireThat(team, 'NOT_TOURNAMENT_MEMBER', 'You are not invited to this tournament.', 403); const terminalTrades=t.trades.filter(x=>x.fromTeamId===team.id||x.toTeamId===team.id).filter(x=>x.status!=='PENDING'),terminalBuyouts=(t.buyouts??[]).filter(x=>x.fromTeamId===team.id||x.toTeamId===team.id||x.status==='ACCEPTED').filter(x=>x.status!=='PENDING'),deals=t.transactions.filter(x=>x.type!=='AUCTION_PURCHASE');const tradeIds=new Set(terminalTrades.slice(-50).map(x=>x.id)),buyoutIds=new Set(terminalBuyouts.slice(-50).map(x=>x.id));
- const { startingSnapshot, receipts, negotiation, secretHeroes, ...state } = structuredClone(t); return { ...state,players:visiblePlayers(t),secretPlayers:heroView(t,team.id),historyCursors:{transactions:deals.length>100?deals.at(-100)!.id:null,trades:terminalTrades.length>50?terminalTrades.at(-50)!.id:null,buyouts:terminalBuyouts.length>50?terminalBuyouts.at(-50)!.id:null},teamSaleReturns:Object.fromEntries(t.teams.map(team=>[team.id,t.transactions.filter(x=>x.fromTeamId===team.id&&['RELEASE','BUYOUT'].includes(x.type)).reduce((sum,x)=>sum+x.amountUnits,0)])),transactions:[...t.transactions.filter(x=>x.type==='AUCTION_PURCHASE'),...deals.slice(-100)],unseenOffers:unseenOffers(t,userId,team.id),playerStats:playerSeasonStats(t),seasonFixturesById:Object.fromEntries(t.seasonData!.seasons.map(s=>[s.id,t.fixtures.filter(f=>f.seasonId===s.id)])),modeStatus:t.status==='ENDED'||t.status==='ARCHIVED'?'ENDED':'ACTIVE',fixtures:seasonFixtures(t),saleQuotes:Object.fromEntries(t.players.filter(p=>p.currentTeamId===team.id).map(p=>[p.id,quoteSale(t,p)])),buyouts:(state.buyouts??[]).filter(o=>o.fromTeamId===team.id||o.toTeamId===team.id||o.status==='ACCEPTED').filter(o=>o.status==='PENDING'||buyoutIds.has(o.id)), negotiation:publicNegotiations(t,team.id), audit:state.audit.slice(-100).map(a=>({...a,detail:'',userId:a.userId===userId?userId:''})), notificationUnread:t.notifications.filter(n=>n.userId===userId&&!n.read).length, notifications: state.notifications.filter(n => n.userId === userId).slice(-100), trades: state.trades.filter(x => x.fromTeamId === team.id || x.toTeamId === team.id).filter(x=>x.status==='PENDING'||tradeIds.has(x.id)), standings: currentSeason(t).status==='ACTIVE'?standings(t.teams,seasonFixtures(t)):currentSeason(t).finalStandings.length?currentSeason(t).finalStandings:standings(t.teams,seasonFixtures(t)), myTeamId: team.id, isHost: t.hostUserId === userId }; }
-    async state(id: string, user: string) { const t = await this.repository.find(id); requireThat(t, 'TOURNAMENT_NOT_FOUND', 'Tournament not found.', 404); return this.view(t, user); }
+ const { startingSnapshot, receipts, negotiation, secretHeroes, ...state } = structuredClone(t); return { ...state,players:visiblePlayers(t,team.id),secretPlayers:heroView(t,team.id),historyCursors:{transactions:deals.length>100?deals.at(-100)!.id:null,trades:terminalTrades.length>50?terminalTrades.at(-50)!.id:null,buyouts:terminalBuyouts.length>50?terminalBuyouts.at(-50)!.id:null},teamSaleReturns:Object.fromEntries(t.teams.map(team=>[team.id,t.transactions.filter(x=>x.fromTeamId===team.id&&['RELEASE','BUYOUT'].includes(x.type)).reduce((sum,x)=>sum+x.amountUnits,0)])),transactions:[...t.transactions.filter(x=>x.type==='AUCTION_PURCHASE'),...deals.slice(-100)],unseenOffers:unseenOffers(t,userId,team.id),playerStats:playerSeasonStats(t),seasonFixturesById:Object.fromEntries(t.seasonData!.seasons.map(s=>[s.id,t.fixtures.filter(f=>f.seasonId===s.id)])),modeStatus:t.status==='ENDED'||t.status==='ARCHIVED'?'ENDED':'ACTIVE',fixtures:seasonFixtures(t),saleQuotes:Object.fromEntries(t.players.filter(p=>p.currentTeamId===team.id&&p.source!=='SECRET_HERO').map(p=>[p.id,quoteSale(t,p)])),buyouts:(state.buyouts??[]).filter(o=>o.fromTeamId===team.id||o.toTeamId===team.id||o.status==='ACCEPTED').filter(o=>o.status==='PENDING'||buyoutIds.has(o.id)), negotiation:publicNegotiations(t,team.id), audit:state.audit.slice(-100).map(a=>({...a,detail:'',userId:a.userId===userId?userId:''})), notificationUnread:t.notifications.filter(n=>n.userId===userId&&!n.read).length, notifications: state.notifications.filter(n => n.userId === userId).slice(-100), trades: state.trades.filter(x => x.fromTeamId === team.id || x.toTeamId === team.id).filter(x=>x.status==='PENDING'||tradeIds.has(x.id)), standings: currentSeason(t).status==='ACTIVE'?standings(t.teams,seasonFixtures(t)):currentSeason(t).finalStandings.length?currentSeason(t).finalStandings:standings(t.teams,seasonFixtures(t)), myTeamId: team.id, isHost: t.hostUserId === userId }; }
+    async state(id: string, user: string) { let t = await this.repository.find(id); requireThat(t, 'TOURNAMENT_NOT_FOUND', 'Tournament not found.', 404); requireThat(t.teams.some(x=>x.managerUserId===user),'NOT_TOURNAMENT_MEMBER','Membership required.',403);if(!t.secretHeroes?.length&&this.repository.initializeHeroes){await this.repository.initializeHeroes(id);t=(await this.repository.find(id))!;}return this.view(t, user); }
+    async reveal(id:string,user:string,purchaseId:string){const t=await this.repository.find(id);requireThat(t,'TOURNAMENT_NOT_FOUND','Tournament not found.',404);const team=t.teams.find(x=>x.managerUserId===user&&x.invitation==='JOINED');requireThat(team,'NOT_TOURNAMENT_MEMBER','Joined membership required.',403);const h=t.secretHeroes?.find(h=>h.id===purchaseId&&h.teamId===team.id);requireThat(h?.playerId,'SECRET_PURCHASE_NOT_FOUND','Your Hero purchase was not found.',404);const player=t.players.find(p=>p.id===h.playerId&&p.currentTeamId===team.id);requireThat(player,'SECRET_PURCHASE_INCOMPLETE','Your purchase could not be loaded. Please retry.',503);return player;}
+
     async history(id:string,user:string,kind:'transactions'|'trades'|'buyouts'|'messages',before?:string,sessionId?:string){
  const t=await this.repository.find(id);requireThat(t,'TOURNAMENT_NOT_FOUND','Tournament not found.',404);const team=t.teams.find(x=>x.managerUserId===user);requireThat(team,'NOT_TOURNAMENT_MEMBER','Membership required.',403);
  if(kind==='messages')requireThat(t.negotiation?.sessions.some(s=>s.id===sessionId&&s.teamId===team.id),'NEGOTIATION_PERMISSION','You do not control this conversation.',403);
@@ -83,9 +85,14 @@ export class ManagerModeService {
     async mutate(id: string, user: string, requestId: string, action: ManagerAction) {
         action = actionSchema.parse(action);
         let changed = false;
+        const secret=action.type==='BUY_SECRET_PLAYER'||action.type==='REVEAL_SECRET_PLAYER';
+        const trace=(stage:string,teamId?:string)=>{if(secret)this.logger?.info({event:'secret-player-action',actionType:action.type,tournamentId:id,requestId,teamId,stage,...(action.type==='BUY_SECRET_PLAYER'?{secretSlotId:action.secretSlotId}:{})},'Secret Player action');};
+        trace('transaction started');
         let result = await this.repository.mutate(id, async (t) => {
+            trace('tournament loaded');
             const team = t.teams.find(x => x.managerUserId === user);
             requireThat(team, 'NOT_TOURNAMENT_MEMBER', 'Tournament membership required.', 403);
+            trace('team resolved',team.id);
             const key = user + ':' + requestId;
             const fingerprint = createHash('sha256').update(JSON.stringify(action)).digest('hex');
             if (t.receipts[key]) {
@@ -98,9 +105,10 @@ export class ManagerModeService {
             if (action.type !== 'INVITATION' && action.type !== 'READ_NOTIFICATION' && action.type !== 'READ_ALL_NOTIFICATIONS')
                 requireThat(team.invitation === 'JOINED', 'INVITATION_NOT_ACCEPTED', 'Accept your invitation first.', 403);
             ensureSeasons(t);
+            ensureHeroPool(t);
             const oldTransactionIds=new Set(t.transactions.map(row=>row.id));
             switch (action.type) {
- case 'BUY_SECRET_PLAYER':case 'REVEAL_SECRET_PLAYER':heroAction(t,user,action.type);break;
+ case 'BUY_SECRET_PLAYER':case 'REVEAL_SECRET_PLAYER':heroAction(t,user,action.type,action.type==='BUY_SECRET_PLAYER'?action.secretSlotId:undefined,Date.now(),stage=>trace(stage,team.id));break;
  case 'SAVE_TEAM_SHEET':case 'RENEW_CONTRACT':squadAction(t,user,action);break;
  case 'END_CURRENT_SEASON':case 'START_NEXT_SEASON':case 'END_MANAGER_MODE':case 'SEASON_SETTINGS':case 'SELL_PLAYER':seasonAction(t,user,action);break;
  case 'BUYOUT':case 'BUYOUT_COUNTER':case 'BUYOUT_RESPONSE':{const offer=buyoutAction(t,user,action);const parties=t.teams.filter(x=>x.id===offer.fromTeamId||x.id===offer.toTeamId);const target=t.players.find(p=>p.id===offer.targetPlayerId)!;const event=action.type==='BUYOUT'?'BUYOUT_CREATED':action.type==='BUYOUT_COUNTER'?'BUYOUT_COUNTERED':'BUYOUT_'+offer.status;this.notify(t,event,target.name+' · ₹'+offer.cashAmountUnits/2+' Cr'+(offer.includedPlayerId?' + '+t.players.find(p=>p.id===offer.includedPlayerId)!.name:'')+' · '+offer.status.toLowerCase(),parties.map(x=>x.managerUserId),{entityType:'buyout',entityId:offer.id});if(offer.status==='ACCEPTED'){this.notify(t,'PLAYER_ACQUIRED','Acquired '+target.name,[t.teams.find(x=>x.id===offer.fromTeamId)!.managerUserId]);this.notify(t,'PLAYER_SOLD','Sold '+target.name,[t.teams.find(x=>x.id===offer.toTeamId)!.managerUserId]);}break;}
@@ -245,6 +253,7 @@ export class ManagerModeService {
  }else if(['SAVE_TEAM_SHEET','RENEW_CONTRACT'].includes(action.type))this.notify(t,action.type,'Your squad has been updated.',[user]);
             changed = true;
         });
+        trace('transaction committed');
         if(changed&&action.type==='OFFER_FREE_AGENT'){
  this.emit(result,'MANAGER_MODE_UPDATED'); // Decision is committed and visible before any external dialogue request.
  const session=result.negotiation!.sessions.find(s=>s.id===action.sessionId)!;
@@ -256,7 +265,7 @@ export class ManagerModeService {
  }
  if (changed) {
  this.emit(result,'MANAGER_MODE_UPDATED');
- if(action.type==='BUY_SECRET_PLAYER'){this.emit(result,'SECRET_PLAYER_CLAIMED');this.emit(result,'TEAM_BUDGET_UPDATED');this.emit(result,'SQUAD_UPDATED');}
+ if(action.type==='BUY_SECRET_PLAYER'){this.emit(result,'SECRET_PLAYER_CLAIMED');this.emit(result,'SECRET_PLAYER_POOL_UPDATED');this.emit(result,'TEAM_BUDGET_UPDATED');this.emit(result,'SQUAD_UPDATED');}
  if(action.type==='REVEAL_SECRET_PLAYER'){this.emit(result,'SECRET_PLAYER_REVEALED');this.emit(result,'SQUAD_UPDATED');}
  if(action.type==='END_CURRENT_SEASON'||(action.type==='SCORE'||action.type==='STATUS'&&action.status==='COMPLETED')&&currentSeason(result).status==='COMPLETED'){this.emit(result,'SEASON_COMPLETED');this.emit(result,'LEAGUE_SHIELD_AWARDED');this.emit(result,'SEASON_BONUSES_AWARDED');this.emit(result,'TEAM_BUDGET_UPDATED');}
  if(action.type==='START_NEXT_SEASON')this.emit(result,'NEXT_SEASON_STARTED');

@@ -147,9 +147,10 @@ export function PlayerCard({ p }: { p: ManagerPlayer }) {
         <PlayerImage player={p} className="w-14 h-14 object-contain rounded-lg bg-white/5"/>
         <div className="min-w-0">
           <h3 className="font-bold text-white truncate">{p.name}</h3>
-          <p className="text-sm text-emerald-300">{p.overall} OVR · {p.position}</p>
+          <p className="text-sm text-emerald-300">{p.overall!==null?p.overall+' OVR · ':''}{p.position}</p>
         </div>
       </div>
+      {p.source==='SECRET_HERO'&&<p className="text-xs text-amber-300">HERO • UNTRADEABLE</p>}
       <p className="text-xs text-slate-400">{p.club || '—'} · {p.nationality || '—'}</p>
       <p className="text-xs text-slate-500">
         {p.acquisitionType?.replaceAll('_', ' ') ?? p.source.replaceAll('_', ' ')}
@@ -302,7 +303,7 @@ function Transfers({ state, action, busy }: { state: TournamentState; action: Ac
   const [parent, setParent] = useState<string | undefined>();
 
   const mine = state.teams.find(t => t.id === state.myTeamId)!;
-  const myPlayers = state.players.filter(p => p.currentTeamId === mine.id);
+  const myPlayers = state.players.filter(p => p.currentTeamId === mine.id&&p.source!=='SECRET_HERO');
   const freeAgents = state.players.filter(p => !p.currentTeamId);
   const incoming = state.trades.filter(t => t.toTeamId === mine.id);
   const outgoing = state.trades.filter(t => t.fromTeamId === mine.id);
@@ -431,7 +432,7 @@ function Transfers({ state, action, busy }: { state: TournamentState; action: Ac
               <span className="text-xs text-slate-400">Requested player</span>
               <select className={field} value={requested} required onChange={e => setRequested(e.target.value)}>
                 <option value="">Choose player</option>
-                {state.players.filter(p => p.currentTeamId === opponent).map(p => <option key={p.id} value={p.id}>{p.name} · {p.position} · {p.overall} OVR</option>)}
+                {state.players.filter(p => p.currentTeamId === opponent&&p.source!=='SECRET_HERO').map(p => <option key={p.id} value={p.id}>{p.name} · {p.position} · {p.overall} OVR</option>)}
               </select>
             </label>
           </div>

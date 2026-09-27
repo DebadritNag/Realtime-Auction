@@ -71,6 +71,7 @@ const { app } = await buildApp({
   playerRepository: await CatalogPlayerRepository.fromDefaultPool(),
 });
 
+if(managerRepository instanceof PostgresManagerRepository)managerRepository.setLogger(app.log);
 if(managerDb)app.addHook('onClose',async()=>{await managerDb.end();});
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const)

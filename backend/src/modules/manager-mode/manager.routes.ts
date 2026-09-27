@@ -17,6 +17,7 @@ export function registerManagerRoutes(app: FastifyInstance, service: ManagerMode
         return reply.type('application/pdf').header('Cache-Control','private, no-store').header('X-Content-Type-Options','nosniff').header('Content-Disposition','attachment; filename="All-Teams-Lineups.pdf"').send(allTeamLineupsPdf(t));
     });
     const params = z.object({ id: z.string().min(1).max(100) });
+    app.get('/api/manager-mode/:id/secret-player-purchases/:purchaseId/reveal',async(req,reply)=>{const p=z.object({id:z.string().uuid(),purchaseId:z.string().uuid()}).parse(req.params);reply.header('Cache-Control','private, no-store');return service.reveal(p.id,req.auth.userId,p.purchaseId);});
     app.get('/api/manager-mode', async (req) => service.list(req.auth.userId));
     app.get('/api/manager-mode/by-auction/:id', async (req) => {
         const auctionId = params.parse(req.params).id;
@@ -31,6 +32,13 @@ export function registerManagerRoutes(app: FastifyInstance, service: ManagerMode
     app.get('/api/manager-mode/:id/history',async req=>{const q=z.object({kind:z.enum(['transactions','trades','buyouts','messages']),before:z.string().max(100).optional(),sessionId:z.string().max(100).optional()}).parse(req.query);return service.history(params.parse(req.params).id,req.auth.userId,q.kind,q.before,q.sessionId);});
     app.get('/api/manager-mode/:id/notifications',async req=>service.notifications(params.parse(req.params).id,req.auth.userId,z.object({before:z.string().min(1).max(100).optional()}).parse(req.query).before));
     app.get('/api/manager-mode/:id', async (req) => service.state(params.parse(req.params).id, req.auth.userId));
-    app.post('/api/manager-mode/:id/actions', async (req) => { const body = mutationSchema.parse(req.body); return service.mutate(params.parse(req.params).id, req.auth.userId, body.requestId, body.action); });
+    app.post('/api/manager-mode/:id/actions', async (req) => {
+      const body=mutationSchema.parse(req.body),id=params.parse(req.params).id;
+      const secret=body.action.type==='BUY_SECRET_PLAYER'||body.action.type==='REVEAL_SECRET_PLAYER';
+      const data={event:'secret-player-action',actionType:body.action.type,tournamentId:id,requestId:body.requestId,...(body.action.type==='BUY_SECRET_PLAYER'?{secretSlotId:body.action.secretSlotId}:{})};
+      if(secret)req.log.info({...data,stage:'received'},'Secret Player action');
+      try{const state=await service.mutate(id,req.auth.userId,body.requestId,body.action);if(secret)req.log.info({...data,teamId:state.myTeamId,stage:'response returned'},'Secret Player action');return state;}
+      catch(error){const e=error as {code?:string;details?:{postgresCode?:string;constraint?:string;stage?:string;teamId?:string;secretSlotId?:string}};if(secret)req.log.error({...data,stage:e.details?.stage??'transaction',teamId:e.details?.teamId,secretSlotId:e.details?.secretSlotId??('secretSlotId' in data?data.secretSlotId:undefined),code:e.code,databaseCode:e.details?.postgresCode,constraint:e.details?.constraint},'Secret Player action failed');throw error;}
+    });
     app.delete('/api/manager-mode/:id', async (req, reply) => { await service.delete(params.parse(req.params).id, req.auth.userId); reply.code(204).send(); });
 }
