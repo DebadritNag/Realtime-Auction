@@ -1,5 +1,6 @@
 import type {Tournament} from '../manager.types.js';
 import type {NegotiationSession} from './negotiation.types.js';
+import {getPlayerOverall} from './valuation.service.js';
 export const offerBehaviors=['FIRST_OFFER','VERY_LOW_OFFER','LOWBALL','FAIR_OFFER','STRONG_OFFER','STRONG_IMPROVEMENT','SMALL_IMPROVEMENT','REPEATED_LOW_OFFER','MATCHED_COUNTER','EXCEEDED_COUNTER','WORSE_THAN_PREVIOUS'] as const;
 export type OfferBehavior=typeof offerBehaviors[number];
 export interface OfferReaction {previousOfferUnits:number|null;offerBehavior:OfferBehavior;offerQuality:'VERY_LOW'|'BELOW_PREFERRED'|'FAIR'|'STRONG';lowballCount:number;consecutiveImprovementCount:number;playingTime:'HIGH'|'MEDIUM'|'LOW';clubStrength:'STRONG'|'AVERAGE'|'DEVELOPING';}
@@ -23,7 +24,8 @@ export function describeOffer(t:Tournament,s:NegotiationSession):OfferReaction {
  else if(offerQuality==='FAIR')offerBehavior='FAIR_OFFER';
  else offerBehavior='FIRST_OFFER';
  const player=t.players.find(p=>p.id===s.playerId)!,squad=t.players.filter(p=>p.currentTeamId===s.teamId);
- const competitors=squad.filter(p=>p.position===player.position&&p.overall>=player.overall).length;
- const top=[...squad].sort((a,b)=>b.overall-a.overall).slice(0,11),strength=top.reduce((n,p)=>n+p.overall,0)/Math.max(1,top.length);
+ const playerOverall=getPlayerOverall(player);
+ const competitors=squad.filter(p=>p.position===player.position&&(p.overall??0)>=playerOverall).length;
+ const top=[...squad].sort((a,b)=>(b.overall??0)-(a.overall??0)).slice(0,11),strength=top.reduce((n,p)=>n+(p.overall??0),0)/Math.max(1,top.length);
  return {previousOfferUnits:old,offerBehavior,offerQuality,lowballCount,consecutiveImprovementCount,playingTime:competitors===0?'HIGH':competitors===1?'MEDIUM':'LOW',clubStrength:strength>=80?'STRONG':strength>=70?'AVERAGE':'DEVELOPING'};
 }

@@ -78,4 +78,5 @@ export const managerService = {
     }) => api.post<TournamentState>(base + '/from-auction/' + encodeURIComponent(id), input),
     action: (id: string, action: ManagerAction, requestId = crypto.randomUUID()) => api.post<TournamentState>(base + '/' + encodeURIComponent(id) + '/actions', { requestId, action }),
     delete: (id: string) => api.delete<void>(base + '/' + encodeURIComponent(id)),
+    byAuction: (auctionId: string) => api.get<{ exists: boolean; tournamentId: string | null; status: string | null }>(base + '/by-auction/' + encodeURIComponent(auctionId)),
 };

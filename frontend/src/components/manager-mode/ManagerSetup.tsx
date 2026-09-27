@@ -63,25 +63,36 @@ export function ManagerSetup({ auctionId }: {
     finally {
         setBusy(false);
     } }
-    async function submit() { setBusy(true); setError(''); try {
-        const t = await managerService.create(auctionId, { name, startingBudgetUnits: croreToUnits(Number(budget)), addUnusedAuctionPurse:carry, csv, format });
-        router.push('/manager-mode/' + t.id);
+    async function submit() {
+        if (busy) return; // hard guard against double-invocation
+        setBusy(true); setError('');
+        try {
+            const t = await managerService.create(auctionId, { name, startingBudgetUnits: croreToUnits(Number(budget)), addUnusedAuctionPurse: carry, csv, format });
+            router.push('/manager-mode/' + t.id);
+        } catch (e) {
+            const msg = e instanceof Error ? e.message : 'Unable to create tournament.';
+            const isDuplicate = msg.includes('ALREADY_EXISTS') || msg.includes('DUPLICATE_MANAGER_RESOURCE') || msg.includes('DUPLICATE');
+            if (isDuplicate) {
+                // Tournament was already created (race or retry). Look it up and navigate there.
+                try {
+                    const lookup = await managerService.byAuction(auctionId);
+                    if (lookup.exists && lookup.tournamentId) {
+                        router.push('/manager-mode/' + lookup.tournamentId);
+                        return;
+                    }
+                } catch { /* fall through to error display */ }
+            }
+            setError(
+                isDuplicate ? 'A Manager Mode tournament already exists for this auction. Redirecting…' :
+                msg.includes('INVALID_REFERENCE') ? 'A required profile or record is missing. Ensure all managers have logged in.' :
+                msg.includes('INVALID_MANAGER_MODE_STATE') ? 'A data validation error occurred. Check the budget and team settings.' :
+                msg.includes('REQUIRED_FIELD') ? 'A required field is missing. Please fill in all settings.' :
+                msg
+            );
+        } finally {
+            setBusy(false);
+        }
     }
-    catch (e) {
-        const msg = e instanceof Error ? e.message : 'Unable to create tournament.';
-        // Surface known domain errors with friendly text
-        setError(
-          msg.includes('ALREADY_EXISTS') ? 'A Manager Mode tournament already exists for this auction.' :
-          msg.includes('DUPLICATE') ? 'A duplicate record was found. Please try again.' :
-          msg.includes('INVALID_REFERENCE') ? 'A required profile or record is missing. Ensure all managers have logged in.' :
-          msg.includes('INVALID_MANAGER_MODE_STATE') ? 'A data validation error occurred. Check the budget and team settings.' :
-          msg.includes('REQUIRED_FIELD') ? 'A required field is missing. Please fill in all settings.' :
-          msg
-        );
-    }
-    finally {
-        setBusy(false);
-    } }
     return <div className="max-w-6xl mx-auto p-6 space-y-6"><h1 className="text-3xl font-bold">Create Manager Mode</h1>{error && <p role="alert" className="text-red-300">{error}</p>}{!preview ? loading?<p>Loading completed auction…</p>:<div className={panel}><p>Failed to load the completed auction. {error}</p><button className={button} onClick={()=>setRetry(n=>n+1)}>Retry setup</button></div> : <><section className={panel}><label>Tournament name<input className={field} value={name} maxLength={100} onChange={e => setName(e.target.value)}/></label><label>Base transfer budget (Cr)<input className={field} type="number" min="0" max="10000" step="0.5" value={budget} onChange={e => setBudget(e.target.value)}/></label><label className="flex gap-2"><input type="checkbox" checked={carry} onChange={e=>setCarry(e.target.checked)}/>Add unused auction purse</label><p>Set base budget to 0 for auction remainder only.</p><label>Format<select className={field} value={format} onChange={e => setFormat(e.target.value)}><option value="SINGLE_ROUND_ROBIN">Single round robin</option><option value="DOUBLE_ROUND_ROBIN">Double round robin</option></select></label><p>{preview.importReport.validPlayers} default external players · {preview.teams.length} teams · {preview.purchases.length} owned players · {preview.players.filter(p => !preview.purchases.some(x=>x.playerId===p.id)).length} auction free agents</p></section><div className="grid md:grid-cols-2 gap-4">{preview.teams.map(t => <details key={t.id} className={panel}><summary>{t.logoEmoji} {t.name} · {t.managerUsername??"Username unavailable"} · {t.playerIds.length} players · {formatCrore(t.spentUnits)} auction spend · {formatCrore(t.startingBudgetUnits - t.spentUnits)} remaining</summary><p>Base transfer budget: ₹{budget||0} Cr</p><p>Unused auction purse: {formatCrore(t.startingBudgetUnits-preview.purchases.filter(p=>p.teamId===t.id).reduce((sum,p)=>sum+p.priceUnits,0))}{carry?" added":" not added"}</p><p>Opening Manager Mode budget: ₹{(Number(budget)||0)+(carry?(t.startingBudgetUnits-preview.purchases.filter(p=>p.teamId===t.id).reduce((sum,p)=>sum+p.priceUnits,0))/2:0)} Cr</p>{preview.players.filter(p => t.playerIds.includes(p.id)).map(p => <p key={p.id}>{p.name} · {p.subPosition ?? 'Position unavailable'} · {p.ovr} OVR · {formatCrore(preview.purchases.find(x => x.playerId === p.id)?.priceUnits ?? 0)}</p>)}</details>)}</div><section className={panel}><h2>Additional external player CSV (optional)</h2><p className="text-sm text-slate-400">The bundled external pool loads automatically. All unowned auction players are included, including players that never appeared.</p><p className="text-sm text-slate-400">Required: player_id (or sofifa_id/ea_id), name, overall, position. Auction players and repeated IDs are excluded.</p><input aria-label="External player CSV" type="file" accept=".csv,text/csv" disabled={busy} onChange={e => { const f = e.target.files?.[0]; if (f)
         void upload(f); }}/>{file && <p>{file}</p>}{report && <><p>{report.rowsDetected} rows · {report.validPlayers} valid · {report.duplicates} duplicates excluded · {report.invalidRows.length} invalid</p>{report.invalidRows.slice(0, 20).map(r => <p key={r.row} className="text-red-300">Row {r.row}: {r.reason}</p>)}</>}</section><label className="flex gap-3"><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)}/>I have reviewed all teams, squads, and the transfer budget. Create the tournament and invite these managers.</label><button className={button} disabled={busy || !confirmed || Boolean(report?.invalidRows.length) || (Boolean(file) && !report)} onClick={() => void submit()}>{busy ? 'Working…' : 'Confirm & invite managers'}</button></>}</div>;
 }

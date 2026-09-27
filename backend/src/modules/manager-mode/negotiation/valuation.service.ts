@@ -2,15 +2,29 @@ import {createHash} from 'node:crypto';
 import type {ManagerPlayer} from '../manager.types.js';
 import type {Archetype,NegotiationProfile} from './negotiation.types.js';
 type Values=Pick<NegotiationProfile,'marketValueUnits'|'minimumValueUnits'|'preferredValueUnits'|'idealValueUnits'>;
+
+/**
+ * Narrows `overall` from `number | null` to `number`.
+ * Every player entering negotiation or valuation must have an OVR; null is a
+ * data-quality failure that should fail loudly rather than silently corrupt prices.
+ */
+export function getPlayerOverall(player: Pick<ManagerPlayer, 'id' | 'overall'>): number {
+    if (typeof player.overall !== 'number' || !Number.isFinite(player.overall)) {
+        throw new Error(`Player ${player.id} has no valid overall rating (got ${String(player.overall)})`);
+    }
+    return player.overall;
+}
 /** Game-economy bands in integer half-crore units, not real-world transfer values. */
 export function freeAgentValues(p:ManagerPlayer,personality:Archetype):Values {
- const [low,high]=p.overall<=80?[2,6]:p.overall<=82?[4,10]:p.overall<=84?[8,14]:p.overall<=86?[12,20]:p.overall<=88?[18,28]:[24,36];
+ const overall = getPlayerOverall(p);
+ const [low,high]=overall<=80?[2,6]:overall<=82?[4,10]:overall<=84?[8,14]:overall<=86?[12,20]:overall<=88?[18,28]:[24,36];
  const stats=Object.values(p.stats).filter(Number.isFinite);
- const quality=stats.length?stats.reduce((a,b)=>a+b,0)/stats.length: p.overall;
+ const quality=stats.length?stats.reduce((a,b)=>a+b,0)/stats.length: overall;
+ if (!Number.isFinite(quality)) throw new Error(`Player ${p.id} has no valid stats for quality calculation`);
  const variation=createHash('sha256').update(p.id).digest()[0]!/255;
- const fraction=Math.max(.15,Math.min(.95,.35+(p.overall%2===0?.12:0)+(p.age&&p.age<25?.08:p.age&&p.age>32?-.08:0)+(['ST','LW','RW'].includes(p.position)?.06:0)+Math.max(-.1,Math.min(.1,(quality-75)/100))+variation*.16));
+ const fraction=Math.max(.15,Math.min(.95,.35+(overall%2===0?.12:0)+(p.age&&p.age<25?.08:p.age&&p.age>32?-.08:0)+(['ST','LW','RW'].includes(p.position)?.06:0)+Math.max(-.1,Math.min(.1,(quality-75)/100))+variation*.16));
  const personalityFactor=personality==='MONEY_DRIVEN'||personality==='OPPORTUNISTIC'?1.1:personality==='STUBBORN'?1.05:personality==='RELAXED'||personality==='LOYAL'?.9:1;
- const discount=p.metadata.freeAgentReason==='TEAM_RELEASE'?.75:p.source==='AUCTION_UNSOLD'?(p.overall>=87?.9:personality==='STUBBORN'?.85:.8):1;
+ const discount=p.metadata.freeAgentReason==='TEAM_RELEASE'?.75:p.source==='AUCTION_UNSOLD'?(overall>=87?.9:personality==='STUBBORN'?.85:.8):1;
  const market=Math.max(2,Math.round((low+(high-low)*fraction)*discount));
  const preferred=Math.max(2,Math.min(Math.round(high*discount),Math.round(market*personalityFactor)));
  return {marketValueUnits:market,minimumValueUnits:Math.max(2,Math.min(preferred,Math.round(preferred*.75))),preferredValueUnits:preferred,idealValueUnits:Math.max(preferred,Math.round(preferred*1.2))};

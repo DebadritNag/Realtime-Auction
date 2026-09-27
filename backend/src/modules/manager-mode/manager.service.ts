@@ -9,6 +9,7 @@ import {buyoutAction,synchronizeBuyouts} from './buyout/buyout.engine.js';
 import {describeOffer} from './negotiation/offer-reaction.js';
 import {SafeDialogueProvider,type NegotiationDialogueProvider} from './negotiation/dialogue.provider.js';
 import {ensureNegotiations,negotiationAction,publicNegotiations,synchronizeWindow} from './negotiation/negotiation.engine.js';
+import {getPlayerOverall} from './negotiation/valuation.service.js';
 import { assertRoom } from '../auction/squad.service.js';
 import { createHash, randomUUID } from 'node:crypto';
 import { requireThat } from '../../domain/errors.js';
@@ -250,7 +251,7 @@ export class ManagerModeService {
  const message=result.negotiation!.messages.filter(m=>m.sessionId===session.id&&m.sender==='PLAYER').at(-1)!;
  const player=result.players.find(p=>p.id===session.playerId)!;
  const publicSession=publicNegotiations(result,session.teamId).sessions.find(s=>s.id===session.id)!;
- const reply=await new SafeDialogueProvider(this.dialogue).generateResponse({reaction:describeOffer(result,session),player:{name:player.name,position:player.position,overall:player.overall},personality:result.negotiation!.profiles.find(p=>p.playerId===player.id)!.archetype,emotion:message.emotion!,decision:message.decision!,counterUnits:session.lastCounterUnits,offerUnits:session.lastOfferUnits,club:{name:result.teams.find(t=>t.id===session.teamId)!.name},competition:publicSession.competition,fallback:message.message});
+ const reply=await new SafeDialogueProvider(this.dialogue).generateResponse({reaction:describeOffer(result,session),player:{name:player.name,position:player.position,overall:getPlayerOverall(player)},personality:result.negotiation!.profiles.find(p=>p.playerId===player.id)!.archetype,emotion:message.emotion!,decision:message.decision!,counterUnits:session.lastCounterUnits,offerUnits:session.lastOfferUnits,club:{name:result.teams.find(t=>t.id===session.teamId)!.name},competition:publicSession.competition,fallback:message.message});
  if(reply.message!==message.message){try{result=await this.repository.mutate(id,draft=>{if(draft.status==='ENDED'||draft.status==='ARCHIVED')return;const target=draft.negotiation?.messages.find(m=>m.id===message.id);if(!target)return;target.message=reply.message;target.provider=reply.provider??'LLM';draft.sequence++;draft.updatedAt=Date.now();draft.audit.push({id:randomUUID(),type:'DIALOGUE_GENERATED',userId:user,at:Date.now(),detail:JSON.stringify({type:'DIALOGUE_GENERATED'})});});}catch{/* The committed deterministic template remains available. */}}
  }
  if (changed) {

@@ -10,7 +10,7 @@ const pool=importExternalCsv(csv,[]);
 it('generated pool imports as 357 unique regular free agents, with no auction overlap',()=>{
  const auctionIds=new Set(['gk','def','mid','att','default-player-pool'].flatMap(name=>parseCsv(readFileSync(new URL('../data/default-pool/'+name+'.csv',import.meta.url),'utf8')).map(p=>p.player_id)));
  expect(pool.invalidRows).toEqual([]);expect(pool.validPlayers).toBe(357);expect(pool.duplicates).toBe(0);expect(new Set(pool.players.map(p=>p.id)).size).toBe(357);
- expect(pool.players.every(p=>p.overall>=79&&!auctionIds.has(p.id)&&p.currentTeamId===null&&p.ownershipStatus==='FREE_AGENT'&&p.source==='EXTERNAL_POOL')).toBe(true);
+ expect(pool.players.every(p=>typeof p.overall==='number'&&p.overall>=79&&!auctionIds.has(p.id)&&p.currentTeamId===null&&p.ownershipStatus==='FREE_AGENT'&&p.source==='EXTERNAL_POOL')).toBe(true);
  expect(pool.players.some(p=>p.overall===79)).toBe(true);expect(pool.players.every(p=>p.metadata.league&&p.metadata.preferredFoot)).toBe(true);
  expect(pool.players.filter(p=>p.category==='GK')).toHaveLength(58);
 });

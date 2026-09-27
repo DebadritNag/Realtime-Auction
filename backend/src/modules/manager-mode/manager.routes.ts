@@ -18,6 +18,12 @@ export function registerManagerRoutes(app: FastifyInstance, service: ManagerMode
     });
     const params = z.object({ id: z.string().min(1).max(100) });
     app.get('/api/manager-mode', async (req) => service.list(req.auth.userId));
+    app.get('/api/manager-mode/by-auction/:id', async (req) => {
+        const auctionId = params.parse(req.params).id;
+        const existing = await service.repository.findByAuction(auctionId);
+        if (!existing) return { exists: false, tournamentId: null, status: null };
+        return { exists: true, tournamentId: existing.id, status: existing.status };
+    });
     app.get('/api/manager-mode/from-auction/:id', async (req) => { const { room, existing, importReport } = await service.preview(params.parse(req.params).id, req.auth.userId); return { auctionId: room.id, name: room.auctionName, teams: room.teams, players: room.players, purchases: room.purchases, existingId: existing?.id ?? null, importReport }; });
     app.post('/api/manager-mode/from-auction/:id/preview', { bodyLimit: 2100000 }, async (req) => { const body = z.object({ csv: z.string().max(2000000) }).strict().parse(req.body); return (await service.preview(params.parse(req.params).id, req.auth.userId, body.csv)).importReport; });
     app.post('/api/manager-mode/from-auction/:id', { bodyLimit: 2100000 }, async (req) => service.create(params.parse(req.params).id, req.auth.userId, req.body));
