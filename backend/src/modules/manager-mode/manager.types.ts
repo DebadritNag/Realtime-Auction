@@ -1,14 +1,18 @@
+import type {SecretHero,SecretPlayersView} from './heroes/hero.types.js';
 import type {SquadData,PlayerSeasonStats} from './squad/squad.types.js';
 import type {TransferWindow} from './reports/window.types.js';
 import type {SeasonData,SaleQuote} from './seasons/season.types.js';
 import type {BuyoutOffer} from './buyout/buyout.types.js';
 import type {NegotiationData,NegotiationView} from './negotiation/negotiation.types.js';
 export type TournamentStatus = 'INVITING' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED' | 'ENDED';
-export type PlayerSource = 'AUCTION_SQUAD' | 'AUCTION_UNSOLD' | 'EXTERNAL_POOL';
+export type PlayerSource = 'AUCTION_SQUAD' | 'AUCTION_UNSOLD' | 'EXTERNAL_POOL' | 'SECRET_HERO';
 export interface ManagerPlayer {
     id: string;
     name: string;
-    overall: number;
+    overall: number | null;
+    isSecretHero?:boolean;
+    isTradeable?:boolean;
+    isSellable?:boolean;
     position: string;
     category: string;
     secondaryPositions: string;
@@ -23,7 +27,7 @@ export interface ManagerPlayer {
     ownershipStatus: 'OWNED' | 'FREE_AGENT';
     availability: 'AVAILABLE' | 'NEGOTIATING' | 'SIGNED';
     auctionPurchasePriceUnits: number | null;
-    acquisitionType: 'AUCTION_PURCHASE' | 'FREE_AGENT_SIGNING' | 'TRADE' | 'BUYOUT' | null;
+    acquisitionType: 'AUCTION_PURCHASE' | 'FREE_AGENT_SIGNING' | 'TRADE' | 'BUYOUT' | 'SECRET_HERO_PURCHASE' | null;
     acquisitionPriceUnits: number | null;
     metadata: Record<string, unknown>;
 }
@@ -83,7 +87,7 @@ export interface TransferTransaction {
     playerId: string;
     fromTeamId: string | null;
     toTeamId: string | null;
-    type: 'AUCTION_PURCHASE' | 'TRADE' | 'FREE_AGENT_SIGNING' | 'BUYOUT' | 'RELEASE';
+    type: 'AUCTION_PURCHASE' | 'TRADE' | 'FREE_AGENT_SIGNING' | 'BUYOUT' | 'RELEASE' | 'SECRET_HERO_PURCHASE';
     buyoutId?: string | null;
     amountUnits: number;
     tradeId: string | null;
@@ -107,6 +111,7 @@ export interface ManagerAudit {
     detail: string;
 }
 export interface Tournament {
+    secretHeroes?:SecretHero[];
     transferWindows?:TransferWindow[];
     squadData?:SquadData;
     seasonData?: SeasonData;
@@ -143,7 +148,8 @@ export interface Tournament {
         fingerprint: string;
     }>;
 }
-export type TournamentState = Omit<Tournament, 'startingSnapshot' | 'receipts' | 'negotiation'> & {
+export type TournamentState = Omit<Tournament, 'startingSnapshot' | 'receipts' | 'negotiation' | 'secretHeroes'> & {
+    secretPlayers?:SecretPlayersView;
     notificationUnread?:number;
     unseenOffers?:string[];
     teamSaleReturns?:Record<string,number>;

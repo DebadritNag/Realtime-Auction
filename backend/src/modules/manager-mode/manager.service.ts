@@ -1,3 +1,4 @@
+import {heroAction,heroView,visiblePlayers,assertTransferable} from './heroes/hero.engine.js';
 import {setupStep,type SetupLogger} from './setup-diagnostics.js';
 import {setTransferWindow,tagWindowTransactions} from './reports/window.engine.js';
 import {unseenOffers} from './notifications.js';
@@ -30,7 +31,7 @@ export class ManagerModeService {
     private notify(t: Tournament, type: string, message: string, users = [t.hostUserId], metadata:Record<string,string> = {}) { for (const userId of users)
         t.notifications.push({ id: randomUUID(), userId, type, title: type.replaceAll('_', ' '), message, read: false, createdAt: Date.now(), metadata: { tournamentId: t.id,...metadata } }); }
     view(t: Tournament, userId: string): TournamentState { hydrateReleaseOrigins(t); ensureSeasons(t);ensureSquad(t);synchronizeSheets(t); const team = t.teams.find(x => x.managerUserId === userId); requireThat(team, 'NOT_TOURNAMENT_MEMBER', 'You are not invited to this tournament.', 403); const terminalTrades=t.trades.filter(x=>x.fromTeamId===team.id||x.toTeamId===team.id).filter(x=>x.status!=='PENDING'),terminalBuyouts=(t.buyouts??[]).filter(x=>x.fromTeamId===team.id||x.toTeamId===team.id||x.status==='ACCEPTED').filter(x=>x.status!=='PENDING'),deals=t.transactions.filter(x=>x.type!=='AUCTION_PURCHASE');const tradeIds=new Set(terminalTrades.slice(-50).map(x=>x.id)),buyoutIds=new Set(terminalBuyouts.slice(-50).map(x=>x.id));
- const { startingSnapshot, receipts, negotiation, ...state } = structuredClone(t); return { ...state,historyCursors:{transactions:deals.length>100?deals.at(-100)!.id:null,trades:terminalTrades.length>50?terminalTrades.at(-50)!.id:null,buyouts:terminalBuyouts.length>50?terminalBuyouts.at(-50)!.id:null},teamSaleReturns:Object.fromEntries(t.teams.map(team=>[team.id,t.transactions.filter(x=>x.fromTeamId===team.id&&['RELEASE','BUYOUT'].includes(x.type)).reduce((sum,x)=>sum+x.amountUnits,0)])),transactions:[...t.transactions.filter(x=>x.type==='AUCTION_PURCHASE'),...deals.slice(-100)],unseenOffers:unseenOffers(t,userId,team.id),playerStats:playerSeasonStats(t),seasonFixturesById:Object.fromEntries(t.seasonData!.seasons.map(s=>[s.id,t.fixtures.filter(f=>f.seasonId===s.id)])),modeStatus:t.status==='ENDED'||t.status==='ARCHIVED'?'ENDED':'ACTIVE',fixtures:seasonFixtures(t),saleQuotes:Object.fromEntries(t.players.filter(p=>p.currentTeamId===team.id).map(p=>[p.id,quoteSale(t,p)])),buyouts:(state.buyouts??[]).filter(o=>o.fromTeamId===team.id||o.toTeamId===team.id||o.status==='ACCEPTED').filter(o=>o.status==='PENDING'||buyoutIds.has(o.id)), negotiation:publicNegotiations(t,team.id), audit:state.audit.slice(-100).map(a=>({...a,detail:'',userId:a.userId===userId?userId:''})), notificationUnread:t.notifications.filter(n=>n.userId===userId&&!n.read).length, notifications: state.notifications.filter(n => n.userId === userId).slice(-100), trades: state.trades.filter(x => x.fromTeamId === team.id || x.toTeamId === team.id).filter(x=>x.status==='PENDING'||tradeIds.has(x.id)), standings: currentSeason(t).status==='ACTIVE'?standings(t.teams,seasonFixtures(t)):currentSeason(t).finalStandings.length?currentSeason(t).finalStandings:standings(t.teams,seasonFixtures(t)), myTeamId: team.id, isHost: t.hostUserId === userId }; }
+ const { startingSnapshot, receipts, negotiation, secretHeroes, ...state } = structuredClone(t); return { ...state,players:visiblePlayers(t),secretPlayers:heroView(t,team.id),historyCursors:{transactions:deals.length>100?deals.at(-100)!.id:null,trades:terminalTrades.length>50?terminalTrades.at(-50)!.id:null,buyouts:terminalBuyouts.length>50?terminalBuyouts.at(-50)!.id:null},teamSaleReturns:Object.fromEntries(t.teams.map(team=>[team.id,t.transactions.filter(x=>x.fromTeamId===team.id&&['RELEASE','BUYOUT'].includes(x.type)).reduce((sum,x)=>sum+x.amountUnits,0)])),transactions:[...t.transactions.filter(x=>x.type==='AUCTION_PURCHASE'),...deals.slice(-100)],unseenOffers:unseenOffers(t,userId,team.id),playerStats:playerSeasonStats(t),seasonFixturesById:Object.fromEntries(t.seasonData!.seasons.map(s=>[s.id,t.fixtures.filter(f=>f.seasonId===s.id)])),modeStatus:t.status==='ENDED'||t.status==='ARCHIVED'?'ENDED':'ACTIVE',fixtures:seasonFixtures(t),saleQuotes:Object.fromEntries(t.players.filter(p=>p.currentTeamId===team.id).map(p=>[p.id,quoteSale(t,p)])),buyouts:(state.buyouts??[]).filter(o=>o.fromTeamId===team.id||o.toTeamId===team.id||o.status==='ACCEPTED').filter(o=>o.status==='PENDING'||buyoutIds.has(o.id)), negotiation:publicNegotiations(t,team.id), audit:state.audit.slice(-100).map(a=>({...a,detail:'',userId:a.userId===userId?userId:''})), notificationUnread:t.notifications.filter(n=>n.userId===userId&&!n.read).length, notifications: state.notifications.filter(n => n.userId === userId).slice(-100), trades: state.trades.filter(x => x.fromTeamId === team.id || x.toTeamId === team.id).filter(x=>x.status==='PENDING'||tradeIds.has(x.id)), standings: currentSeason(t).status==='ACTIVE'?standings(t.teams,seasonFixtures(t)):currentSeason(t).finalStandings.length?currentSeason(t).finalStandings:standings(t.teams,seasonFixtures(t)), myTeamId: team.id, isHost: t.hostUserId === userId }; }
     async state(id: string, user: string) { const t = await this.repository.find(id); requireThat(t, 'TOURNAMENT_NOT_FOUND', 'Tournament not found.', 404); return this.view(t, user); }
     async history(id:string,user:string,kind:'transactions'|'trades'|'buyouts'|'messages',before?:string,sessionId?:string){
  const t=await this.repository.find(id);requireThat(t,'TOURNAMENT_NOT_FOUND','Tournament not found.',404);const team=t.teams.find(x=>x.managerUserId===user);requireThat(team,'NOT_TOURNAMENT_MEMBER','Membership required.',403);
@@ -91,13 +92,14 @@ export class ManagerModeService {
                 return;
             }
             const host = () => requireThat(t.hostUserId === user, 'HOST_ONLY', 'Only the host may perform this action.', 403);
-            if (action.type !== 'READ_NOTIFICATION' && action.type !== 'READ_ALL_NOTIFICATIONS' && action.type !== 'READ_OFFER')
+            if (action.type !== 'REVEAL_SECRET_PLAYER' && action.type !== 'READ_NOTIFICATION' && action.type !== 'READ_ALL_NOTIFICATIONS' && action.type !== 'READ_OFFER')
                 requireThat(t.status !== 'ARCHIVED'&&t.status!=='ENDED', 'MANAGER_MODE_ENDED', 'Manager Mode has ended and is read-only.',409);
             if (action.type !== 'INVITATION' && action.type !== 'READ_NOTIFICATION' && action.type !== 'READ_ALL_NOTIFICATIONS')
                 requireThat(team.invitation === 'JOINED', 'INVITATION_NOT_ACCEPTED', 'Accept your invitation first.', 403);
             ensureSeasons(t);
             const oldTransactionIds=new Set(t.transactions.map(row=>row.id));
             switch (action.type) {
+ case 'BUY_SECRET_PLAYER':case 'REVEAL_SECRET_PLAYER':heroAction(t,user,action.type);break;
  case 'SAVE_TEAM_SHEET':case 'RENEW_CONTRACT':squadAction(t,user,action);break;
  case 'END_CURRENT_SEASON':case 'START_NEXT_SEASON':case 'END_MANAGER_MODE':case 'SEASON_SETTINGS':case 'SELL_PLAYER':seasonAction(t,user,action);break;
  case 'BUYOUT':case 'BUYOUT_COUNTER':case 'BUYOUT_RESPONSE':{const offer=buyoutAction(t,user,action);const parties=t.teams.filter(x=>x.id===offer.fromTeamId||x.id===offer.toTeamId);const target=t.players.find(p=>p.id===offer.targetPlayerId)!;const event=action.type==='BUYOUT'?'BUYOUT_CREATED':action.type==='BUYOUT_COUNTER'?'BUYOUT_COUNTERED':'BUYOUT_'+offer.status;this.notify(t,event,target.name+' · ₹'+offer.cashAmountUnits/2+' Cr'+(offer.includedPlayerId?' + '+t.players.find(p=>p.id===offer.includedPlayerId)!.name:'')+' · '+offer.status.toLowerCase(),parties.map(x=>x.managerUserId),{entityType:'buyout',entityId:offer.id});if(offer.status==='ACCEPTED'){this.notify(t,'PLAYER_ACQUIRED','Acquired '+target.name,[t.teams.find(x=>x.id===offer.fromTeamId)!.managerUserId]);this.notify(t,'PLAYER_SOLD','Sold '+target.name,[t.teams.find(x=>x.id===offer.toTeamId)!.managerUserId]);}break;}
@@ -162,6 +164,7 @@ export class ManagerModeService {
                     requireThat(t.status === 'ACTIVE' && t.transferWindowOpen, 'TRANSFER_WINDOW_CLOSED', 'The transfer window is closed.');
                     const offered = t.players.find(p => p.id === action.offeredPlayerId), requested = t.players.find(p => p.id === action.requestedPlayerId);
                     requireThat(offered?.currentTeamId === team.id && requested?.currentTeamId && requested.currentTeamId !== team.id, 'INVALID_OWNERSHIP', 'Choose one of your players and one opponent player.');
+                    assertTransferable(offered);assertTransferable(requested);
                     requireThat(t.teams.some(x => x.id === requested.currentTeamId && x.invitation === 'JOINED'), 'INVALID_RECIPIENT', 'Recipient has not joined.');
                     if (action.parentTradeId) {
                         const parent = t.trades.find(x => x.id === action.parentTradeId);
@@ -181,6 +184,7 @@ export class ManagerModeService {
                         requireThat(t.status === 'ACTIVE' && t.transferWindowOpen, 'TRANSFER_WINDOW_CLOSED', 'Transfer window is closed.');
                         const a = t.players.find(p => p.id === tr.offeredPlayerId), b = t.players.find(p => p.id === tr.requestedPlayerId);
                         requireThat(a?.currentTeamId === tr.fromTeamId && b?.currentTeamId === tr.toTeamId, 'STALE_OWNERSHIP', 'Player ownership changed.', 409);
+                        assertTransferable(a);assertTransferable(b);
                         for (const [p, target] of [[a, tr.toTeamId], [b, tr.fromTeamId]] as const) {
                             t.transactions.push({ id: randomUUID(), playerId: p.id, fromTeamId: p.currentTeamId, toTeamId: target, type: 'TRADE', amountUnits: 0, tradeId: tr.id, at: Date.now() });
                             p.currentTeamId = target;
@@ -251,6 +255,8 @@ export class ManagerModeService {
  }
  if (changed) {
  this.emit(result,'MANAGER_MODE_UPDATED');
+ if(action.type==='BUY_SECRET_PLAYER'){this.emit(result,'SECRET_PLAYER_CLAIMED');this.emit(result,'TEAM_BUDGET_UPDATED');this.emit(result,'SQUAD_UPDATED');}
+ if(action.type==='REVEAL_SECRET_PLAYER'){this.emit(result,'SECRET_PLAYER_REVEALED');this.emit(result,'SQUAD_UPDATED');}
  if(action.type==='END_CURRENT_SEASON'||(action.type==='SCORE'||action.type==='STATUS'&&action.status==='COMPLETED')&&currentSeason(result).status==='COMPLETED'){this.emit(result,'SEASON_COMPLETED');this.emit(result,'LEAGUE_SHIELD_AWARDED');this.emit(result,'SEASON_BONUSES_AWARDED');this.emit(result,'TEAM_BUDGET_UPDATED');}
  if(action.type==='START_NEXT_SEASON')this.emit(result,'NEXT_SEASON_STARTED');
  if(action.type==='END_MANAGER_MODE')this.emit(result,'MANAGER_MODE_ENDED');

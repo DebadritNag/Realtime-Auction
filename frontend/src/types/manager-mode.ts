@@ -1,14 +1,18 @@
+import type {SecretPlayersView} from '../../../backend/src/modules/manager-mode/heroes/hero.types';
 import type {SquadData,PlayerSeasonStats} from './manager-squad';
 import type {TransferWindow} from '../../../backend/src/modules/manager-mode/reports/window.types';
 import type {SeasonData,SaleQuote} from './manager-season';
 import type {BuyoutOffer} from './manager-buyout';
 import type {NegotiationData,NegotiationView} from './manager-negotiation';
 export type TournamentStatus = 'INVITING' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED' | 'ENDED';
-export type PlayerSource = 'AUCTION_SQUAD' | 'AUCTION_UNSOLD' | 'EXTERNAL_POOL';
+export type PlayerSource = 'AUCTION_SQUAD' | 'AUCTION_UNSOLD' | 'EXTERNAL_POOL' | 'SECRET_HERO';
 export interface ManagerPlayer {
     id: string;
     name: string;
-    overall: number;
+    overall: number | null;
+    isSecretHero?:boolean;
+    isTradeable?:boolean;
+    isSellable?:boolean;
     position: string;
     category: string;
     secondaryPositions: string;
@@ -23,7 +27,7 @@ export interface ManagerPlayer {
     ownershipStatus: 'OWNED' | 'FREE_AGENT';
     availability: 'AVAILABLE' | 'NEGOTIATING' | 'SIGNED';
     auctionPurchasePriceUnits: number | null;
-    acquisitionType: 'AUCTION_PURCHASE' | 'FREE_AGENT_SIGNING' | 'TRADE' | 'BUYOUT' | null;
+    acquisitionType: 'AUCTION_PURCHASE' | 'FREE_AGENT_SIGNING' | 'TRADE' | 'BUYOUT' | 'SECRET_HERO_PURCHASE' | null;
     acquisitionPriceUnits: number | null;
     metadata: Record<string, unknown>;
 }
@@ -82,7 +86,7 @@ export interface TransferTransaction {
     playerId: string;
     fromTeamId: string | null;
     toTeamId: string | null;
-    type: 'AUCTION_PURCHASE' | 'TRADE' | 'FREE_AGENT_SIGNING' | 'BUYOUT' | 'RELEASE';
+    type: 'AUCTION_PURCHASE' | 'TRADE' | 'FREE_AGENT_SIGNING' | 'BUYOUT' | 'RELEASE' | 'SECRET_HERO_PURCHASE';
     buyoutId?: string | null;
     amountUnits: number;
     tradeId: string | null;
@@ -143,6 +147,7 @@ export interface Tournament {
     }>;
 }
 export type TournamentState = Omit<Tournament, 'startingSnapshot' | 'receipts' | 'negotiation'> & {
+    secretPlayers?:SecretPlayersView;
     notificationUnread?:number;
     unseenOffers?:string[];
     teamSaleReturns?:Record<string,number>;
