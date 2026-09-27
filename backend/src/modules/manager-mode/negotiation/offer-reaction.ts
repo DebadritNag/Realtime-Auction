@@ -26,6 +26,6 @@ export function describeOffer(t:Tournament,s:NegotiationSession):OfferReaction {
  const player=t.players.find(p=>p.id===s.playerId)!,squad=t.players.filter(p=>p.currentTeamId===s.teamId);
  const playerOverall=getPlayerOverall(player);
  const competitors=squad.filter(p=>p.position===player.position&&(p.overall??0)>=playerOverall).length;
- const top=[...squad].sort((a,b)=>(b.overall??0)-(a.overall??0)).slice(0,11),strength=top.reduce((n,p)=>n+(p.overall??0),0)/Math.max(1,top.length);
+ const top=squad.filter(p=>p.overall!==null).sort((a,b)=>(b.overall??0)-(a.overall??0)).slice(0,11),strength=top.reduce((n,p)=>n+(p.overall??0),0)/Math.max(1,top.length);
  return {previousOfferUnits:old,offerBehavior,offerQuality,lowballCount,consecutiveImprovementCount,playingTime:competitors===0?'HIGH':competitors===1?'MEDIUM':'LOW',clubStrength:strength>=80?'STRONG':strength>=70?'AVERAGE':'DEVELOPING'};
 }

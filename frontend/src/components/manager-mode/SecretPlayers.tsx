@@ -35,8 +35,8 @@ export function SecretPlayers({state,busy}:{state:TournamentState;action:(a:Mana
   try{const request=prior??{slotId:selected.secretSlotId,requestId:crypto.randomUUID()};attempt.current=request;
   try{sessionStorage.setItem(key,JSON.stringify(request));}catch{}
   const updated=await managerService.purchaseHero(state.id,request.slotId,request.requestId);apply(updated);if(mounted.current){setPhase('PURCHASED_UNREVEALED');setSelected(null);}attempt.current=null;try{sessionStorage.removeItem(key);}catch{}}
-  catch(e){const code=e instanceof ApiError?e.code:'';if(e instanceof ApiError&&e.status&&e.status<500){attempt.current=null;try{sessionStorage.removeItem(key);}catch{}}
-   if(mounted.current){setError(messages[code]??(e instanceof Error?e.message:'Purchase failed. Retry safely with the same request.'));setPhase('ERROR');}void refresh();}
+  catch(e){const code=e instanceof ApiError?e.code:'';if(e instanceof ApiError&&e.status&&e.status>=400&&e.status<500){attempt.current=null;try{sessionStorage.removeItem(key);}catch{}}
+   if(mounted.current){setError(messages[code]??(e instanceof Error?e.message:'Purchase failed. Retry safely with the same request.'));setPhase('ERROR');if(code==='SECRET_PLAYER_ALREADY_CLAIMED'||code==='SECRET_PLAYER_NOT_FOUND')setSelected(null);}void refresh();}
   finally{inFlight.current=false;}
  }
  async function reveal(){

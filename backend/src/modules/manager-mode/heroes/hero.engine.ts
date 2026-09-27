@@ -37,7 +37,7 @@ export function heroAction(t:Tournament,user:string,type:'BUY_SECRET_PLAYER'|'RE
  requireThat(hero,'SECRET_PLAYER_NOT_FOUND','This Secret Player slot was not found.',404);
  trace('slot resolved');
  requireThat(!hero.teamId,'SECRET_PLAYER_ALREADY_CLAIMED','This Secret Player was just claimed by another team.',409);
- const player:ManagerPlayer={id:randomUUID(),name:hero.identity.name,position:hero.identity.position,overall:null,stats:{},secondaryPositions:'',category:hero.identity.position,club:'',nationality:'',imageUrl:'',tier:'',source:'SECRET_HERO',currentTeamId:team.id,ownershipStatus:'OWNED',availability:'SIGNED',auctionPurchasePriceUnits:null,acquisitionType:'SECRET_HERO_PURCHASE',acquisitionPriceUnits:90,metadata:{},isSecretHero:true,isTradeable:false,isSellable:false};
+ const player:ManagerPlayer={id:randomUUID(),name:hero.identity.name,position:hero.identity.position,overall:null,stats:{},secondaryPositions:'',category:hero.identity.position==='GK'?'GK':['CB','LB','RB','LWB','RWB'].includes(hero.identity.position)?'DEF':['ST','CF','LW','RW'].includes(hero.identity.position)?'FWD':'MID',club:'',nationality:'',imageUrl:'',tier:'',source:'SECRET_HERO',currentTeamId:team.id,ownershipStatus:'OWNED',availability:'SIGNED',auctionPurchasePriceUnits:null,acquisitionType:'SECRET_HERO_PURCHASE',acquisitionPriceUnits:90,metadata:{},isSecretHero:true,isTradeable:false,isSellable:false};
  team.transferBudgetUnits-=90;
  Object.assign(hero,{teamId:team.id,playerId:player.id,claimedAt:now,transferWindowId:window.id});
  t.players.push(player);
