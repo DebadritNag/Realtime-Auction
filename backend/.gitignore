@@ -9,3 +9,7 @@ coverage/
 !data/manager-mode/
 data/manager-mode/*
 !data/manager-mode/external-players.csv
+
+!data/secret-heroes/
+data/secret-heroes/*
+!data/secret-heroes/hero-player-data.csv
