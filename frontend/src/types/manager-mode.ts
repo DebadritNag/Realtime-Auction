@@ -1,6 +1,4 @@
-import type {SecretPlayersView} from '../../../backend/src/modules/manager-mode/heroes/hero.types';
 import type {SquadData,PlayerSeasonStats} from './manager-squad';
-import type {TransferWindow} from '../../../backend/src/modules/manager-mode/reports/window.types';
 import type {SeasonData,SaleQuote} from './manager-season';
 import type {BuyoutOffer} from './manager-buyout';
 import type {NegotiationData,NegotiationView} from './manager-negotiation';
@@ -109,6 +107,9 @@ export interface ManagerAudit {
     at: number;
     detail: string;
 }
+export interface WindowTeamSnapshot {teamId:string;teamName:string;managerName:string;openingBudgetUnits:number;closingBudgetUnits:number|null}
+export interface TransferWindow {id:string;number:number;seasonId:string|null;seasonNumber:number|null;status:'OPEN'|'CLOSED';openedAt:number;closedAt:number|null;auditAvailable:boolean;teams:WindowTeamSnapshot[]}
+
 export interface Tournament {
     transferWindows?:TransferWindow[];
     squadData?:SquadData;
@@ -146,6 +147,18 @@ export interface Tournament {
         fingerprint: string;
     }>;
 }
+/** Anonymous view of the Secret Players pool — sent to every client.
+ *  Deliberately omits Hero identity (name, position, playerId) before purchase. */
+export interface SecretPlayersView {
+    availableCount: number;
+    priceUnits: 90;
+    teamEligible: boolean;
+    claimed: boolean;
+    revealed: boolean;
+    /** playerId of the claimed Hero — only present after the team reveals. */
+    playerId: string | null;
+}
+
 export type TournamentState = Omit<Tournament, 'startingSnapshot' | 'receipts' | 'negotiation'> & {
     secretPlayers?:SecretPlayersView;
     notificationUnread?:number;
@@ -172,8 +185,7 @@ export interface TournamentSummary {
     unread: number;
     sequence: number;
 }
-export interface ImportReport {
-    auditRows?: {row:number;externalId:string|null;name:string|null;status:"VALID"|"INVALID"|"DUPLICATE";reason:string|null}[];
+export interface ImportReport {    auditRows?: {row:number;externalId:string|null;name:string|null;status:"VALID"|"INVALID"|"DUPLICATE";reason:string|null}[];
     rowsDetected: number;
     validPlayers: number;
     duplicates: number;
