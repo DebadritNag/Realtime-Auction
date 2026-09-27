@@ -83,8 +83,38 @@ export class PostgresManagerTournamentRepository implements ManagerTournamentRep
  if(alreadyExists)return {tournament:(await this.load(tx,alreadyExists.id))!,created:false};
  // Lock the existing source row: concurrent requests for one auction serialize before unique insertion.
  const [source]=await tx<{host_user_id:string;status:string}[]>`select host_user_id,status from public.auction_rooms where id=${input.sourceAuctionId} for update`;
- requireThat(source?.status==='COMPLETED'&&source.host_user_id===input.hostUserId,'INVALID_AUCTION_SNAPSHOT','Completed auction and host must match the database.',409); const t=structuredClone(input);const pool=await tx<{id:string;player_id:string}[]>`select id,player_id from public.auction_pool where room_id=${t.sourceAuctionId}`;
- const playerIds=new Map(t.players.map(p=>[p.id,randomUUID()]));for(const p of t.players){const old=p.id;p.id=playerIds.get(old)!;p.metadata={...p.metadata,...(p.source==='EXTERNAL_POOL'?{externalSourceKey:old}:{sourcePlayerId:old,sourceAuctionPlayerId:pool.find(x=>x.player_id===old)?.id})};if(p.source!=='EXTERNAL_POOL')requireThat(p.metadata.sourceAuctionPlayerId,'INVALID_REFERENCE','Auction pool player is missing.',409);}
+ requireThat(source?.status==='COMPLETED'&&source.host_user_id===input.hostUserId,'INVALID_AUCTION_SNAPSHOT','Completed auction and host must match the database.',409); const t=structuredClone(input);
+ // Load the pool with both the pool row ID and the football_player's external_id so we can
+ // match against the original auction player IDs (which may be external IDs, not UUIDs).
+ const pool=await tx<{id:string;player_id:string;external_id:string|null}[]>`
+   select ap.id, ap.player_id, fp.external_id
+   from public.auction_pool ap
+   left join public.football_players fp on fp.id=ap.player_id
+   where ap.room_id=${t.sourceAuctionId}
+ `;
+ // Build two lookup maps: by football_players.id and by football_players.external_id
+ const poolByFootballId=new Map(pool.map(r=>[r.player_id,r]));
+ const poolByExternalId=new Map(pool.filter(r=>r.external_id).map(r=>[r.external_id!,r]));
+ const findPoolRow=(originalPlayerId:string)=>
+   poolByFootballId.get(originalPlayerId)??poolByExternalId.get(originalPlayerId);
+ const playerIds=new Map(t.players.map(p=>[p.id,randomUUID()]));
+ for(const p of t.players){
+   const old=p.id;p.id=playerIds.get(old)!;
+   if(p.source==='EXTERNAL_POOL'){
+     p.metadata={...p.metadata,externalSourceKey:old};
+   } else {
+     const poolRow=findPoolRow(old);
+     if(!poolRow){
+       // Log safe diagnostics before throwing
+       throw new DomainError('INVALID_REFERENCE',
+         `Auction pool player is missing for player "${p.name}" (originalId=${old}, source=${p.source}). ` +
+         `Ensure the auction was fully archived before creating Manager Mode.`,
+         409,{originalPlayerId:old,playerName:p.name,playerSource:p.source,auctionId:t.sourceAuctionId}
+       );
+     }
+     p.metadata={...p.metadata,sourcePlayerId:poolRow.player_id,sourceAuctionPlayerId:poolRow.id};
+   }
+ }
  for(const tr of t.transactions)tr.playerId=playerIds.get(tr.playerId)!;
  t.negotiation=undefined;ensureNegotiations(t);
  t.startingSnapshot=structuredClone({teams:t.teams,players:t.players,auctionSequence:t.startingSnapshot.auctionSequence,importReport:t.startingSnapshot.importReport});
