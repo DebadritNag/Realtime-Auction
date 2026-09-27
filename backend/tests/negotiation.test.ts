@@ -1,3 +1,4 @@
+import {setTransferWindow} from '../src/modules/manager-mode/reports/window.engine.js';
 import {it,expect,vi,afterEach} from 'vitest';
 import {randomUUID} from 'node:crypto';
 import type {Room} from '../src/domain/types.js';
@@ -26,7 +27,7 @@ it('commits and broadcasts the decision before waiting for dialogue',async()=>{
  const gate=new Promise<void>(resolve=>{release=resolve;}),started=new Promise<void>(resolve=>{entered=resolve;});
  const service=new ManagerModeService(repo,async()=>room,undefined,undefined,{async generateResponse(c){entered();await gate;throw Error('Groq unavailable');}});
  const state=await service.create(room.id,'user0',{addUnusedAuctionPurse:false,name:'Commit order'});
- await repo.mutate(state.id,t=>{t.status='ACTIVE';t.transferWindowOpen=true;});
+ await repo.mutate(state.id,t=>{t.status='ACTIVE';setTransferWindow(t,true);});
  const opened=await service.mutate(state.id,'user0',randomUUID(),{type:'START_NEGOTIATION',playerId:'p192'}),sessionId=opened.negotiation.sessions[0]!.id;
  const snapshots:string[]=[];service.subscribe(t=>{snapshots.push(t.negotiation!.sessions[0]!.status);});
  const pending=service.mutate(state.id,'user0',randomUUID(),{type:'OFFER_FREE_AGENT',sessionId,amountUnits:80});
@@ -34,3 +35,4 @@ it('commits and broadcasts the decision before waiting for dialogue',async()=>{
  // A second repository mutation can complete while the provider is still waiting.
  await repo.mutate(state.id,t=>{t.updatedAt++;});release();const final=await pending;expect(final.negotiation.sessions[0]!.status).toBe(committed.negotiation!.sessions[0]!.status);expect(final.negotiation.sessions[0]!.messages.at(-1)!.provider).toBe('TEMPLATE');
 });
+

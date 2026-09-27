@@ -1,4 +1,5 @@
 import type {SquadData,PlayerSeasonStats} from './manager-squad';
+import type {TransferWindow} from '../../../backend/src/modules/manager-mode/reports/window.types';
 import type {SeasonData,SaleQuote} from './manager-season';
 import type {BuyoutOffer} from './manager-buyout';
 import type {NegotiationData,NegotiationView} from './manager-negotiation';
@@ -105,6 +106,7 @@ export interface ManagerAudit {
     detail: string;
 }
 export interface Tournament {
+    transferWindows?:TransferWindow[];
     squadData?:SquadData;
     seasonData?: SeasonData;
     buyouts?: BuyoutOffer[];

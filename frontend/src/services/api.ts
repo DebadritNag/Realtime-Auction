@@ -31,7 +31,8 @@ export function normalizeError(error: unknown): ApiError {
 
 export async function apiFetch<T>(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  responseType: 'json' | 'blob' = 'json'
 ): Promise<T> {
   const configured = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/+$/, "");
   const base = configured ? configured.replace(/\/api$/, "") + "/api" : "";
@@ -43,7 +44,7 @@ export async function apiFetch<T>(
   // that surfaces as "server didn't respond."
 
   const headers = new Headers(options.headers);
-  headers.set("Accept", "application/json");
+  headers.set("Accept", responseType === 'blob' ? 'application/pdf' : 'application/json');
   if (options.body != null && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
@@ -60,6 +61,10 @@ export async function apiFetch<T>(
   }
 
   if (response.status === 204) return undefined as T;
+  if(response.ok && responseType === 'blob') {
+    if(!response.headers.get('content-type')?.includes('application/pdf')) throw new ApiError('The server did not return a PDF.','INVALID_RESPONSE',response.status);
+    return await response.blob() as T;
+  }
 
   const text = await response.text();
   let body: unknown = null;
@@ -94,6 +99,7 @@ export async function apiFetch<T>(
 }
 
 export const api = {
+  pdf: (path: string) => apiFetch<Blob>(path, {method:'GET'}, 'blob'),
   get: <T>(path: string, options?: RequestInit) =>
     apiFetch<T>(path, { ...options, method: "GET" }),
   post: <T>(path: string, body?: unknown) =>

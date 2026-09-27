@@ -2,7 +2,20 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import type { ManagerModeService } from './manager.service.js';
 import { mutationSchema } from './manager.schemas.js';
+import {ManagerReportService} from './reports/report.service.js';
+import {allTeamLineupsPdf,transferAuditPdf} from './reports/report.pdf.js';
 export function registerManagerRoutes(app: FastifyInstance, service: ManagerModeService) {
+    const reports=new ManagerReportService(service.repository);
+    app.get('/api/manager-mode/:id/transfer-windows',async req=>reports.windows(params.parse(req.params).id,req.auth.userId));
+    app.get('/api/manager-mode/:id/transfer-windows/:windowId/report.pdf',{config:{rateLimit:{max:8,timeWindow:'1 minute'}}},async(req,reply)=>{
+        const p=z.object({id:z.string().min(1).max(100),windowId:z.string().uuid()}).parse(req.params);
+        const report=await reports.audit(p.id,req.auth.userId,p.windowId);
+        return reply.type('application/pdf').header('Cache-Control','private, no-store').header('X-Content-Type-Options','nosniff').header('Content-Disposition',`attachment; filename="Transfer-Window-${report.window.number}-Audit.pdf"`).send(transferAuditPdf(report));
+    });
+    app.get('/api/manager-mode/:id/team-sheets/report.pdf',{config:{rateLimit:{max:8,timeWindow:'1 minute'}}},async(req,reply)=>{
+        const t=await reports.lineups(params.parse(req.params).id,req.auth.userId);
+        return reply.type('application/pdf').header('Cache-Control','private, no-store').header('X-Content-Type-Options','nosniff').header('Content-Disposition','attachment; filename="All-Teams-Lineups.pdf"').send(allTeamLineupsPdf(t));
+    });
     const params = z.object({ id: z.string().min(1).max(100) });
     app.get('/api/manager-mode', async (req) => service.list(req.auth.userId));
     app.get('/api/manager-mode/from-auction/:id', async (req) => { const { room, existing, importReport } = await service.preview(params.parse(req.params).id, req.auth.userId); return { auctionId: room.id, name: room.auctionName, teams: room.teams, players: room.players, purchases: room.purchases, existingId: existing?.id ?? null, importReport }; });

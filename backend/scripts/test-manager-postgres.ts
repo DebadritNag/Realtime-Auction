@@ -1,4 +1,5 @@
 import {remapLineup} from '../src/domain/formations.js';
+import {ManagerReportService} from '../src/modules/manager-mode/reports/report.service.js';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {connectDatabase} from '../src/repositories/postgres.js';
@@ -19,9 +20,24 @@ try{
  const service=new ManagerModeService(new PostgresManagerTournamentRepository(db),id=>readCompletedAuction(db,id));
  phase='create';let t=await service.create(sourceId,users[0]!,{addUnusedAuctionPurse:false,name:'Integration tournament',csv:'player_id,name,overall,position\n'+Array.from({length:50},(_,i)=>run+'-external'+i+',External '+i+',82,CB').join('\n')});tournamentId=t.id;assert.equal(t.players.filter(p=>p.currentTeamId).length,192);assert.equal(t.players.filter(p=>!p.currentTeamId).length,427);
  assert.equal((await service.create(sourceId,users[0]!,{addUnusedAuctionPurse:false,name:'Duplicate'})).id,t.id);
- const act=(user:string,action:Parameters<typeof service.mutate>[3],request=randomUUID())=>service.mutate(t.id,user,request,action);
+ const act=(user:string,action:Parameters<typeof service.mutate>[3],request=randomUUID())=>{console.log('Verifying '+phase+' / '+action.type);return service.mutate(t.id,user,request,action);};
  const imports=await db`select id,valid_rows from public.manager_external_player_imports where tournament_id=${t.id}`;assert.equal(imports.length,1);assert.equal(imports[0]!.valid_rows,407);const imported=await db`select count(*)::int as count from public.manager_external_player_import_rows where import_id=${imports[0]!.id}`;assert.equal(imported[0]!.count,407);
- if(process.argv.includes('--squad-only')){
+ if(process.argv.includes('--reports-only')){
+ const reports=new ManagerReportService(new PostgresManagerTournamentRepository(db));
+ phase='report activation';await db`update public.manager_tournament_members set status='JOINED' where tournament_id=${t.id}`;t=await act(users[0]!,{type:'GENERATE_FIXTURES'});
+ phase='window one';t=await act(users[0]!,{type:'WINDOW',open:true});const w1=t.transferWindows!.at(-1)!;const owned=t.players.filter(p=>p.currentTeamId===teamIds[0]),target=t.players.find(p=>p.currentTeamId===teamIds[1])!;
+ phase='release ledger';const quote=t.saleQuotes![owned[0]!.id]!;await act(users[0]!,{type:'SELL_PLAYER',playerId:owned[0]!.id,ownershipToken:quote.ownershipToken,expectedSaleUnits:quote.saleValueUnits});
+ phase='trade ledger';t=await act(users[0]!,{type:'TRADE',offeredPlayerId:owned[1]!.id,requestedPlayerId:target.id});await act(users[1]!,{type:'TRADE_RESPONSE',tradeId:t.trades.at(-1)!.id,response:'ACCEPT'});
+ phase='close one';await act(users[0]!,{type:'WINDOW',open:false});const first=await reports.audit(t.id,users[0]!,w1.id);assert.equal(first.teams.find(x=>x.teamId===teamIds[0])!.receivedUnits,quote.saleValueUnits);
+ phase='window two';t=await act(users[0]!,{type:'WINDOW',open:true});const w2=t.transferWindows!.at(-1)!;const free=t.players.find(p=>!p.currentTeamId&&p.id!==owned[0]!.id)!;
+ phase='signing ledger';t=await act(users[0]!,{type:'START_NEGOTIATION',playerId:free.id});const session=t.negotiation.sessions.find(x=>x.playerId===free.id)!;await act(users[0]!,{type:'OFFER_FREE_AGENT',sessionId:session.id,amountUnits:80});await act(users[0]!,{type:'CONFIRM_SIGNING',sessionId:session.id});
+ phase='buyout ledger';const b=t.players.find(p=>p.currentTeamId===teamIds[1]&&p.id!==target.id)!;t=await act(users[0]!,{type:'BUYOUT',targetPlayerId:b.id,offerType:'CASH_PLUS_PLAYER',cashAmountUnits:20,includedPlayerId:owned[2]!.id});await act(users[1]!,{type:'BUYOUT_RESPONSE',buyoutId:t.buyouts!.at(-1)!.id,response:'ACCEPT'});
+ phase='close two';await act(users[0]!,{type:'WINDOW',open:false});const second=await reports.audit(t.id,users[0]!,w2.id);assert.equal(second.teams.find(x=>x.teamId===teamIds[0])!.spentUnits,100);assert.deepEqual(await reports.audit(t.id,users[0]!,w1.id),first);
+ phase='snapshot immutability';await assert.rejects(db`update public.manager_transfer_window_team_snapshots set opening_budget_units=0 where transfer_window_id=${w1.id}`);await assert.rejects(db`update public.manager_transfer_windows set opened_at=now() where id=${w1.id}`);
+ const links=await db`select type,transfer_window_id from public.manager_transfer_transactions where tournament_id=${t.id} and type<>'AUCTION_IMPORT'`;assert.equal(links.length,6);assert.ok(links.every(x=>[w1.id,w2.id].includes(x.transfer_window_id)));
+ const permissions=await db`select has_table_privilege('authenticated','public.manager_transfer_window_team_snapshots','SELECT') as readable`;assert.equal(permissions[0]!.readable,false);
+ console.log('PASS: two persisted windows, release, trade RPC, free-agent signing RPC, cash-plus-player buyout, budget reconciliation, immutable snapshots, host audit and window isolation.');
+ }else if(process.argv.includes('--squad-only')){
  phase='squad activation';await db`update public.manager_tournament_members set status='JOINED' where tournament_id=${t.id}`;t=await act(users[0]!,{type:'GENERATE_FIXTURES'});
  const owned=t.players.filter(p=>p.currentTeamId===teamIds[0]).sort((a,b)=>Number(a.name.split(' ').at(-1))-Number(b.name.split(' ').at(-1)));const slots=[...owned.slice(0,10).map(p=>p.id),null];
  phase='team sheet';t=await act(users[0]!,{type:'SAVE_TEAM_SHEET',formation:'4-3-3 Holding',slots,bench:[owned[10]!.id],captainId:owned[0]!.id});assert.equal(t.squadData!.sheets[0]!.slots.filter(Boolean).length,10);
@@ -77,7 +93,7 @@ try{
  phase='end and recovery';await act(users[0]!,{type:'END_MANAGER_MODE',confirmation:'END MANAGER MODE'});const other=connectDatabase(process.env.DATABASE_URL!);try{const fresh=new ManagerModeService(new PostgresManagerTournamentRepository(other),id=>readCompletedAuction(other,id));t=await fresh.state(t.id,users[0]!);assert.equal(t.modeStatus,'ENDED');assert.equal(t.seasonData!.bonuses.length,8);assert.equal(t.seasonData!.seasons[1]!.status,'ARCHIVED');assert.equal(t.seasonData!.seasons[1]!.championTeamId,null);assert.equal(t.transactions.filter(x=>x.type==='RELEASE').length,1);assert.equal(t.players.find(x=>x.id===player.id)!.currentTeamId,null);assert.equal(t.teams.reduce((n,x)=>n+x.transferBudgetUnits,0),1853);assert.equal(t.seasonFixturesById![firstId]!.find(x=>x.id===fixture.id)!.homeScore,3);}finally{await other.end();}
  console.log('PASS: real Postgres seasons, concurrent reward protection, new schedule, retained history, atomic release, reopened negotiation, read-only archive and fresh-connection recovery.');
  }
- if(!process.argv.includes('--imports-only')&&!process.argv.includes('--buyouts-only')&&!process.argv.includes('--seasons-only')&&!process.argv.includes('--pricing-only')&&!process.argv.includes('--squad-only')){
+ if(!process.argv.includes('--imports-only')&&!process.argv.includes('--buyouts-only')&&!process.argv.includes('--seasons-only')&&!process.argv.includes('--pricing-only')&&!process.argv.includes('--squad-only')&&!process.argv.includes('--reports-only')){
  phase='join and fixtures';for(const user of users.slice(1))await act(user,{type:'INVITATION',accept:true});t=await act(users[0]!,{type:'GENERATE_FIXTURES'});assert.equal(t.fixtures.length,28);
  phase='score RPC';t=await act(users[0]!,{type:'SCORE',fixtureId:t.fixtures[0]!.id,homeScore:3,awayScore:1});t=await act(users[0]!,{type:'SCORE',fixtureId:t.fixtures[0]!.id,homeScore:2,awayScore:2});assert.equal(t.standings.find(s=>s.teamId===t.fixtures[0]!.homeTeamId)!.points,1);
  const audits=await db`select event_type from public.manager_tournament_events where tournament_id=${t.id} and event_type in ('RESULT_CREATED','RESULT_EDITED')`;assert.equal(audits.length,2);
@@ -90,9 +106,10 @@ assert.equal(t.transactions.filter(x=>x.type==='FREE_AGENT_SIGNING').length,1);
  const privateEvents=await db`select metadata from public.manager_tournament_events where tournament_id=${t.id} and metadata->'action'->>'type'='OFFER_FREE_AGENT'`;assert.ok(privateEvents.length);for(const e of privateEvents){assert.deepEqual(Object.keys(e.metadata.action),['type']);assert.match(e.metadata.receipt.fingerprint,/^[a-f0-9]{64}$/);}
  phase='RLS';const permissions=await db`select has_table_privilege('authenticated','public.manager_negotiation_sessions','UPDATE') as write,has_table_privilege('authenticated','public.manager_player_negotiation_profiles','SELECT') as secrets,has_function_privilege('authenticated','public.accept_manager_trade(uuid,uuid)','EXECUTE') as rpc`;assert.equal(permissions[0]!.write,false);assert.equal(permissions[0]!.secrets,false);assert.equal(permissions[0]!.rpc,false);
  }
- if(!process.argv.includes('--buyouts-only')&&!process.argv.includes('--seasons-only')&&!process.argv.includes('--pricing-only')&&!process.argv.includes('--squad-only'))console.log(process.argv.includes('--imports-only')?'PASS: completed snapshot, duplicate creation, 192 owned/70 free, persisted import batch and 50 audit rows.':'PASS: real Postgres snapshot, duplicate creation, 8 memberships, 192 owned/70 free, 28 fixtures, score RPC correction, atomic trade RPC, competing signings, fresh-connection recovery, hidden-profile and RPC permissions.');
+ if(!process.argv.includes('--buyouts-only')&&!process.argv.includes('--seasons-only')&&!process.argv.includes('--pricing-only')&&!process.argv.includes('--squad-only')&&!process.argv.includes('--reports-only'))console.log(process.argv.includes('--imports-only')?'PASS: completed snapshot, duplicate creation, 192 owned/70 free, persisted import batch and 50 audit rows.':'PASS: real Postgres snapshot, duplicate creation, 8 memberships, 192 owned/70 free, 28 fixtures, score RPC correction, atomic trade RPC, competing signings, fresh-connection recovery, hidden-profile and RPC permissions.');
 }catch(error){const e=error as {code?:string;message?:string};console.error(JSON.stringify({phase,code:e.code??'TEST_FAILED',message:e.message?.includes('postgres://')?'Redacted database error':e.message}));process.exitCode=1;}
 finally{
  try{await db.begin(async tx=>{if(tournamentId){await tx`delete from public.manager_free_agent_offers where session_id in (select id from public.manager_negotiation_sessions where tournament_id=${tournamentId})`;await tx`delete from public.manager_negotiation_sessions where tournament_id=${tournamentId}`;await tx`delete from public.manager_tournaments where id=${tournamentId}`;};await tx`delete from public.auction_rooms where id=${sourceId}`;await tx`delete from public.football_players where external_id like ${run+'-%'}`;await tx`delete from auth.users where id in ${tx(users)}`;});console.log('Isolated integration fixtures removed.');}catch{console.error('Fixture cleanup failed; run ID '+run);process.exitCode=1;}await db.end();
 }
+
 

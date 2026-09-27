@@ -1,4 +1,5 @@
 import {randomUUID} from 'node:crypto';
+import {setTransferWindow} from '../reports/window.engine.js';
 import {requireThat} from '../../../domain/errors.js';
 import type {Tournament,ManagerPlayer} from '../manager.types.js';
 import {standings,generateFixtures} from '../fixture.service.js';
@@ -18,6 +19,8 @@ export function quoteSale(t:Tournament,p:ManagerPlayer):SaleQuote{const d=ensure
 function notice(t:Tournament,type:string,message:string,users=t.teams.map(x=>x.managerUserId)){for(const userId of users)t.notifications.push({id:randomUUID(),userId,type,title:type.replaceAll('_',' '),message,read:false,createdAt:Date.now(),metadata:{tournamentId:t.id}});}
 export function completeSeason(t:Tournament,rewards=true,now=Date.now()){
  const d=ensureSeasons(t),s=currentSeason(t);requireThat(s.status==='ACTIVE','SEASON_NOT_ACTIVE','This season is already closed.',409);
+ // Freeze transfer accounting before performance bonuses for the next season.
+ setTransferWindow(t,false,now);
  s.finalStandings=standings(t.teams,seasonFixtures(t));s.status=rewards?'COMPLETED':'ARCHIVED';s.completedAt=now;s.endedEarly=seasonFixtures(t).some(f=>f.status!=='COMPLETED')||!seasonFixtures(t).length;
  if(rewards){s.championTeamId=s.finalStandings[0]?.teamId??null;for(const row of s.finalStandings){requireThat(!d.bonuses.some(b=>b.seasonId===s.id&&b.teamId===row.teamId),'BONUS_ALREADY_AWARDED','Season bonus already awarded.',409);const amount=d.settings.bonusUnits[row.position-1]!;const team=t.teams.find(x=>x.id===row.teamId)!;team.transferBudgetUnits+=amount;d.bonuses.push({seasonId:s.id,teamId:team.id,position:row.position,amountUnits:amount,awardedAt:now});notice(t,'SEASON_BONUS','Season '+s.number+' performance reward: ₹'+amount/2+' Cr.',[team.managerUserId]);}s.bonusesAwardedAt=now;notice(t,'LEAGUE_SHIELD_AWARDED',(t.teams.find(x=>x.id===s.championTeamId)?.name??'Champion')+' won the Season '+s.number+' League Shield.');}
  for(const trade of t.trades)if(trade.status==='PENDING'){trade.status='EXPIRED';trade.updatedAt=now;}

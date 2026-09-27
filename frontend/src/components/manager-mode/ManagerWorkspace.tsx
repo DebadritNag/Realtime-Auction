@@ -1,4 +1,5 @@
 'use client';
+import {HostReports} from './HostReports';
 import {api} from '@/services/api';
 import {notificationHref} from '@/lib/manager-notifications';
 import {ManagerSquad} from './ManagerSquad';
@@ -607,6 +608,7 @@ function HostControl({ state, action, busy }: { state: TournamentState; action: 
         </div>
       </div>
 
+      <HostReports state={state}/>
       {/* Announcement */}
       <form className={panel} onSubmit={e => { e.preventDefault(); void action({ type: 'ANNOUNCE', message: announcement }); setAnnouncement(''); }}>
         <h3 className="text-base font-bold text-white">Send Announcement</h3>
@@ -876,3 +878,4 @@ export function ManagerWorkspace({ section }: { section: string }) {
 export function LegacyTrades({ state, action, busy }: { state: TournamentState; action: Act; busy: boolean; initialTab?: string }) {
   return <Transfers state={state} action={action} busy={busy || state.modeStatus === 'ENDED'} />;
 }
+

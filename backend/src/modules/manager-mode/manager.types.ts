@@ -1,4 +1,5 @@
 import type {SquadData,PlayerSeasonStats} from './squad/squad.types.js';
+import type {TransferWindow} from './reports/window.types.js';
 import type {SeasonData,SaleQuote} from './seasons/season.types.js';
 import type {BuyoutOffer} from './buyout/buyout.types.js';
 import type {NegotiationData,NegotiationView} from './negotiation/negotiation.types.js';
@@ -77,6 +78,7 @@ export interface Trade {
     updatedAt: number;
 }
 export interface TransferTransaction {
+    transferWindowId?:string|null;
     id: string;
     playerId: string;
     fromTeamId: string | null;
@@ -105,6 +107,7 @@ export interface ManagerAudit {
     detail: string;
 }
 export interface Tournament {
+    transferWindows?:TransferWindow[];
     squadData?:SquadData;
     seasonData?: SeasonData;
     buyouts?: BuyoutOffer[];

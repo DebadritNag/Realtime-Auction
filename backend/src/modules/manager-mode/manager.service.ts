@@ -1,4 +1,5 @@
 import {setupStep,type SetupLogger} from './setup-diagnostics.js';
+import {setTransferWindow,tagWindowTransactions} from './reports/window.engine.js';
 import {unseenOffers} from './notifications.js';
 import {combinedImport,hydrateReleaseOrigins} from './free-agent-pool.js';
 import {ensureSquad,squadAction,synchronizeSheets,recordMatch,playerSeasonStats} from './squad/squad.engine.js';
@@ -95,6 +96,7 @@ export class ManagerModeService {
             if (action.type !== 'INVITATION' && action.type !== 'READ_NOTIFICATION' && action.type !== 'READ_ALL_NOTIFICATIONS')
                 requireThat(team.invitation === 'JOINED', 'INVITATION_NOT_ACCEPTED', 'Accept your invitation first.', 403);
             ensureSeasons(t);
+            const oldTransactionIds=new Set(t.transactions.map(row=>row.id));
             switch (action.type) {
  case 'SAVE_TEAM_SHEET':case 'RENEW_CONTRACT':squadAction(t,user,action);break;
  case 'END_CURRENT_SEASON':case 'START_NEXT_SEASON':case 'END_MANAGER_MODE':case 'SEASON_SETTINGS':case 'SELL_PLAYER':seasonAction(t,user,action);break;
@@ -131,7 +133,7 @@ export class ManagerModeService {
                 case 'WINDOW':
                     host();
                     requireThat(t.status === 'ACTIVE'&&currentSeason(t).status==='ACTIVE', 'INVALID_STATE', 'Start an active season first.');
-                    t.transferWindowOpen = action.open;
+                    setTransferWindow(t,action.open);
                     if (!action.open)
                         for (const trade of t.trades)
                             if (trade.status === 'PENDING') {
@@ -214,6 +216,8 @@ export class ManagerModeService {
                     this.notify(t, 'INVITATION', 'Please respond to your tournament invitation.', t.teams.filter(x => x.invitation === 'PENDING').map(x => x.managerUserId));
                     break;
             }
+            tagWindowTransactions(t,oldTransactionIds);
+            if(!t.transferWindowOpen)setTransferWindow(t,false);
             if(action.type==='SCORE'&&currentSeason(t).status==='ACTIVE'&&seasonFixtures(t).length&&seasonFixtures(t).every(f=>f.status==='COMPLETED'))completeSeason(t);
             ensureNegotiations(t);
             synchronizeSheets(t);
