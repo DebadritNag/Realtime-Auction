@@ -71,9 +71,10 @@ export function ManagerSetup({ auctionId }: {
             router.push('/manager-mode/' + t.id);
         } catch (e) {
             const msg = e instanceof Error ? e.message : 'Unable to create tournament.';
-            const isDuplicate = msg.includes('ALREADY_EXISTS') || msg.includes('DUPLICATE_MANAGER_RESOURCE') || msg.includes('DUPLICATE');
-            if (isDuplicate) {
-                // Tournament was already created (race or retry). Look it up and navigate there.
+            const status = (e as { status?: number }).status;
+            // Any 409 might mean the tournament already exists — try looking it up first.
+            const is409 = status === 409 || msg.includes('ALREADY_EXISTS') || msg.includes('DUPLICATE_MANAGER_RESOURCE') || msg.includes('DUPLICATE') || msg.includes('INVALID_AUCTION_SNAPSHOT');
+            if (is409) {
                 try {
                     const lookup = await managerService.byAuction(auctionId);
                     if (lookup.exists && lookup.tournamentId) {
@@ -83,7 +84,7 @@ export function ManagerSetup({ auctionId }: {
                 } catch { /* fall through to error display */ }
             }
             setError(
-                isDuplicate ? 'A Manager Mode tournament already exists for this auction. Redirecting…' :
+                is409 ? 'A Manager Mode tournament already exists for this auction. Redirecting…' :
                 msg.includes('INVALID_REFERENCE') ? 'A required profile or record is missing. Ensure all managers have logged in.' :
                 msg.includes('INVALID_MANAGER_MODE_STATE') ? 'A data validation error occurred. Check the budget and team settings.' :
                 msg.includes('REQUIRED_FIELD') ? 'A required field is missing. Please fill in all settings.' :

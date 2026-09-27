@@ -77,10 +77,13 @@ export class PostgresManagerTournamentRepository implements ManagerTournamentRep
  audit:events.map(e=>({id:String(e.id),type:e.event_type,userId:e.actor_user_id??'',at:ms(e.created_at),detail:JSON.stringify((e.metadata as unknown as EventMetadata)?.action??{})}))};
  }
  async createUnique(input:Tournament){try{return await this.db.begin(async tx=>{
+ // First: if a tournament already exists for this auction, return it immediately.
+ // This short-circuits before any auction_rooms lock and handles all idempotent retries.
+ const [alreadyExists]=await tx<{id:string}[]>`select id from public.manager_tournaments where source_auction_id=${input.sourceAuctionId}`;
+ if(alreadyExists)return {tournament:(await this.load(tx,alreadyExists.id))!,created:false};
  // Lock the existing source row: concurrent requests for one auction serialize before unique insertion.
  const [source]=await tx<{host_user_id:string;status:string}[]>`select host_user_id,status from public.auction_rooms where id=${input.sourceAuctionId} for update`;
- requireThat(source?.status==='COMPLETED'&&source.host_user_id===input.hostUserId,'INVALID_AUCTION_SNAPSHOT','Completed auction and host must match the database.',409);
- const [existing]=await tx<{id:string}[]>`select id from public.manager_tournaments where source_auction_id=${input.sourceAuctionId}`;if(existing)return {tournament:(await this.load(tx,existing.id))!,created:false}; const t=structuredClone(input);const pool=await tx<{id:string;player_id:string}[]>`select id,player_id from public.auction_pool where room_id=${t.sourceAuctionId}`;
+ requireThat(source?.status==='COMPLETED'&&source.host_user_id===input.hostUserId,'INVALID_AUCTION_SNAPSHOT','Completed auction and host must match the database.',409); const t=structuredClone(input);const pool=await tx<{id:string;player_id:string}[]>`select id,player_id from public.auction_pool where room_id=${t.sourceAuctionId}`;
  const playerIds=new Map(t.players.map(p=>[p.id,randomUUID()]));for(const p of t.players){const old=p.id;p.id=playerIds.get(old)!;p.metadata={...p.metadata,...(p.source==='EXTERNAL_POOL'?{externalSourceKey:old}:{sourcePlayerId:old,sourceAuctionPlayerId:pool.find(x=>x.player_id===old)?.id})};if(p.source!=='EXTERNAL_POOL')requireThat(p.metadata.sourceAuctionPlayerId,'INVALID_REFERENCE','Auction pool player is missing.',409);}
  for(const tr of t.transactions)tr.playerId=playerIds.get(tr.playerId)!;
  t.negotiation=undefined;ensureNegotiations(t);
@@ -101,11 +104,17 @@ export class PostgresManagerTournamentRepository implements ManagerTournamentRep
  return {tournament:(await this.load(tx,t.id))!,created:true};
  });}catch(e){
   // Race: two concurrent requests passed the pre-check; the second hits the unique constraint.
-  // Treat this exactly like the pre-check "already exists" path.
+  // Also handles the case where auction_rooms isn't yet archived when createUnique runs.
   const err=e as {code?:string;constraint_name?:string;constraint?:string};
   const isUniqueViolation=err.code==='23505';
   const onSourceAuction=(err.constraint_name??err.constraint??'').includes('source_auction_id');
   if(isUniqueViolation&&onSourceAuction){
+   const [found]=await this.db<{id:string}[]>`select id from public.manager_tournaments where source_auction_id=${input.sourceAuctionId}`;
+   if(found){const tournament=await this.find(found.id);if(tournament)return {tournament,created:false};}
+  }
+  // Any DomainError with code INVALID_AUCTION_SNAPSHOT may indicate the archive is still in progress.
+  // Try to find an existing tournament first before giving up.
+  if(e instanceof DomainError&&e.code==='INVALID_AUCTION_SNAPSHOT'){
    const [found]=await this.db<{id:string}[]>`select id from public.manager_tournaments where source_auction_id=${input.sourceAuctionId}`;
    if(found){const tournament=await this.find(found.id);if(tournament)return {tournament,created:false};}
   }
