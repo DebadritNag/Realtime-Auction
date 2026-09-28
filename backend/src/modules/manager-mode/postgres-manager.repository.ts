@@ -128,6 +128,7 @@ export class PostgresManagerTournamentRepository implements ManagerTournamentRep
  if(report?.rowsDetected){const importId=randomUUID();await tx`insert into public.manager_external_player_imports ${tx({id:importId,tournament_id:t.id,uploaded_by:t.hostUserId,filename:'external-player-upload.csv',status:'COMPLETED',total_rows:report.rowsDetected,valid_rows:report.validPlayers,invalid_rows:report.invalidRows.length,duplicate_rows:report.duplicates})}`;
  if(report.auditRows?.length)await tx`insert into public.manager_external_player_import_rows ${tx(report.auditRows.map(r=>({import_id:importId,row_number:r.row,external_player_id:r.externalId,player_name:r.name,status:r.status,error_message:r.reason})))}`;}
  await persistSeasons(tx,t);
+ if(t.fixtures.length)await tx`insert into public.manager_fixtures ${tx(t.fixtures.map(f=>({id:f.id,tournament_id:t.id,season_id:f.seasonId!,matchday:f.matchday,home_team_id:f.homeTeamId,away_team_id:f.awayTeamId,status:f.status})))}`;
  await persistNegotiations(tx,t);
  await this.notifications(tx,t,[]);
  await tx`insert into public.manager_tournament_events (tournament_id,event_type,actor_user_id,metadata) values (${t.id},'MANAGER_MODE_CREATED',${t.hostUserId},${json(tx,{sequence:1,initial:{startingSnapshot:t.startingSnapshot,code:t.sourceAuctionCode,name:t.sourceAuctionName,budgetMode:t.budgetMode}})})`;
@@ -159,7 +160,7 @@ export class PostgresManagerTournamentRepository implements ManagerTournamentRep
  const oldEvent=await tx<{max:string|null}[]>`select max(id) from public.manager_tournament_events where tournament_id=${id}`;
  if(action.type==='SCORE')await tx`select public.save_fixture_result(${action.fixtureId}::uuid,${action.homeScore}::int,${action.awayScore}::int,${actor}::uuid)`;
  if(accepted)await tx`select public.accept_manager_trade(${accepted.id}::uuid,${actor}::uuid)`;
- await tx`update public.manager_tournaments set status=${draft.status},updated_at=now() where id=${id}`;
+ await tx`update public.manager_tournaments set status=${draft.status},fixture_format=${draft.format},updated_at=now() where id=${id}`;
  for(const team of draft.teams){const prior=before.teams.find(t=>t.id===team.id)!;if(prior.invitation!==team.invitation){await tx`update public.manager_tournament_members set status=${team.invitation==='PENDING'?'INVITED':team.invitation},joined_at=case when ${team.invitation}='JOINED' then now() else joined_at end where tournament_id=${id} and user_id=${team.managerUserId}`;await tx`update public.manager_tournament_invitations set status=${team.invitation},responded_at=case when ${team.invitation}='PENDING' then null else now() end where tournament_id=${id} and user_id=${team.managerUserId}`;}}
  await persistTransferWindows(tx,draft,before,actor);
  await persistSeasons(tx,draft,before);

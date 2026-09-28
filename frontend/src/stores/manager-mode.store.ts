@@ -74,6 +74,7 @@ export const useManagerStore = create<ManagerStore>((set, get) => ({ toasts:[],d
     catch (e) {
         if(reading)webSocketService.requestManagerState(state.id);
         set({ error: e instanceof Error ? e.message : 'Action failed.' });
+        if (a.type === 'UPDATE_FIXTURE_FORMAT') throw e;
     }
     finally {
         set({ busy: false });

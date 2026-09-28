@@ -1,5 +1,6 @@
 'use client';
 import {HostReports} from './HostReports';
+import {FixtureFormatControl} from './FixtureFormatControl';
 import {api} from '@/services/api';
 import {notificationHref} from '@/lib/manager-notifications';
 import {ManagerSquad} from './ManagerSquad';
@@ -597,8 +598,8 @@ function HostControl({ state, action, busy }: { state: TournamentState; action: 
           <button className={button} disabled={busy || state.status !== 'INVITING'} onClick={() => void action({ type: 'RESEND_INVITATIONS' })}>
             Resend Invitations
           </button>
-          <button className={button} disabled={busy || Boolean(state.fixtures.length) || state.teams.some(t => t.invitation !== 'JOINED')} onClick={() => void action({ type: 'GENERATE_FIXTURES' })}>
-            Generate Fixtures &amp; Start
+          <button className={button} disabled={busy || (state.status !== 'INVITING' && Boolean(state.fixtures.length)) || state.teams.some(t => t.invitation !== 'JOINED')} onClick={() => void action({ type: 'GENERATE_FIXTURES' })}>
+            {state.fixtures.length ? 'Start Tournament' : 'Generate Fixtures & Start'}
           </button>
           <button className={button} disabled={busy || state.status !== 'ACTIVE'||state.seasonData?.seasons.find(s=>s.id===state.seasonData?.currentSeasonId)?.status!=='ACTIVE'} onClick={() => void action({ type: 'WINDOW', open: !state.transferWindowOpen })}>
             {state.transferWindowOpen ? 'Close' : 'Open'} Transfer Window
@@ -610,6 +611,7 @@ function HostControl({ state, action, busy }: { state: TournamentState; action: 
       </div>
 
       <HostReports state={state}/>
+      <FixtureFormatControl state={state} action={action} busy={busy}/>
       {/* Announcement */}
       <form className={panel} onSubmit={e => { e.preventDefault(); void action({ type: 'ANNOUNCE', message: announcement }); setAnnouncement(''); }}>
         <h3 className="text-base font-bold text-white">Send Announcement</h3>

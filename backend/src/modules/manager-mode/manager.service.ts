@@ -16,7 +16,7 @@ import { requireThat } from '../../domain/errors.js';
 import type { Room } from '../../domain/types.js';
 import type { ManagerTournamentRepository, ManagerIdentityRepository } from './manager.repository.js';
 import type { Tournament, TournamentState, ManagerPlayer } from './manager.types.js';
-import { generateFixtures, standings } from './fixture.service.js';
+import { generateFixtures, extendDoubleFixtures, standings } from './fixture.service.js';
 import { importExternalCsv } from './external-import.service.js';
 import { setupSchema, actionSchema, type ManagerAction } from './manager.schemas.js';
 export class ManagerModeService {
@@ -75,6 +75,8 @@ export class ManagerModeService {
         const now = Date.now();
         const t: Tournament = { id: randomUUID(), sourceAuctionId: room.id, sourceAuctionCode: room.code, sourceAuctionName: room.auctionName, name: settings.name, hostUserId: user, status: 'INVITING', format: settings.format, budgetMode: settings.addUnusedAuctionPurse?'CARRY_OVER':'EQUAL', startingBudgetUnits: settings.startingBudgetUnits, createdAt: now, updatedAt: now, sequence: 1, transferWindowOpen: false, teams, players, fixtures: [], trades: [], transactions: room.purchases.map(p => ({ id: randomUUID(), playerId: p.playerId, fromTeamId: null, toTeamId: p.teamId, type: 'AUCTION_PURCHASE', amountUnits: p.priceUnits, tradeId: null, at: p.at })), notifications: [], audit: [], startingSnapshot: structuredClone({ teams, players, auctionSequence: room.sequence, importReport }), receipts: {} };
         ensureSeasons(t);
+        t.fixtures = generateFixtures(t.teams.map(team => team.id), t.format === 'DOUBLE_ROUND_ROBIN')
+            .map(f => ({ ...f, seasonId: currentSeason(t).id }));
         ensureNegotiations(t);
         this.notify(t, 'INVITATION', 'Your auction team has been invited to ' + t.name,t.teams.map(x=>x.managerUserId));
         const result = await setupStep(this.logger,id,'CREATE_MANAGER_MODE',()=>this.repository.createUnique(t));
@@ -121,11 +123,28 @@ export class ManagerModeService {
                     break;
                 case 'GENERATE_FIXTURES':
                     host();
-                    requireThat(!seasonFixtures(t).length&&currentSeason(t).status==='ACTIVE', 'FIXTURES_EXIST', 'Fixtures have already been generated.', 409);
+                    requireThat((t.status === 'INVITING' || !seasonFixtures(t).length)&&currentSeason(t).status==='ACTIVE', 'FIXTURES_EXIST', 'Fixtures have already been generated.', 409);
                     requireThat(t.teams.every(x => x.invitation === 'JOINED'), 'INVITATIONS_PENDING', 'All teams must accept before fixtures are generated.');
-                    t.fixtures = generateFixtures(t.teams.map(x => x.id), t.format === 'DOUBLE_ROUND_ROBIN').map(f=>({...f,seasonId:currentSeason(t).id}));
+                    if (!seasonFixtures(t).length) t.fixtures.push(...generateFixtures(t.teams.map(x => x.id), t.format === 'DOUBLE_ROUND_ROBIN').map(f=>({...f,seasonId:currentSeason(t).id})));
                     t.status = 'ACTIVE';
                     break;
+                case 'UPDATE_FIXTURE_FORMAT': {
+                    host();
+                    requireThat(t.status === 'ACTIVE' && currentSeason(t).status === 'ACTIVE', 'INVALID_STATE', 'An active tournament and season are required.', 409);
+                    const fixtures = seasonFixtures(t);
+                    if (action.format === 'SINGLE_ROUND_ROBIN') {
+                        const days = t.teams.length % 2 ? t.teams.length : t.teams.length - 1;
+                        requireThat(!fixtures.some(f => f.matchday > days && f.status === 'COMPLETED'), 'SECOND_LEG_PLAYED', 'Cannot switch to Single Round Robin because second-leg fixtures have already been played.', 409);
+                        requireThat(!fixtures.some(f => f.matchday > days), 'FIXTURE_DOWNGRADE_BLOCKED', 'Existing reverse fixtures are preserved. Switching this schedule to Single Round Robin is disabled.', 409);
+                        if (t.format === action.format) return;
+                    } else {
+                        const added = extendDoubleFixtures(t.teams.map(x => x.id), fixtures);
+                        if (!added.length && t.format === action.format) return;
+                        t.fixtures.push(...added);
+                    }
+                    t.format = action.format;
+                    break;
+                }
                 case 'SCORE':
                 case 'RESET_SCORE': {
                     host();
@@ -229,6 +248,7 @@ export class ManagerModeService {
                     this.notify(t, 'INVITATION', 'Please respond to your tournament invitation.', t.teams.filter(x => x.invitation === 'PENDING').map(x => x.managerUserId));
                     break;
             }
+            if (action.type !== 'UPDATE_FIXTURE_FORMAT') {
             tagWindowTransactions(t,oldTransactionIds);
             if(!t.transferWindowOpen)setTransferWindow(t,false);
             if(action.type==='SCORE'&&currentSeason(t).status==='ACTIVE'&&seasonFixtures(t).length&&seasonFixtures(t).every(f=>f.status==='COMPLETED'))completeSeason(t);
@@ -236,6 +256,7 @@ export class ManagerModeService {
             synchronizeSheets(t);
             synchronizeBuyouts(t);
             synchronizeWindow(t);
+            }
             t.receipts[key] = { fingerprint };
             t.sequence++;
             t.updatedAt = Date.now();
@@ -265,6 +286,7 @@ export class ManagerModeService {
  }
  if (changed) {
  this.emit(result,'MANAGER_MODE_UPDATED');
+ if(action.type==='UPDATE_FIXTURE_FORMAT'){this.emit(result,'FIXTURE_FORMAT_UPDATED');this.emit(result,'FIXTURES_GENERATED');}
  if(action.type==='BUY_SECRET_PLAYER'){this.emit(result,'SECRET_PLAYER_CLAIMED');this.emit(result,'SECRET_PLAYER_POOL_UPDATED');this.emit(result,'TEAM_BUDGET_UPDATED');this.emit(result,'SQUAD_UPDATED');}
  if(action.type==='REVEAL_SECRET_PLAYER'){this.emit(result,'SECRET_PLAYER_REVEALED');this.emit(result,'SQUAD_UPDATED');}
  if(action.type==='END_CURRENT_SEASON'||(action.type==='SCORE'||action.type==='STATUS'&&action.status==='COMPLETED')&&currentSeason(result).status==='COMPLETED'){this.emit(result,'SEASON_COMPLETED');this.emit(result,'LEAGUE_SHIELD_AWARDED');this.emit(result,'SEASON_BONUSES_AWARDED');this.emit(result,'TEAM_BUDGET_UPDATED');}

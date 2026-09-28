@@ -10,6 +10,9 @@ export type ManagerAction = {type:'BUY_SECRET_PLAYER';secretSlotId:string} | {ty
 } | {
     type: 'GENERATE_FIXTURES';
 } | {
+    type: 'UPDATE_FIXTURE_FORMAT';
+    format: 'SINGLE_ROUND_ROBIN' | 'DOUBLE_ROUND_ROBIN';
+} | {
     type: 'SCORE';
     scorers?:Record<string,{playerId:string;goals:number}[]>;
     fixtureId: string;

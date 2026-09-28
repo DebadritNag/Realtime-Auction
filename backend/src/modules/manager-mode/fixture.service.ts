@@ -1,5 +1,38 @@
 import { randomUUID } from 'node:crypto';
 import type { Fixture, ManagerTeam, Standing } from './manager.types.js';
+import { requireThat } from '../../domain/errors.js';
+
+/** Validate the existing first leg before appending only missing reverse games. */
+export function extendDoubleFixtures(ids: string[], existing: Fixture[]): Fixture[] {
+    const days = ids.length % 2 ? ids.length : ids.length - 1;
+    const expected = ids.length * (ids.length - 1) / 2;
+    const first = existing.filter(f => f.matchday <= days);
+    const pairs = new Set<string>(), directed = new Set<string>();
+    const appearances = new Set<string>();
+    for (const f of existing) {
+        const key = JSON.stringify([f.homeTeamId, f.awayTeamId]);
+        requireThat(ids.includes(f.homeTeamId) && ids.includes(f.awayTeamId) && f.homeTeamId !== f.awayTeamId && !directed.has(key), 'INVALID_FIXTURE_SCHEDULE', 'Fixture pairings are invalid or duplicated.', 409);
+        directed.add(key);
+    }
+    for (const f of first) {
+        const pair = JSON.stringify([f.homeTeamId, f.awayTeamId].sort());
+        requireThat(Number.isInteger(f.matchday) && f.matchday >= 1 && !pairs.has(pair), 'INVALID_FIXTURE_SCHEDULE', 'The first leg must be a complete single round robin.', 409);
+        pairs.add(pair);
+        for (const id of [f.homeTeamId, f.awayTeamId]) {
+            const key = JSON.stringify([f.matchday, id]);
+            requireThat(!appearances.has(key), 'INVALID_FIXTURE_SCHEDULE', 'A team plays twice in one matchday.', 409);
+            appearances.add(key);
+        }
+    }
+    requireThat(first.length === expected, 'INVALID_FIXTURE_SCHEDULE', 'The first leg must be complete before adding reverse fixtures.', 409);
+    for (const f of existing.filter(f => f.matchday > days)) {
+        requireThat(first.some(a => a.homeTeamId === f.awayTeamId && a.awayTeamId === f.homeTeamId && a.matchday + days === f.matchday), 'INVALID_FIXTURE_SCHEDULE', 'Existing reverse fixtures do not match the first leg.', 409);
+    }
+    return first.filter(f => !directed.has(JSON.stringify([f.awayTeamId, f.homeTeamId]))).map(f => ({
+        ...f, id: randomUUID(), matchday: f.matchday + days, homeTeamId: f.awayTeamId, awayTeamId: f.homeTeamId,
+        status: 'SCHEDULED', homeScore: null, awayScore: null, scheduledAt: null, completedAt: null,
+    }));
+}
 export function generateFixtures(ids: string[], double = false): Fixture[] {
     const ring: (string | null)[] = [...ids];
     if (ring.length % 2)
