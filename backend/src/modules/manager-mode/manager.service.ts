@@ -32,7 +32,7 @@ export class ManagerModeService {
     private notify(t: Tournament, type: string, message: string, users = [t.hostUserId], metadata:Record<string,string> = {}) { for (const userId of users)
         t.notifications.push({ id: randomUUID(), userId, type, title: type.replaceAll('_', ' '), message, read: false, createdAt: Date.now(), metadata: { tournamentId: t.id,...metadata } }); }
     view(t: Tournament, userId: string): TournamentState { hydrateReleaseOrigins(t); ensureSeasons(t);ensureSquad(t);synchronizeSheets(t); const team = t.teams.find(x => x.managerUserId === userId); requireThat(team, 'NOT_TOURNAMENT_MEMBER', 'You are not invited to this tournament.', 403); const terminalTrades=t.trades.filter(x=>x.fromTeamId===team.id||x.toTeamId===team.id).filter(x=>x.status!=='PENDING'),terminalBuyouts=(t.buyouts??[]).filter(x=>x.fromTeamId===team.id||x.toTeamId===team.id||x.status==='ACCEPTED').filter(x=>x.status!=='PENDING'),deals=t.transactions.filter(x=>x.type!=='AUCTION_PURCHASE');const tradeIds=new Set(terminalTrades.slice(-50).map(x=>x.id)),buyoutIds=new Set(terminalBuyouts.slice(-50).map(x=>x.id));
- const { startingSnapshot, receipts, negotiation, secretHeroes, ...state } = structuredClone(t); return { ...state,players:visiblePlayers(t,team.id),secretPlayers:heroView(t,team.id),historyCursors:{transactions:deals.length>100?deals.at(-100)!.id:null,trades:terminalTrades.length>50?terminalTrades.at(-50)!.id:null,buyouts:terminalBuyouts.length>50?terminalBuyouts.at(-50)!.id:null},teamSaleReturns:Object.fromEntries(t.teams.map(team=>[team.id,t.transactions.filter(x=>x.fromTeamId===team.id&&['RELEASE','BUYOUT'].includes(x.type)).reduce((sum,x)=>sum+x.amountUnits,0)])),transactions:[...t.transactions.filter(x=>x.type==='AUCTION_PURCHASE'),...deals.slice(-100)],unseenOffers:unseenOffers(t,userId,team.id),playerStats:playerSeasonStats(t),seasonFixturesById:Object.fromEntries(t.seasonData!.seasons.map(s=>[s.id,t.fixtures.filter(f=>f.seasonId===s.id)])),modeStatus:t.status==='ENDED'||t.status==='ARCHIVED'?'ENDED':'ACTIVE',fixtures:seasonFixtures(t),saleQuotes:Object.fromEntries(t.players.filter(p=>p.currentTeamId===team.id&&p.source!=='SECRET_HERO').map(p=>[p.id,quoteSale(t,p)])),buyouts:(state.buyouts??[]).filter(o=>o.fromTeamId===team.id||o.toTeamId===team.id||o.status==='ACCEPTED').filter(o=>o.status==='PENDING'||buyoutIds.has(o.id)), negotiation:publicNegotiations(t,team.id), audit:state.audit.slice(-100).map(a=>({...a,detail:'',userId:a.userId===userId?userId:''})), notificationUnread:t.notifications.filter(n=>n.userId===userId&&!n.read).length, notifications: state.notifications.filter(n => n.userId === userId).slice(-100), trades: state.trades.filter(x => x.fromTeamId === team.id || x.toTeamId === team.id).filter(x=>x.status==='PENDING'||tradeIds.has(x.id)), standings: currentSeason(t).status==='ACTIVE'?standings(t.teams,seasonFixtures(t)):currentSeason(t).finalStandings.length?currentSeason(t).finalStandings:standings(t.teams,seasonFixtures(t)), myTeamId: team.id, isHost: t.hostUserId === userId }; }
+ const { startingSnapshot, receipts, negotiation, secretHeroes, ...state } = t; return structuredClone({ ...state,players:visiblePlayers(t,team.id),secretPlayers:heroView(t,team.id),historyCursors:{transactions:deals.length>100?deals.at(-100)!.id:null,trades:terminalTrades.length>50?terminalTrades.at(-50)!.id:null,buyouts:terminalBuyouts.length>50?terminalBuyouts.at(-50)!.id:null},teamSaleReturns:Object.fromEntries(t.teams.map(team=>[team.id,t.transactions.filter(x=>x.fromTeamId===team.id&&['RELEASE','BUYOUT'].includes(x.type)).reduce((sum,x)=>sum+x.amountUnits,0)])),transactions:[...t.transactions.filter(x=>x.type==='AUCTION_PURCHASE'),...deals.slice(-100)],unseenOffers:unseenOffers(t,userId,team.id),playerStats:playerSeasonStats(t),seasonFixturesById:Object.fromEntries(t.seasonData!.seasons.map(s=>[s.id,t.fixtures.filter(f=>f.seasonId===s.id)])),modeStatus:t.status==='ENDED'||t.status==='ARCHIVED'?'ENDED':'ACTIVE',fixtures:seasonFixtures(t),saleQuotes:Object.fromEntries(t.players.filter(p=>p.currentTeamId===team.id&&p.source!=='SECRET_HERO').map(p=>[p.id,quoteSale(t,p)])),buyouts:(state.buyouts??[]).filter(o=>o.fromTeamId===team.id||o.toTeamId===team.id||o.status==='ACCEPTED').filter(o=>o.status==='PENDING'||buyoutIds.has(o.id)), negotiation:publicNegotiations(t,team.id), audit:state.audit.slice(-100).map(a=>({...a,detail:'',userId:a.userId===userId?userId:''})), notificationUnread:t.notifications.filter(n=>n.userId===userId&&!n.read).length, notifications: state.notifications.filter(n => n.userId === userId).slice(-100), trades: state.trades.filter(x => x.fromTeamId === team.id || x.toTeamId === team.id).filter(x=>x.status==='PENDING'||tradeIds.has(x.id)), standings: currentSeason(t).status==='ACTIVE'?standings(t.teams,seasonFixtures(t)):currentSeason(t).finalStandings.length?currentSeason(t).finalStandings:standings(t.teams,seasonFixtures(t)), myTeamId: team.id, isHost: t.hostUserId === userId }); }
     async state(id: string, user: string) { let t = await this.repository.find(id); requireThat(t, 'TOURNAMENT_NOT_FOUND', 'Tournament not found.', 404); requireThat(t.teams.some(x=>x.managerUserId===user),'NOT_TOURNAMENT_MEMBER','Membership required.',403);if(!t.secretHeroes?.length&&this.repository.initializeHeroes){await this.repository.initializeHeroes(id);t=(await this.repository.find(id))!;}return this.view(t, user); }
     async reveal(id:string,user:string,purchaseId:string){const t=await this.repository.find(id);requireThat(t,'TOURNAMENT_NOT_FOUND','Tournament not found.',404);const team=t.teams.find(x=>x.managerUserId===user&&x.invitation==='JOINED');requireThat(team,'NOT_TOURNAMENT_MEMBER','Joined membership required.',403);const h=t.secretHeroes?.find(h=>h.id===purchaseId&&h.teamId===team.id);requireThat(h?.playerId,'SECRET_PURCHASE_NOT_FOUND','Your Hero purchase was not found.',404);const player=t.players.find(p=>p.id===h.playerId&&p.currentTeamId===team.id);requireThat(player,'SECRET_PURCHASE_INCOMPLETE','Your purchase could not be loaded. Please retry.',503);return player;}
 
@@ -102,7 +102,7 @@ export class ManagerModeService {
                 return;
             }
             const host = () => requireThat(t.hostUserId === user, 'HOST_ONLY', 'Only the host may perform this action.', 403);
-            if (action.type !== 'REVEAL_SECRET_PLAYER' && action.type !== 'READ_NOTIFICATION' && action.type !== 'READ_ALL_NOTIFICATIONS' && action.type !== 'READ_OFFER')
+            if (action.type !== 'UPDATE_FIXTURE_SCORERS' && action.type !== 'REVEAL_SECRET_PLAYER' && action.type !== 'READ_NOTIFICATION' && action.type !== 'READ_ALL_NOTIFICATIONS' && action.type !== 'READ_OFFER')
                 requireThat(t.status !== 'ARCHIVED'&&t.status!=='ENDED', 'MANAGER_MODE_ENDED', 'Manager Mode has ended and is read-only.',409);
             if (action.type !== 'INVITATION' && action.type !== 'READ_NOTIFICATION' && action.type !== 'READ_ALL_NOTIFICATIONS')
                 requireThat(team.invitation === 'JOINED', 'INVITATION_NOT_ACCEPTED', 'Accept your invitation first.', 403);
@@ -145,6 +145,14 @@ export class ManagerModeService {
                     t.format = action.format;
                     break;
                 }
+                case 'UPDATE_FIXTURE_SCORERS': {
+                    host();
+                    const f=t.fixtures.find(f=>f.id===action.fixtureId);
+                    requireThat(f?.status==='COMPLETED','FIXTURE_NOT_COMPLETED','Only completed fixtures can be backfilled.',409);
+                    requireThat(f.homeScore===action.expectedHomeScore&&f.awayScore===action.expectedAwayScore,'STALE_FIXTURE_SCORE','The result changed. Reload it before assigning goalscorers.',409);
+                    recordMatch(t,f,action.scorers,f.completedAt??Date.now(),false);
+                    break;
+                }
                 case 'SCORE':
                 case 'RESET_SCORE': {
                     host();
@@ -156,7 +164,7 @@ export class ManagerModeService {
                     f.homeScore = action.type === 'SCORE' ? action.homeScore : null;
                     f.awayScore = action.type === 'SCORE' ? action.awayScore : null;
                     f.status = action.type === 'SCORE' ? 'COMPLETED' : 'SCHEDULED';
-                    f.completedAt = action.type === 'SCORE' ? Date.now() : null;
+                    f.completedAt = action.type === 'SCORE' ? f.completedAt??Date.now() : null;
                     if(action.type==='SCORE')recordMatch(t,f,action.scorers,Date.now(),!wasCompleted);else ensureSquad(t).lineups=ensureSquad(t).lineups.filter(x=>x.fixtureId!==f.id);
                     break;
                 }
@@ -248,7 +256,7 @@ export class ManagerModeService {
                     this.notify(t, 'INVITATION', 'Please respond to your tournament invitation.', t.teams.filter(x => x.invitation === 'PENDING').map(x => x.managerUserId));
                     break;
             }
-            if (action.type !== 'UPDATE_FIXTURE_FORMAT') {
+            if (action.type !== 'UPDATE_FIXTURE_FORMAT' && action.type !== 'UPDATE_FIXTURE_SCORERS') {
             tagWindowTransactions(t,oldTransactionIds);
             if(!t.transferWindowOpen)setTransferWindow(t,false);
             if(action.type==='SCORE'&&currentSeason(t).status==='ACTIVE'&&seasonFixtures(t).length&&seasonFixtures(t).every(f=>f.status==='COMPLETED'))completeSeason(t);
@@ -286,6 +294,7 @@ export class ManagerModeService {
  }
  if (changed) {
  this.emit(result,'MANAGER_MODE_UPDATED');
+ if(['SCORE','RESET_SCORE','UPDATE_FIXTURE_SCORERS'].includes(action.type)){this.emit(result,'FIXTURE_SCORERS_UPDATED');this.emit(result,'PLAYER_STATS_UPDATED');if(action.type!=='UPDATE_FIXTURE_SCORERS'){this.emit(result,'FIXTURE_RESULT_UPDATED');this.emit(result,'STANDINGS_UPDATED');}}
  if(action.type==='UPDATE_FIXTURE_FORMAT'){this.emit(result,'FIXTURE_FORMAT_UPDATED');this.emit(result,'FIXTURES_GENERATED');}
  if(action.type==='BUY_SECRET_PLAYER'){this.emit(result,'SECRET_PLAYER_CLAIMED');this.emit(result,'SECRET_PLAYER_POOL_UPDATED');this.emit(result,'TEAM_BUDGET_UPDATED');this.emit(result,'SQUAD_UPDATED');}
  if(action.type==='REVEAL_SECRET_PLAYER'){this.emit(result,'SECRET_PLAYER_REVEALED');this.emit(result,'SQUAD_UPDATED');}

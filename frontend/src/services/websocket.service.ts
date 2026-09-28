@@ -10,6 +10,12 @@ export class WebSocketService {
  private retry:ReturnType<typeof setTimeout>|undefined;
  private syncTimeout:ReturnType<typeof setTimeout>|undefined;
  private generation=0;private attempts=0;private room:string|null=null;private manual=true;
+ private connectionId:string|undefined;
+ private dispatch(event:ServerEvent){
+  let failed=false;
+  for(const listener of this.listeners){try{listener(event);}catch{failed=true;console.warn('realtime_subscriber_failed',{connectionId:this.connectionId,eventType:event.type,incomingSequence:event.sequence});}}
+  if(failed&&event.type!=='ERROR')for(const listener of this.listeners){try{listener({type:'ERROR',sequence:0,serverTime:Date.now(),payload:{reason:'SUBSCRIBER_ERROR',message:'Synchronizing latest state…'}});}catch{/* Isolate a broken subscriber. */}}
+ }
  subscribe(listener:(event:ServerEvent)=>void){this.listeners.add(listener);return()=>{this.listeners.delete(listener);};}
  connectManager(id?:string){this.connect('@manager:'+ (id??''));}
  connect(roomCode:string){
@@ -36,8 +42,11 @@ export class WebSocketService {
    };
    socket.onmessage=message=>{
     if(generation!==this.generation||socket!==this.socket)return;
-    try{
-     const event=parseServerEvent(String(message.data));
+    let event:ServerEvent|null;
+    try{event=parseServerEvent(String(message.data));}
+    catch{console.warn('realtime_invalid_message',{connectionId:this.connectionId,payloadBytes:new Blob([String(message.data)]).size,serverTime:Date.now()});this.dispatch({type:'ERROR',sequence:0,serverTime:Date.now(),payload:{reason:'INVALID_RESPONSE',message:'Synchronizing latest state…'}});return;}
+    if(!event)return;
+    if(event.type==='CONNECTED')this.connectionId=event.payload.connectionId;
      if((event.type==='ROOM_STATE'&&event.payload.roomCode===this.room)||(event.type==='MANAGER_MODE_STATE'&&this.room==='@manager:'+event.payload.id)||(event.type==='MANAGER_MODE_INBOX'&&this.room==='@manager:')){
       clearTimeout(this.syncTimeout);this.attempts=0;useConnectionStore.getState().setStatus('SYNCED');
      }
@@ -46,9 +55,8 @@ export class WebSocketService {
       clearTimeout(pending.timer);this.pending.delete(event.requestId!);
       if(event.type==='COMMAND_ACK')pending.resolve();else pending.reject(new ApiError(event.payload.message,event.payload.reason));
      }
-     for(const listener of this.listeners)listener(event);
+     this.dispatch(event);
      if(event.type==='ERROR'&&['NOT_ROOM_MEMBER','UNAUTHENTICATED','ROOM_NOT_FOUND'].includes(event.payload.reason))this.disconnect();
-    }catch{for(const listener of this.listeners)listener({type:'ERROR',sequence:0,serverTime:Date.now(),payload:{reason:'INVALID_RESPONSE',message:'Unable to read server state. Reconnect to synchronize.'}});}
    };
    socket.onerror=()=>{/* onclose handles reconnection; never fall back to simulated state */};
    socket.onclose=()=>{
@@ -58,12 +66,13 @@ export class WebSocketService {
    };
   }catch(error){
    if(generation!==this.generation)return;
-   for(const listener of this.listeners)listener({type:'ERROR',sequence:0,serverTime:Date.now(),payload:{reason:'CONNECTION_ERROR',message:error instanceof Error?error.message:'Connection failed.'}});
+   this.dispatch({type:'ERROR',sequence:0,serverTime:Date.now(),payload:{reason:'CONNECTION_ERROR',message:error instanceof Error?error.message:'Connection failed.'}});
    this.schedule(generation);
   }
  }
  private schedule(generation:number){
   if(this.manual)return;
+  clearTimeout(this.retry);
   useConnectionStore.getState().setStatus('RECONNECTING');
   const delay=Math.min(1000*2**Math.min(this.attempts++,5),15000)+Math.random()*300;
   this.retry=setTimeout(()=>{void this.open(generation);},delay);

@@ -1,0 +1,28 @@
+import {build} from '../../backend/node_modules/esbuild/lib/main.js';
+import {chromium,expect} from '@playwright/test';
+import {fileURLToPath} from 'node:url';
+import {readFileSync,readdirSync,mkdirSync} from 'node:fs';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const bundle=await build({stdin:{contents:`
+import React,{useState} from 'react';import {createRoot} from 'react-dom/client';import {StandingsWithGoldenBoot} from './src/components/manager-mode/GoldenBoot';import {FixtureMatchCard} from './src/components/manager-mode/FixtureMatchCard';
+const players=[{id:'p1',name:'Erling Haaland',position:'ST',currentTeamId:'a'},{id:'p2',name:'Phil Foden',position:'CM',currentTeamId:'a'},{id:'p3',name:'Kylian Mbappe',position:'ST',currentTeamId:'b'}];
+const fixture={id:'f',seasonId:'s',homeTeamId:'a',awayTeamId:'b',homeScore:2,awayScore:1,status:'COMPLETED',matchday:1};
+const initial={id:'t',status:'ACTIVE',modeStatus:'ACTIVE',isHost:true,myTeamId:'a',sequence:1,teams:[{id:'a',name:'Debadrit FC'},{id:'b',name:'Barca'}],players,fixtures:[fixture],squadData:{sheets:[],contracts:[],lineups:[]},seasonData:{currentSeasonId:'s',seasons:[{id:'s',number:1,status:'ACTIVE'},{id:'old',number:0,status:'COMPLETED'}]}};
+window.actions=[];window.api={get:async(path)=>{if(path.endsWith('/scorers'))return {eligibleByTeam:{a:['p1','p2'],b:['p3']}};if(path.includes('golden-boot'))return {seasonId:'s',missingScorerFixtures:1,missingLineupFixtures:1,completedFixtures:3,rows:players.map((p,i)=>({rank:i+1,playerId:p.id,name:p.name,position:p.position,imageUrl:'',teamName:i<2?'Debadrit FC':'Barca',scoringTeams:[{teamName:i<2?'Debadrit FC':'Barca',goals:9-i}],goals:9-i,matchesPlayed:6,goalsPerMatch:(9-i)/6}))};return {items:[],lineups:[],nextOffset:null};}};
+function App(){const [state,setState]=useState(initial);const action=async a=>{window.actions.push(a);setState(s=>({...s,sequence:s.sequence+1,squadData:{...s.squadData,lineups:Object.entries(a.scorers).map(([teamId,scorers])=>({fixtureId:'f',teamId,scorers,eligiblePlayerIds:teamId==='a'?['p1','p2']:['p3'],starters:[],bench:[],lineupAvailable:false}))}}));};return <main className="mx-auto max-w-6xl space-y-8 p-4"><FixtureMatchCard fixture={fixture} state={state} onAction={action} busy={false}/><StandingsWithGoldenBoot state={state} action={action} busy={false} leagueTable={<p>Existing league table</p>}/></main>;}createRoot(document.getElementById('root')).render(<App/>);
+`,resolveDir:root,loader:'tsx'},bundle:true,write:false,platform:'browser',jsx:'automatic',alias:{'@':root+'src'},define:{'process.env.NODE_ENV':'"test"'},plugins:[{name:'services',setup(b){b.onResolve({filter:/services\/(api|websocket\.service)$/},args=>({path:args.path,namespace:'mock'}));b.onLoad({filter:/.*/,namespace:'mock'},args=>({contents:args.path.endsWith('/api')?'export const api={get:(...args)=>window.api.get(...args)};':'export const webSocketService={subscribe:()=>()=>{}};',loader:'js'}));}}]});
+const css=readdirSync(root+'.next/static/css').filter(f=>f.endsWith('.css')).map(f=>readFileSync(root+'.next/static/css/'+f,'utf8')).join('\n');
+const browser=await chromium.launch({channel:'chrome',headless:true});
+try{
+ const page=await browser.newPage({viewport:{width:1440,height:1100}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.route('https://golden.test/',r=>r.fulfill({contentType:'text/html',body:'<style>'+css+'</style><body style="background:#050d19;color:#e2e8f0"><div id="root"></div><script src="/app.js"></script></body>'}));
+ await page.route('https://golden.test/app.js',r=>r.fulfill({contentType:'application/javascript',body:bundle.outputFiles[0].text}));
+ await page.route('https://golden.test/images/**',r=>r.fulfill({contentType:'image/webp',body:readFileSync(root+'public/images/players/default-player.webp')}));
+ await page.goto('https://golden.test/');await expect(page.getByText('Goalscorers not recorded',{exact:true})).toBeVisible();await expect(page.getByText('Existing league table')).toBeVisible();
+ await page.getByRole('button',{name:'Add Goalscorers',exact:true}).click();await expect(page.getByRole('spinbutton',{name:'Home score',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'Save',exact:true})).toBeDisabled();
+ const home=page.getByRole('combobox',{name:'Add scorer for Debadrit FC'});await home.selectOption('p1');await home.selectOption('p1');await page.getByRole('combobox',{name:'Add scorer for Barca'}).selectOption('p3');await expect(page.getByRole('button',{name:'Save',exact:true})).toBeEnabled();await page.getByRole('button',{name:'Save',exact:true}).click();
+ await expect(page.getByText('Erling Haaland ×2',{exact:true})).toBeVisible();expect(await page.evaluate(()=>window.actions[0])).toMatchObject({type:'UPDATE_FIXTURE_SCORERS',expectedHomeScore:2,expectedAwayScore:1});
+ await page.getByRole('button',{name:'Golden Boot',exact:true}).click();await expect(page.getByRole('table')).toBeVisible();await expect(page.getByText('Goalscorer data incomplete',{exact:true})).toBeVisible();await expect(page.getByRole('table')).toContainText('1.50');
+ mkdirSync(root+'test-results',{recursive:true});await page.screenshot({path:root+'test-results/golden-boot-desktop.png',fullPage:true});await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:root+'test-results/golden-boot-mobile.png',fullPage:true});expect(errors).toEqual([]);
+ console.log('PASS: legacy missing state, scorer-only locked scores, exact counts, repeat scorer, card display, existing table, Golden Boot podium/table, incomplete data and mobile layout.');
+}finally{await browser.close();}

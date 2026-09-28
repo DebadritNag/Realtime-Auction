@@ -1,4 +1,5 @@
 'use client';
+import {StandingsWithGoldenBoot} from './GoldenBoot';
 import {HostReports} from './HostReports';
 import {FixtureFormatControl} from './FixtureFormatControl';
 import {api} from '@/services/api';
@@ -222,7 +223,7 @@ function FixturesSection({ state, action, busy }: { state: TournamentState; acti
               )}
               <div className="grid lg:grid-cols-2 gap-3">
                 {games.map(f => (
-                  <FixtureMatchCard key={f.id} fixture={f} state={state} onAction={action} busy={busy || state.modeStatus === 'ENDED'} />
+                  <FixtureMatchCard key={f.id} fixture={f} state={state} onAction={action} busy={busy} />
                 ))}
               </div>
             </section>
@@ -800,10 +801,11 @@ function WorkspaceLoader({ error, status }: { error: string | null; status: stri
 
 // ─── Root export ──────────────────────────────────────────────────────────────
 export function ManagerWorkspace({ section }: { section: string }) {
+  const syncStatus=useManagerStore(s=>s.syncStatus),resync=useManagerStore(s=>s.resync);
   const state=useManagerStore(s=>s.state),error=useManagerStore(s=>s.error),busy=useManagerStore(s=>s.busy),action=useManagerStore(s=>s.action);
   const status = useConnectionStore(s => s.status);
 
-  if (!state) return <WorkspaceLoader error={error} status={status} />;
+  if (!state) return <><WorkspaceLoader error={error} status={status} />{syncStatus==='ERROR'&&<button className={button} onClick={resync}>Retry synchronization</button>}</>;
 
   const mine = state.teams.find(t => t.id === state.myTeamId)!;
   const joined = mine.invitation === 'JOINED';
@@ -820,14 +822,14 @@ export function ManagerWorkspace({ section }: { section: string }) {
         return (
           <>
             <SectionTitle title="Fixtures" subtitle="Track all league matches and enter results as host." />
-            <FixturesSection state={state} action={action} busy={busy || state.modeStatus === 'ENDED' || state.seasonData?.seasons.find(s=>s.id===state.seasonData?.currentSeasonId)?.status !== 'ACTIVE'} />
+            <FixturesSection state={state} action={action} busy={busy} />
           </>
         );
       case 'standings':
         return (
           <>
             <SectionTitle title="Standings" subtitle="3 points for a win, 1 for a draw. Ties broken by goal difference." />
-            <StandingsTable state={state} />
+            <StandingsWithGoldenBoot state={state} leagueTable={<StandingsTable state={state}/>} action={action} busy={busy}/>
           </>
         );
       case 'transfers':
@@ -865,6 +867,7 @@ export function ManagerWorkspace({ section }: { section: string }) {
 
   return (
     <ManagerModeLayout state={state} section={section.split('/')[0]!} connectionStatus={status}>
+      {syncStatus!=='SYNCED'&&<div role="status" className="mb-4 rounded-xl border border-amber-500/30 p-3 text-sm text-amber-200">{syncStatus==='ERROR'?<>Unable to synchronize. <button className={button} onClick={resync}>Retry synchronization</button></>:syncStatus==='OFFLINE'?'Reconnecting…':'Synchronizing latest tournament state…'}</div>}
       {state.modeStatus==='ENDED'&&<p className="mb-4 text-amber-300 font-semibold">MANAGER MODE ENDED · READ ONLY</p>}{state.seasonData&&<p className="mb-4 text-slate-400">Current season: {state.seasonData.seasons.find(s=>s.id===state.seasonData?.currentSeasonId)?.number}</p>}{error && (
         <div role="alert" className="mb-6 flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-700/50 text-sm text-red-300">
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" /></svg>

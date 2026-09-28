@@ -162,6 +162,7 @@ export type TournamentState = Omit<Tournament, 'startingSnapshot' | 'receipts' |
     playerStats?:Record<string,PlayerSeasonStats>;
     saleQuotes?: Record<string,SaleQuote>;
     seasonFixturesById?: Record<string,Fixture[]>;
+    seasonFixtureCounts?:Record<string,{total:number;completed:number}>;
     modeStatus?: "ACTIVE" | "ENDED";
     standings: Standing[];
     myTeamId: string;

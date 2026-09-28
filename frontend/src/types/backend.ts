@@ -54,6 +54,9 @@ export type ClientCommand =
  | {type:'UPDATE_SETTINGS';payload:RoomPayload & {settings:Partial<SettingsDTO>};requestId?:string}
  | {type:'PING';payload?:Record<string,never>;requestId?:string};
 interface Payloads {
+ FIXTURE_RESULT_UPDATED:{tournamentId:string}; FIXTURE_SCORERS_UPDATED:{tournamentId:string}; PLAYER_STATS_UPDATED:{tournamentId:string}; STANDINGS_UPDATED:{tournamentId:string};
+ SECRET_PLAYER_CLAIMED:{tournamentId:string}; SECRET_PLAYER_POOL_UPDATED:{tournamentId:string}; SECRET_PLAYER_REVEALED:{tournamentId:string};
+ SQUAD_UPDATED:{tournamentId:string}; FIXTURE_FORMAT_UPDATED:{tournamentId:string}; FIXTURES_GENERATED:{tournamentId:string};
  MANAGER_PLAYER_SOLD:{tournamentId:string};
 SEASON_COMPLETED:{tournamentId:string};
 LEAGUE_SHIELD_AWARDED:{tournamentId:string};
@@ -102,12 +105,16 @@ TRANSFER_WINDOW_CLOSED:{tournamentId:string};
  ERROR:{reason:string;message:string;minimumNextBidCr?:number};PONG:Record<string,never>;
 }
 export type ServerEvent = {[K in keyof Payloads]:{type:K;payload:Payloads[K];roomId?:string;sequence:number;serverTime:number;requestId?:string}}[keyof Payloads];
-export function parseServerEvent(raw:string):ServerEvent {
+export function parseServerEvent(raw:string):ServerEvent | null {
  const value:unknown=JSON.parse(raw);
  if(!value || typeof value!=='object') throw new Error('Invalid server event');
  const e=value as Record<string,unknown>;
  const names=['NOTIFICATION_CREATED','MANAGER_MODE_PATCH','MANAGER_MODE_SUMMARY','PLAYER_RELEASED','FREE_AGENT_POOL_UPDATED','MANAGER_PLAYER_SOLD','SEASON_COMPLETED','LEAGUE_SHIELD_AWARDED','SEASON_BONUSES_AWARDED','NEXT_SEASON_STARTED','MANAGER_MODE_ENDED','BUYOUT_CREATED','BUYOUT_UPDATED','BUYOUT_ACCEPTED','BUYOUT_REJECTED','BUYOUT_COUNTERED','TEAM_BUDGET_UPDATED','NEGOTIATION_STARTED','NEGOTIATION_UPDATED','FREE_AGENT_OFFER_UPDATED','FREE_AGENT_ACCEPTED','FREE_AGENT_SIGNED','FREE_AGENT_SIGNED_ELSEWHERE','TRADE_CREATED','TRADE_UPDATED','PLAYER_TRANSFERRED','TRANSFER_WINDOW_OPENED','TRANSFER_WINDOW_CLOSED','MANAGER_MODE_STATE','MANAGER_MODE_INBOX','MANAGER_MODE_CREATED','MANAGER_MODE_UPDATED','MANAGER_MODE_DELETED','CONNECTED','ROOM_STATE','ROOM_UPDATED','MEMBER_JOINED','MEMBER_LEFT','PRESENCE_UPDATED','AUCTION_STARTED','PLAYER_STARTED','BID_UPDATED','TIMER_EXTENDED','PLAYER_SOLD','PLAYER_UNSOLD','SKIP_VOTE_UPDATED','PLAYER_RECALLED','TEAM_UPDATED','BUDGET_UPDATED','AUCTION_PAUSED','AUCTION_RESUMED','AUCTION_COMPLETED','COMMAND_ACK','BID_REJECTED','ERROR','PONG'];
- if(typeof e.type!=='string'||!names.includes(e.type)||typeof e.sequence!=='number'||typeof e.serverTime!=='number'||!e.payload||typeof e.payload!=='object') throw new Error('Unsupported server event');
+ names.push('FIXTURE_RESULT_UPDATED','FIXTURE_SCORERS_UPDATED','PLAYER_STATS_UPDATED','STANDINGS_UPDATED','SECRET_PLAYER_CLAIMED','SECRET_PLAYER_POOL_UPDATED','SECRET_PLAYER_REVEALED','SQUAD_UPDATED','FIXTURE_FORMAT_UPDATED','FIXTURES_GENERATED');
+ if(typeof e.type!=='string'||!Number.isSafeInteger(e.sequence)||typeof e.serverTime!=='number'||!Number.isFinite(e.serverTime)||!e.payload||typeof e.payload!=='object') throw new Error('Invalid server envelope');
+ // New informational signals during a rolling deployment are not corrupt state.
+ if(!names.includes(e.type)) return null;
+ if(e.type==='MANAGER_MODE_PATCH'){const p=e.payload as Record<string,unknown>;const c=p.changes as Record<string,unknown>|undefined;if(typeof p.tournamentId!=='string'||!Number.isSafeInteger(p.baseSequence)||!c||typeof c!=='object'||c.sequence!==e.sequence||(c.id!==undefined&&c.id!==p.tournamentId))throw new Error('Invalid tournament patch');}
  if(e.type==='MANAGER_MODE_STATE'){const p=e.payload as Record<string,unknown>;if(typeof p.id!=='string'||typeof p.sequence!=='number'||!Array.isArray(p.teams)||!Array.isArray(p.players)||!Array.isArray(p.fixtures)||!Array.isArray(p.standings))throw new Error('Invalid tournament snapshot');}
  if(e.type==='ROOM_STATE'){
   const p=e.payload as Record<string,unknown>;
