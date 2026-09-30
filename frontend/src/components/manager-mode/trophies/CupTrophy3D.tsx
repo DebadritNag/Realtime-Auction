@@ -4,12 +4,12 @@ import {Component,useEffect,useRef,useState,type ReactNode} from 'react';
 import {TrophyFallback} from './TrophyFallback';
 
 const Viewer=dynamic(()=>import('./TrophyViewer'),{ssr:false,loading:()=> <TrophyFallback loading/>});
-class ViewerBoundary extends Component<{children:ReactNode},{failed:boolean}> {
+class ViewerBoundary extends Component<{children:ReactNode;label:string},{failed:boolean}> {
  state={failed:false};
  static getDerivedStateFromError(){return {failed:true};}
- render(){return this.state.failed?<TrophyFallback/>:this.props.children;}
+ render(){return this.state.failed?<TrophyFallback label={this.props.label}/>:this.props.children;}
 }
-export function CupTrophy3D(){
+export function CupTrophy3D({variant='CUP'}:{variant?:'CUP'|'LEAGUE_SHIELD'}){
  const container=useRef<HTMLDivElement>(null);
  const [visible,setVisible]=useState(false),[loaded,setLoaded]=useState(false),[reduced,setReduced]=useState(true),[hidden,setHidden]=useState(false),[paused,setPaused]=useState(false);
  useEffect(()=>{
@@ -19,8 +19,9 @@ export function CupTrophy3D(){
   motion();visibility();media.addEventListener('change',motion);document.addEventListener('visibilitychange',visibility);
   return()=>{observer.disconnect();media.removeEventListener('change',motion);document.removeEventListener('visibilitychange',visibility);};
  },[]);
- return <div ref={container} className="relative h-[320px] min-w-0 sm:h-[410px]" aria-label="Interactive Cup trophy">
-  <ViewerBoundary>{loaded?<Viewer active={visible&&!hidden} rotate={!paused&&!reduced}/>:<TrophyFallback loading/>}</ViewerBoundary>
+ const isShield=variant==='LEAGUE_SHIELD',label=isShield?'League Shield':'Cup trophy',modelPath=isShield?'/models/trophies/league-shield.glb':'/models/trophies/cup.glb';
+ return <div ref={container} className="relative h-[320px] min-w-0 sm:h-[410px]" aria-label={`Interactive ${label}`}>
+  <ViewerBoundary label={label}>{loaded?<Viewer active={visible&&!hidden} rotate={!paused&&!reduced} modelPath={modelPath} label={label}/>:<TrophyFallback loading label={label}/>}</ViewerBoundary>
   <div className="absolute inset-x-0 bottom-3 flex items-center justify-center gap-4 text-[11px] text-slate-400">
    <span className="hidden [@media(pointer:fine)]:inline">Drag to rotate · Scroll to inspect</span><span className="[@media(pointer:fine)]:hidden">Drag to rotate</span>
    {!reduced&&<button className="rounded px-2 py-1 text-amber-200 focus-visible:outline-2" onClick={()=>setPaused(p=>!p)} aria-pressed={paused}>{paused?'Rotate':'Pause'}</button>}
