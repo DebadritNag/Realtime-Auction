@@ -490,6 +490,7 @@ function Transfers({ state, action, busy }: { state: TournamentState; action: Ac
 
 // ─── Section: Teams ───────────────────────────────────────────────────────────
 function TeamsSection({ state }: { state: TournamentState }) {
+  const [history,setHistory]=useState(false);
   const [teamId, setTeamId] = useState(state.myTeamId);
   const team = state.teams.find(t => t.id === teamId)!;
   const players = state.players.filter(p => p.currentTeamId === teamId);
@@ -524,6 +525,8 @@ function TeamsSection({ state }: { state: TournamentState }) {
         </div>
       </div>
       <Squad players={players} />
+      <button className={button} aria-expanded={history} onClick={()=>setHistory(v=>!v)}>{history?'Hide':'View'} club history, trophy cabinet and statistics</button>
+      {history&&<TrophyGallery key={teamId} state={state} clubId={teamId}/>}
     </div>
   );
 }

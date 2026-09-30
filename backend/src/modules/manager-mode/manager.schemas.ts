@@ -4,6 +4,7 @@ const id = z.string().min(1).max(100);
 export const setupSchema = z.object({ name: z.string().trim().min(2).max(100), addUnusedAuctionPurse:z.boolean().default(true), startingBudgetUnits: z.number().int().min(0).max(20000).default(200), format: z.enum(['SINGLE_ROUND_ROBIN', 'DOUBLE_ROUND_ROBIN']).default('SINGLE_ROUND_ROBIN'), csv: z.string().max(2000000).default('') }).strict();
 const buyoutTerms={offerType:z.enum(['CASH','CASH_PLUS_PLAYER']),cashAmountUnits:z.number().int().min(0).max(2000000000),includedPlayerId:id.nullable().optional()};
 export const actionSchema = z.discriminatedUnion('type', [
+ z.object({type:z.literal('CUP_DRAW')}).strict(),
  z.object({type:z.literal('CUP_SETTINGS'),settings:z.object({enabled:z.boolean(),name:z.string().trim().min(2).max(80),qualifiedTeams:z.number().int().min(4).max(32),groupStage:z.boolean(),groupMeetings:z.union([z.literal(1),z.literal(2)]),semiFinalLegs:z.union([z.literal(1),z.literal(2)]),finalLegs:z.union([z.literal(1),z.literal(2)]),thirdPlace:z.boolean()}).strict()}).strict(),
  z.object({type:z.literal('CUP_SCORE'),fixtureId:id,homeScore:z.number().int().min(0).max(99),awayScore:z.number().int().min(0).max(99),scorers:z.record(z.array(z.object({playerId:id,goals:z.number().int().min(1).max(99)}).strict()).max(100))}).strict(),
  z.object({type:z.literal('CUP_PENALTIES'),tieId:id,winnerTeamId:id}).strict(),

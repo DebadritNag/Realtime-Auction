@@ -115,7 +115,7 @@ export class ManagerModeService {
             ensureHeroPool(t);
             const oldTransactionIds=new Set(t.transactions.map(row=>row.id));
             switch (action.type) {
- case 'CUP_SETTINGS':case 'CUP_SCORE':case 'CUP_PENALTIES':cupAction(t,user,action);break;
+ case 'CUP_DRAW':case 'CUP_SETTINGS':case 'CUP_SCORE':case 'CUP_PENALTIES':cupAction(t,user,action);break;
  case 'BUY_SECRET_PLAYER':case 'REVEAL_SECRET_PLAYER':heroAction(t,user,action.type,action.type==='BUY_SECRET_PLAYER'?action.secretSlotId:undefined,Date.now(),stage=>trace(stage,team.id));break;
  case 'SAVE_TEAM_SHEET':case 'RENEW_CONTRACT':squadAction(t,user,action);break;
  case 'END_CURRENT_SEASON':case 'START_NEXT_SEASON':case 'END_MANAGER_MODE':case 'SEASON_SETTINGS':case 'SELL_PLAYER':seasonAction(t,user,action);break;
@@ -292,8 +292,9 @@ export class ManagerModeService {
         trace('transaction committed');
         if(changed){
          const c=currentCup(result);
-         if(action.type==='CUP_SETTINGS')this.emit(result,'CUP_ENABLED');
-         if(c?.drawnAt&&(!cupBefore||cupBefore==='NOT_STARTED')){this.emit(result,'CUP_QUALIFIERS_CONFIRMED');this.emit(result,'CUP_DRAW_COMPLETED');}
+         if(action.type==='CUP_SETTINGS'){this.emit(result,'CUP_ENABLED');this.emit(result,'CUP_SETTINGS_UPDATED');}
+         if(c?.status==='DRAW_READY'&&cupBefore!=='DRAW_READY')this.emit(result,'CUP_QUALIFIERS_CONFIRMED');
+         if(action.type==='CUP_DRAW')this.emit(result,'CUP_DRAW_COMPLETED');
          if(action.type==='CUP_SCORE'){this.emit(result,'CUP_FIXTURE_UPDATED');this.emit(result,'CUP_GROUP_STANDINGS_UPDATED');}
          if(c&&c.status!==cupBefore){if(c.status==='SEMI_FINAL')this.emit(result,'CUP_SEMI_FINAL_READY');if(c.status==='FINAL')this.emit(result,'CUP_FINAL_READY');if(c.status==='COMPLETED')this.emit(result,'CUP_COMPLETED');}
          if((result.cupData?.trophies.length??0)>oldTrophies)this.emit(result,'TROPHY_AWARDED');

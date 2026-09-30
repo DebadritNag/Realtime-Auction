@@ -43,10 +43,14 @@ function progress(t:Tournament,c:CupCompetition,now:number){
 export function synchronizeCup(t:Tournament,now=Date.now()){
  const c=currentCup(t),season=currentSeason(t);
  if(t.cupData&&season.championTeamId)award(t,{seasonId:season.id,teamId:season.championTeamId,type:'LEAGUE_SHIELD',competitionId:null,name:'League Shield',wonAt:season.completedAt});
- if(!c?.settings.enabled||c.status!=='NOT_STARTED')return;
+ if(!c?.settings.enabled||!['NOT_STARTED','WAITING_FOR_LEAGUE'].includes(c.status))return;
+ c.status='WAITING_FOR_LEAGUE';
  const league=seasonFixtures(t);if(!league.length||league.some(f=>f.status!=='COMPLETED')||season.status!=='COMPLETED')return;
  c.qualified=structuredClone(season.finalStandings.slice(0,c.settings.qualifiedTeams));
  requireThat(c.qualified.length===c.settings.qualifiedTeams,'CUP_QUALIFICATION_INVALID','Final league standings do not contain enough teams.',409);
+ c.status='DRAW_READY';
+}
+function drawCup(c:CupCompetition,now:number){
  c.drawnAt=now;
  if(!c.settings.groupStage){addTie(c,'SEMI_FINAL',[c.qualified[0]!.teamId,c.qualified[3]!.teamId],c.settings.semiFinalLegs);addTie(c,'SEMI_FINAL',[c.qualified[1]!.teamId,c.qualified[2]!.teamId],c.settings.semiFinalLegs);c.status='SEMI_FINAL';return;}
  c.groups=[{name:'A',teamIds:[]},{name:'B',teamIds:[]}];
@@ -59,15 +63,19 @@ export function cupAction(t:Tournament,user:string,a:CupAction,now=Date.now()){
  const season=currentSeason(t);let c=currentCup(t);
  requireThat(t.status==='ACTIVE'&&season.status!=='ARCHIVED','INVALID_STATE','Start Manager Mode before configuring or playing a Cup.',409);
  if(a.type==='CUP_SETTINGS'){
-  requireThat(!c||c.status==='NOT_STARTED','CUP_DRAW_LOCKED','Cup settings and qualification are locked after the draw.',409);
+  requireThat(!c||!c.drawnAt,'CUP_DRAW_LOCKED','Cup settings and qualification are locked after the draw.',409);
   const s=a.settings;
   requireThat(!s.enabled||(s.qualifiedTeams<=t.teams.length&&s.qualifiedTeams>=4&&s.qualifiedTeams%2===0&&(s.groupStage||s.qualifiedTeams===4)),'INVALID_CUP_SETTINGS','Use an even number of qualifiers from 4 to the team count. Without groups, exactly 4 teams qualify.');
   requireThat(!s.enabled||!season.endedEarly,'LEAGUE_INCOMPLETE','A season ended early cannot start a Cup. Configure the next season instead.',409);
   t.cupData??={competitions:[],trophies:[]};
-  if(c)c.settings=structuredClone(s);else{c={id:randomUUID(),seasonId:season.id,settings:structuredClone(s),status:'NOT_STARTED',qualified:[],groups:[],fixtures:[],ties:[],lineups:[],drawnAt:null,completedAt:null,championTeamId:null,finishes:{}};t.cupData.competitions.push(c);}
+  if(c){c.settings=structuredClone(s);c.status='NOT_STARTED';c.qualified=[];}else{c={id:randomUUID(),seasonId:season.id,settings:structuredClone(s),status:'NOT_STARTED',qualified:[],groups:[],fixtures:[],ties:[],lineups:[],drawnAt:null,completedAt:null,championTeamId:null,finishes:{}};t.cupData.competitions.push(c);}
   synchronizeCup(t,now);return;
  }
- requireThat(c?.settings.enabled&&c.status!=='NOT_STARTED'&&c.status!=='COMPLETED','CUP_NOT_ACTIVE','There is no active Cup for this season.',409);
+ if(a.type==='CUP_DRAW'){
+  requireThat(c?.settings.enabled&&!c.drawnAt&&['QUALIFIED','DRAW_READY'].includes(c.status),'CUP_DRAW_NOT_READY','Wait for league qualification; an existing draw cannot be regenerated.',409);
+  drawCup(c,now);return;
+ }
+ requireThat(c?.settings.enabled&&['GROUP_STAGE','SEMI_FINAL','FINAL'].includes(c.status),'CUP_NOT_ACTIVE','There is no active Cup for this season.',409);
  if(a.type==='CUP_PENALTIES'){
   const tie=c.ties.find(x=>x.id===a.tieId);requireThat(tie&&!tie.winnerTeamId&&tie.teamIds.includes(a.winnerTeamId),'INVALID_PENALTY_WINNER','Choose a team from an unresolved tie.');
   const [h,v]=cupAggregate(c,tie);requireThat(c.fixtures.filter(f=>f.tieId===tie.id).every(f=>f.status==='COMPLETED')&&h===v,'PENALTIES_NOT_REQUIRED','Penalties are allowed only after all legs finish level.');tie.penaltyWinnerTeamId=a.winnerTeamId;

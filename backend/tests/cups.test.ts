@@ -3,7 +3,7 @@ import {randomUUID} from 'node:crypto';
 import {source} from './seasons.test.js';
 import {MemoryManagerRepository} from '../src/modules/manager-mode/manager.repository.js';
 import {ManagerModeService} from '../src/modules/manager-mode/manager.service.js';
-import {defaultCupSettings,cupGroupStandings,trophyRecords} from '../src/modules/manager-mode/cups/cup.engine.js';
+import {defaultCupSettings,cupGroupStandings,trophyRecords,synchronizeCup} from '../src/modules/manager-mode/cups/cup.engine.js';
 import {clubHistory} from '../src/modules/manager-mode/cups/club-history.js';
 import {goldenBoot} from '../src/modules/manager-mode/squad/golden-boot.js';
 import type {CupCompetition} from '../src/modules/manager-mode/cups/cup.types.js';
@@ -12,20 +12,32 @@ import {StaticTokenAuthService} from '../src/modules/auth-context/auth.service.j
 
 async function setup(){const room=source(),repo=new MemoryManagerRepository(),service=new ManagerModeService(repo,async()=>room);const state=await service.create(room.id,'user0',{name:'Cup test'});const act=(a:Parameters<typeof service.mutate>[3],user='user0',request=randomUUID())=>service.mutate(state.id,user,request,a);for(let i=1;i<8;i++)await act({type:'INVITATION',accept:true},'user'+i);await act({type:'GENERATE_FIXTURES'});return {repo,service,state,act,get:async()=>(await repo.find(state.id))!};}
 async function finishLeague(f:Awaited<ReturnType<typeof setup>>){await f.repo.mutate(f.state.id,t=>{for(const fixture of t.fixtures.slice(1))Object.assign(fixture,{status:'COMPLETED',homeScore:0,awayScore:0,completedAt:Date.now()});});await f.act({type:'SCORE',fixtureId:f.state.fixtures[0]!.id,homeScore:0,awayScore:0,scorers:{}});}
+it('waits for a host draw, serializes competing draw requests, and preserves already-saved draws',async()=>{
+ const f=await setup();await f.act({type:'CUP_SETTINGS',settings:{...defaultCupSettings,enabled:true}});
+ await expect(f.act({type:'CUP_DRAW'})).rejects.toMatchObject({code:'CUP_DRAW_NOT_READY'});
+ await finishLeague(f);const before=await f.get(),ready=before.cupData!.competitions[0]!;
+ expect(ready.status).toBe('DRAW_READY');expect(ready.fixtures).toEqual([]);expect(ready.drawnAt).toBeNull();
+ await expect(f.act({type:'CUP_DRAW'},'user1')).rejects.toMatchObject({code:'HOST_ONLY'});
+ const request=randomUUID();const [first,retry]=await Promise.all([f.act({type:'CUP_DRAW'},'user0',request),f.act({type:'CUP_DRAW'},'user0',request)]);
+ expect(first.sequence).toBe(retry.sequence);
+ await expect(f.act({type:'CUP_DRAW'})).rejects.toMatchObject({code:'CUP_DRAW_NOT_READY'});
+ const drawn=await f.get(),saved=structuredClone(drawn);synchronizeCup(drawn);expect(drawn).toEqual(saved);
+ for(const key of ['fixtures','teams','players','seasonData','transactions','squadData'] as const)expect(drawn[key]).toEqual(before[key]);
+});
 it('is opt-in and preserves active Matchday progress when settings are saved; rejects permissions and unsupported settings',async()=>{
  const f=await setup();expect((await f.get()).cupData).toBeUndefined();const fixture=f.state.fixtures[0]!;
  await f.act({type:'SCORE',fixtureId:fixture.id,homeScore:1,awayScore:0,scorers:{[fixture.homeTeamId]:[{playerId:f.state.players.find(p=>p.currentTeamId===fixture.homeTeamId)!.id,goals:1}]}});
  const before=await f.get(),settings={...defaultCupSettings,enabled:true};
  await expect(f.act({type:'CUP_SETTINGS',settings},'user1')).rejects.toMatchObject({code:'HOST_ONLY'});
  for(const bad of [{qualifiedTeams:5},{qualifiedTeams:10},{groupStage:false}])await expect(f.act({type:'CUP_SETTINGS',settings:{...settings,...bad}})).rejects.toMatchObject({code:'INVALID_CUP_SETTINGS'});
- const s=await f.act({type:'CUP_SETTINGS',settings});expect(s.cupData!.competitions[0]).toMatchObject({status:'NOT_STARTED',qualified:[],fixtures:[]});
+ const s=await f.act({type:'CUP_SETTINGS',settings});expect(s.cupData!.competitions[0]).toMatchObject({status:'WAITING_FOR_LEAGUE',qualified:[],fixtures:[]});
  const after=await f.get();for(const key of ['fixtures','squadData','teams','players','seasonData','transactions','transferWindows'] as const)expect(after[key]).toEqual(before[key]);
  expect(goldenBoot(after,'user0',after.seasonData!.currentSeasonId)).toEqual(goldenBoot(before,'user0',before.seasonData!.currentSeasonId));
  await expect(f.act({type:'END_CURRENT_SEASON',confirmation:'END SEASON'})).rejects.toMatchObject({code:'CUP_LEAGUE_PENDING'});
  await f.act({type:'CUP_SETTINGS',settings:{...settings,enabled:false}});expect((await f.get()).cupData!.competitions[0]!.settings.enabled).toBe(false);
 });
 it.each([4,6,8])('draws %i qualifiers from frozen same-season standings into separate pots exactly once',async n=>{
- const f=await setup();await f.act({type:'CUP_SETTINGS',settings:{...defaultCupSettings,enabled:true,qualifiedTeams:n,groupMeetings:2}});await finishLeague(f);
+ const f=await setup();await f.act({type:'CUP_SETTINGS',settings:{...defaultCupSettings,enabled:true,qualifiedTeams:n,groupMeetings:2}});await finishLeague(f);await f.act({type:'CUP_DRAW'});
  const t=await f.get(),c=t.cupData!.competitions[0]!;expect(c.qualified).toEqual(t.seasonData!.seasons[0]!.finalStandings.slice(0,n));
  expect(c.groups.map(g=>g.teamIds.length)).toEqual([n/2,n/2]);for(let i=0;i<n;i+=2)expect(c.groups.every(g=>g.teamIds.filter(id=>[c.qualified[i]!.teamId,c.qualified[i+1]!.teamId].includes(id)).length===1)).toBe(true);
  expect(c.fixtures).toHaveLength(2*(n/2)*(n/2-1));expect(new Set(c.fixtures.map(f=>f.homeTeamId+':'+f.awayTeamId)).size).toBe(c.fixtures.length);
@@ -33,7 +45,7 @@ it.each([4,6,8])('draws %i qualifiers from frozen same-season standings into sep
  await expect(f.act({type:'START_NEXT_SEASON'})).rejects.toMatchObject({code:'CUP_PENDING'});expect((await f.service.state(t.id,'user0')).cupData).toEqual(t.cupData);
 });
 it.each([1,2] as const)('plays a six-team Cup with %i-leg knockouts, penalties, third place and exactly-once trophies',async legs=>{
- const f=await setup();await f.act({type:'CUP_SETTINGS',settings:{...defaultCupSettings,enabled:true,semiFinalLegs:legs,finalLegs:legs,thirdPlace:true}});await finishLeague(f);
+ const f=await setup();await f.act({type:'CUP_SETTINGS',settings:{...defaultCupSettings,enabled:true,semiFinalLegs:legs,finalLegs:legs,thirdPlace:true}});await finishLeague(f);await f.act({type:'CUP_DRAW'});
  const before=await f.get();let c=before.cupData!.competitions[0]!;
  for(const fixture of c.fixtures)await f.act({type:'CUP_SCORE',fixtureId:fixture.id,homeScore:0,awayScore:0,scorers:{}});
  c=(await f.get()).cupData!.competitions[0]!;expect(c.status).toBe('SEMI_FINAL');expect(cupGroupStandings(await f.get(),c).every(g=>g.rows.every(r=>r.played===2&&r.points===2))).toBe(true);
@@ -51,6 +63,7 @@ it('supports direct semi-finals and idempotent scoring, without duplicating exis
  const f=await setup();await finishLeague(f);const old=await f.get(),s=old.seasonData!.seasons[0]!;
  expect(trophyRecords(old)).toHaveLength(1);expect(old.cupData).toBeUndefined();
  await f.act({type:'CUP_SETTINGS',settings:{...defaultCupSettings,enabled:true,qualifiedTeams:4,groupStage:false,semiFinalLegs:1,finalLegs:1}});
+ await f.act({type:'CUP_DRAW'});
  const c=(await f.get()).cupData!.competitions[0]!;expect(c.groups).toEqual([]);expect(c.status).toBe('SEMI_FINAL');
  const fixture=c.fixtures[0]!,action={type:'CUP_SCORE' as const,fixtureId:fixture.id,homeScore:0,awayScore:0,scorers:{}},request=randomUUID();const outcomes=await Promise.all([f.act(action,'user0',request),f.act(action,'user0',request)]);expect(outcomes[0]!.sequence).toBe(outcomes[1]!.sequence);expect((await f.get()).cupData!.competitions[0]!.lineups).toHaveLength(2);
  expect(trophyRecords(await f.get()).filter(x=>x.type==='LEAGUE_SHIELD')).toHaveLength(1);expect((await f.get()).seasonData!.seasons[0]).toEqual(s);

@@ -30,6 +30,7 @@ try{
  const configured=(await service.repository.find(t.id))!;for(const key of ['fixtures','squadData','teams','players','seasonData','transactions'] as const)assert.deepEqual(configured[key],before[key]);
  phase='cup qualification';const last=t.fixtures[0]!;await db`update public.manager_fixtures set status='COMPLETED',home_score=0,away_score=0,completed_at=now() where tournament_id=${t.id} and id<>${last.id}`;
  t=await act(users[0]!,{type:'SCORE',fixtureId:last.id,homeScore:0,awayScore:0,scorers:{}});
+ assert.equal(t.cupData!.competitions[0]!.status,'DRAW_READY');t=await act(users[0]!,{type:'CUP_DRAW'});
  assert.equal(t.cupData!.competitions[0]!.qualified.length,6);assert.equal(t.cupData!.competitions[0]!.status,'GROUP_STAGE');
  const leagueDone=(await service.repository.find(t.id))!;
  phase='cup rounds';

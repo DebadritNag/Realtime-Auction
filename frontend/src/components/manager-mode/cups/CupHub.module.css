@@ -1,0 +1,19 @@
+.hero {display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);overflow:hidden;border:1px solid #d7b76a35;border-radius:24px;background:#0b1729;position:relative}
+.title {padding:36px 36px 12px;grid-column:1;align-self:end;min-width:0}
+.title h2 {font-size:clamp(2rem,4vw,3.6rem);font-weight:800;line-height:1.05;letter-spacing:-.045em;overflow-wrap:anywhere;color:#f9f5e9;margin:18px 0}
+.viewer {grid-column:2;grid-row:1/3;background:radial-gradient(ellipse at 50% 45%,#b08b3220,transparent 65%);align-self:center;min-width:0}
+.info {grid-column:1;padding:12px 36px 36px;min-width:0}
+.progress {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid #ffffff14;border-radius:14px;overflow:hidden;background:#091322}
+.step {padding:18px;border-right:1px solid #ffffff0d;font-size:12px;color:#8391a7}
+.step strong {display:block;font-size:10px;letter-spacing:.07em;text-transform:uppercase;margin-top:8px}
+.complete {color:#e6c578}.current {color:#6ee7b7;background:#6ee7b709}
+.draw {animation:appear 280ms cubic-bezier(.23,1,.32,1) both}
+.bracket {display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center}
+.round {position:relative;display:flex;flex-direction:column;gap:18px;min-width:0}
+.round:first-child:after {content:'';position:absolute;right:-13px;top:25%;bottom:25%;width:13px;border-top:1px solid #d7b76a55;border-bottom:1px solid #d7b76a55;border-right:1px solid #d7b76a55}
+.confetti {position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.confetti i {position:absolute;left:calc(var(--i) * 8%);top:-10px;width:4px;height:9px;background:#ebcc82;opacity:0;animation:confetti 2.2s calc(var(--i) * 65ms) ease-out 1}
+@keyframes confetti {10%{opacity:.7}100%{transform:translate3d(24px,380px,0) rotate(240deg);opacity:0}}
+@keyframes appear {from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:767px){.hero{grid-template-columns:1fr}.title{padding:24px 24px 0}.viewer{grid-column:1;grid-row:2}.info{grid-row:3;padding:0 24px 24px}.progress{grid-template-columns:repeat(3,minmax(0,1fr))}.step{padding:12px}.bracket{grid-template-columns:1fr}.round:first-child:after{display:none}}
+@media(prefers-reduced-motion:reduce){.draw{animation:none}.confetti{display:none}}
