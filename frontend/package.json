@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "typecheck": "node tests/type-boundary.mjs",
     "start": "next start",
     "lint": "eslint"
   },

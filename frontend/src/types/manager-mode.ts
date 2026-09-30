@@ -111,7 +111,7 @@ export interface WindowTeamSnapshot {teamId:string;teamName:string;managerName:s
 export interface TransferWindow {id:string;number:number;seasonId:string|null;seasonNumber:number|null;status:'OPEN'|'CLOSED';openedAt:number;closedAt:number|null;auditAvailable:boolean;teams:WindowTeamSnapshot[]}
 
 export interface Tournament {
-    cupData?:import('../../../backend/src/modules/manager-mode/cups/cup.types').CupData;
+    cupData?:import('@/types/manager-cup').CupData;
     transferWindows?:TransferWindow[];
     squadData?:SquadData;
     seasonData?: SeasonData;
@@ -150,8 +150,8 @@ export interface Tournament {
 }
 /** Anonymous view of the Secret Players pool — sent to every client.
  *  Deliberately omits Hero identity (name, position, playerId) before purchase. */
-export type {SecretPlayersView} from '../../../backend/src/modules/manager-mode/heroes/hero.types';
-import type {SecretPlayersView} from '../../../backend/src/modules/manager-mode/heroes/hero.types';
+export type {SecretPlayersView} from '@/types/manager-hero';
+import type {SecretPlayersView} from '@/types/manager-hero';
 
 export type TournamentState = Omit<Tournament, 'startingSnapshot' | 'receipts' | 'negotiation'> & {
     secretPlayers?:SecretPlayersView;

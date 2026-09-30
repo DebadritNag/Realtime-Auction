@@ -2,8 +2,8 @@
 import {useEffect,useState} from 'react';
 import type {TournamentState,Standing} from '@/types/manager-mode';
 import type {ManagerAction} from '@/services/manager-mode.service';
-import type {CupCompetition,CupSettings} from '../../../../backend/src/modules/manager-mode/cups/cup.types';
-import type {ClubHistory} from '../../../../backend/src/modules/manager-mode/cups/club-history';
+import type {CupCompetition,CupSettings} from '@/types/manager-cup';
+import type {ClubHistory} from '@/types/manager-club-history';
 import {api} from '@/services/api';
 import {formatCrore} from '@/lib/money';
 import {FixtureMatchCard} from './FixtureMatchCard';

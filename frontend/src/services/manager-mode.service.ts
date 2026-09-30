@@ -1,5 +1,5 @@
 import type {SquadAction} from '@/types/manager-squad';
-import type {CupAction} from '../../../backend/src/modules/manager-mode/cups/cup.types';
+import type {CupAction} from '@/types/manager-cup';
 import type {SeasonAction} from '@/types/manager-season';
 import type {BuyoutAction} from '@/types/manager-buyout';
 import { api,apiFetch } from './api';

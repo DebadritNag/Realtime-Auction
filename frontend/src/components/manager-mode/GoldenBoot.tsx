@@ -8,7 +8,7 @@ import {PlayerImage} from '@/components/shared/PlayerImage';
 import {FixtureMatchCard} from './FixtureMatchCard';
 import type {TournamentState,Fixture} from '@/types/manager-mode';
 import type {ManagerAction} from '@/services/manager-mode.service';
-import type {GoldenBootState} from '../../../../backend/src/modules/manager-mode/squad/golden-boot';
+import type {GoldenBootState} from '@/types/manager-golden-boot';
 
 const button='rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-amber-500/50 focus-visible:outline-2 focus-visible:outline-amber-400 disabled:opacity-40';
 export function StandingsWithGoldenBoot({state,leagueTable,action,busy}:{state:TournamentState;leagueTable:ReactNode;action:(a:ManagerAction)=>Promise<void>;busy:boolean}){

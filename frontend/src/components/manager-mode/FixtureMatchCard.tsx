@@ -5,7 +5,7 @@ import type { ManagerAction } from '@/services/manager-mode.service';
 import {api} from '@/services/api';
 
 interface Props {
-  cup?:import('../../../../backend/src/modules/manager-mode/cups/cup.types').CupCompetition;
+  cup?:import('@/types/manager-cup').CupCompetition;
   fixture: Fixture;
   state: TournamentState;
   onAction: (action: ManagerAction) => Promise<void>;
