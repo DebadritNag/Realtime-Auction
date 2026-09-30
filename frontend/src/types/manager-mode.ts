@@ -111,6 +111,7 @@ export interface WindowTeamSnapshot {teamId:string;teamName:string;managerName:s
 export interface TransferWindow {id:string;number:number;seasonId:string|null;seasonNumber:number|null;status:'OPEN'|'CLOSED';openedAt:number;closedAt:number|null;auditAvailable:boolean;teams:WindowTeamSnapshot[]}
 
 export interface Tournament {
+    cupData?:import('../../../backend/src/modules/manager-mode/cups/cup.types').CupData;
     transferWindows?:TransferWindow[];
     squadData?:SquadData;
     seasonData?: SeasonData;

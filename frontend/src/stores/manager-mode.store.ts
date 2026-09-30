@@ -104,7 +104,7 @@ export const useManagerStore = create<ManagerStore>((set, get) => ({ syncStatus:
     catch (e) {
         if(reading)requestResync();
         set({ error: e instanceof Error ? e.message : 'Action failed.' });
-        if (['UPDATE_FIXTURE_FORMAT','UPDATE_FIXTURE_SCORERS','SCORE','RESET_SCORE'].includes(a.type)) throw e;
+        if (a.type.startsWith('CUP_')||['UPDATE_FIXTURE_FORMAT','UPDATE_FIXTURE_SCORERS','SCORE','RESET_SCORE'].includes(a.type)) throw e;
     }
     finally {
         set({ busy: false });

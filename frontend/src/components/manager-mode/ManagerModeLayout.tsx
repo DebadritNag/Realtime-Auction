@@ -17,6 +17,7 @@ export function ManagerModeLayout({ state, section, connectionStatus, children }
     <>
       <ManagerModeHeader state={state} connectionStatus={connectionStatus} />
       <ManagerModeSubnav
+        cupEnabled={state.cupData?.competitions.some(c=>c.seasonId===state.seasonData?.currentSeasonId&&c.settings.enabled)}
         tournamentId={state.id}
         activeSection={section}
         isHost={state.isHost}

@@ -111,6 +111,7 @@ export interface ManagerAudit {
     detail: string;
 }
 export interface Tournament {
+    cupData?:import('./cups/cup.types.js').CupData;
     secretHeroes?:SecretHero[];
     transferWindows?:TransferWindow[];
     squadData?:SquadData;

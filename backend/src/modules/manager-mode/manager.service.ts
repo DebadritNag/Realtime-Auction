@@ -1,4 +1,5 @@
 import {ensureHeroPool,heroAction,heroView,visiblePlayers,assertTransferable} from './heroes/hero.engine.js';
+import {cupAction,synchronizeCup,currentCup,assertCupFinished} from './cups/cup.engine.js';
 import {setupStep,type SetupLogger} from './setup-diagnostics.js';
 import {setTransferWindow,tagWindowTransactions} from './reports/window.engine.js';
 import {unseenOffers} from './notifications.js';
@@ -87,6 +88,7 @@ export class ManagerModeService {
     async mutate(id: string, user: string, requestId: string, action: ManagerAction) {
         action = actionSchema.parse(action);
         let changed = false;
+        let cupBefore:string|undefined;let oldTrophies=0;
         const secret=action.type==='BUY_SECRET_PLAYER'||action.type==='REVEAL_SECRET_PLAYER';
         const trace=(stage:string,teamId?:string)=>{if(secret)this.logger?.info({event:'secret-player-action',actionType:action.type,tournamentId:id,requestId,teamId,stage,...(action.type==='BUY_SECRET_PLAYER'?{secretSlotId:action.secretSlotId}:{})},'Secret Player action');};
         trace('transaction started');
@@ -107,9 +109,13 @@ export class ManagerModeService {
             if (action.type !== 'INVITATION' && action.type !== 'READ_NOTIFICATION' && action.type !== 'READ_ALL_NOTIFICATIONS')
                 requireThat(team.invitation === 'JOINED', 'INVITATION_NOT_ACCEPTED', 'Accept your invitation first.', 403);
             ensureSeasons(t);
+            cupBefore=currentCup(t)?.status;oldTrophies=t.cupData?.trophies.length??0;
+            if(action.type==='START_NEXT_SEASON'||action.type==='END_MANAGER_MODE')assertCupFinished(t);
+            if(action.type==='END_CURRENT_SEASON'&&currentCup(t)?.settings.enabled)requireThat(seasonFixtures(t).length&&seasonFixtures(t).every(f=>f.status==='COMPLETED'),'CUP_LEAGUE_PENDING','Complete all league fixtures before closing a Cup-enabled season.',409);
             ensureHeroPool(t);
             const oldTransactionIds=new Set(t.transactions.map(row=>row.id));
             switch (action.type) {
+ case 'CUP_SETTINGS':case 'CUP_SCORE':case 'CUP_PENALTIES':cupAction(t,user,action);break;
  case 'BUY_SECRET_PLAYER':case 'REVEAL_SECRET_PLAYER':heroAction(t,user,action.type,action.type==='BUY_SECRET_PLAYER'?action.secretSlotId:undefined,Date.now(),stage=>trace(stage,team.id));break;
  case 'SAVE_TEAM_SHEET':case 'RENEW_CONTRACT':squadAction(t,user,action);break;
  case 'END_CURRENT_SEASON':case 'START_NEXT_SEASON':case 'END_MANAGER_MODE':case 'SEASON_SETTINGS':case 'SELL_PLAYER':seasonAction(t,user,action);break;
@@ -256,7 +262,7 @@ export class ManagerModeService {
                     this.notify(t, 'INVITATION', 'Please respond to your tournament invitation.', t.teams.filter(x => x.invitation === 'PENDING').map(x => x.managerUserId));
                     break;
             }
-            if (action.type !== 'UPDATE_FIXTURE_FORMAT' && action.type !== 'UPDATE_FIXTURE_SCORERS') {
+            if (!action.type.startsWith('CUP_') && action.type !== 'UPDATE_FIXTURE_FORMAT' && action.type !== 'UPDATE_FIXTURE_SCORERS') {
             tagWindowTransactions(t,oldTransactionIds);
             if(!t.transferWindowOpen)setTransferWindow(t,false);
             if(action.type==='SCORE'&&currentSeason(t).status==='ACTIVE'&&seasonFixtures(t).length&&seasonFixtures(t).every(f=>f.status==='COMPLETED'))completeSeason(t);
@@ -265,6 +271,7 @@ export class ManagerModeService {
             synchronizeBuyouts(t);
             synchronizeWindow(t);
             }
+            if(['SCORE','STATUS','END_CURRENT_SEASON'].includes(action.type))synchronizeCup(t);
             t.receipts[key] = { fingerprint };
             t.sequence++;
             t.updatedAt = Date.now();
@@ -283,6 +290,14 @@ export class ManagerModeService {
             changed = true;
         });
         trace('transaction committed');
+        if(changed){
+         const c=currentCup(result);
+         if(action.type==='CUP_SETTINGS')this.emit(result,'CUP_ENABLED');
+         if(c?.drawnAt&&(!cupBefore||cupBefore==='NOT_STARTED')){this.emit(result,'CUP_QUALIFIERS_CONFIRMED');this.emit(result,'CUP_DRAW_COMPLETED');}
+         if(action.type==='CUP_SCORE'){this.emit(result,'CUP_FIXTURE_UPDATED');this.emit(result,'CUP_GROUP_STANDINGS_UPDATED');}
+         if(c&&c.status!==cupBefore){if(c.status==='SEMI_FINAL')this.emit(result,'CUP_SEMI_FINAL_READY');if(c.status==='FINAL')this.emit(result,'CUP_FINAL_READY');if(c.status==='COMPLETED')this.emit(result,'CUP_COMPLETED');}
+         if((result.cupData?.trophies.length??0)>oldTrophies)this.emit(result,'TROPHY_AWARDED');
+        }
         if(changed&&action.type==='OFFER_FREE_AGENT'){
  this.emit(result,'MANAGER_MODE_UPDATED'); // Decision is committed and visible before any external dialogue request.
  const session=result.negotiation!.sessions.find(s=>s.id===action.sessionId)!;

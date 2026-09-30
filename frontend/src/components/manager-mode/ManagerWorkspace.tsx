@@ -1,5 +1,6 @@
 'use client';
 import {StandingsWithGoldenBoot} from './GoldenBoot';
+import {CupSettingsPanel,ManagerCup,TrophyGallery} from './ManagerCups';
 import {HostReports} from './HostReports';
 import {FixtureFormatControl} from './FixtureFormatControl';
 import {api} from '@/services/api';
@@ -814,6 +815,8 @@ export function ManagerWorkspace({ section }: { section: string }) {
     if (!joined && state.modeStatus !== 'ENDED') return <InvitationGate state={state} action={action} busy={busy} />;
 
     switch (section.split('/')[0]) {
+      case 'cup':return <ManagerCup state={state} action={action} busy={busy}/>;
+      case 'trophies':return <TrophyGallery state={state}/>;
       case 'dashboard':
         return <><SeasonPanel state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/><Dashboard state={state} action={action} busy={busy || state.modeStatus === 'ENDED'} /></>;
       case 'squad':
@@ -857,6 +860,7 @@ export function ManagerWorkspace({ section }: { section: string }) {
         return (
           <>
             <SectionTitle title="Host Control" subtitle="Manage the tournament lifecycle." />
+            <CupSettingsPanel state={state} action={action} busy={busy}/>
             {state.isHost&&<><SeasonPanel state={state} action={action} busy={busy || state.modeStatus === 'ENDED'} controls/><SeasonSettings state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/></>}<HostControl state={state} action={action} busy={busy || state.modeStatus === 'ENDED'} />
           </>
         );

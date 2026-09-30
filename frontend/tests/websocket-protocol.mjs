@@ -6,7 +6,7 @@ const output=await build({stdin:{contents:`export {WebSocketService} from './src
 const module={exports:{}};new Function('module','exports',output.outputFiles[0].text)(module,module.exports);
 const {WebSocketService,parseServerEvent}=module.exports;
 const frame=(type,payload={tournamentId:'t'})=>JSON.stringify({type,payload,sequence:2,serverTime:1});
-const signals=['SECRET_PLAYER_CLAIMED','SECRET_PLAYER_POOL_UPDATED','SECRET_PLAYER_REVEALED','SQUAD_UPDATED','FIXTURE_FORMAT_UPDATED','FIXTURES_GENERATED','FIXTURE_SCORERS_UPDATED','PLAYER_STATS_UPDATED','FIXTURE_RESULT_UPDATED','STANDINGS_UPDATED'];
+const signals=['CUP_ENABLED','CUP_QUALIFIERS_CONFIRMED','CUP_DRAW_COMPLETED','CUP_FIXTURE_UPDATED','CUP_GROUP_STANDINGS_UPDATED','CUP_SEMI_FINAL_READY','CUP_FINAL_READY','CUP_COMPLETED','TROPHY_AWARDED','SECRET_PLAYER_CLAIMED','SECRET_PLAYER_POOL_UPDATED','SECRET_PLAYER_REVEALED','SQUAD_UPDATED','FIXTURE_FORMAT_UPDATED','FIXTURES_GENERATED','FIXTURE_SCORERS_UPDATED','PLAYER_STATS_UPDATED','FIXTURE_RESULT_UPDATED','STANDINGS_UPDATED'];
 for(const type of signals)assert.equal(parseServerEvent(frame(type)).type,type);
 assert.equal(parseServerEvent(frame('FUTURE_SIGNAL')),null);assert.throws(()=>parseServerEvent('{'));
 assert.throws(()=>parseServerEvent(frame('MANAGER_MODE_PATCH',{tournamentId:'t',baseSequence:1,changes:{sequence:1}})));

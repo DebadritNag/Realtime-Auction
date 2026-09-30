@@ -1,10 +1,11 @@
 import type {SquadAction} from '@/types/manager-squad';
+import type {CupAction} from '../../../backend/src/modules/manager-mode/cups/cup.types';
 import type {SeasonAction} from '@/types/manager-season';
 import type {BuyoutAction} from '@/types/manager-buyout';
 import { api,apiFetch } from './api';
 import type { TournamentState, TournamentSummary, ImportReport } from '@/types/manager-mode';
 import type { PlayerDTO } from '@/types/backend';
-export type ManagerAction = {type:'UPDATE_FIXTURE_SCORERS';fixtureId:string;expectedHomeScore:number;expectedAwayScore:number;scorers:Record<string,{playerId:string;goals:number}[]>} | {type:'BUY_SECRET_PLAYER';secretSlotId:string} | {type:'REVEAL_SECRET_PLAYER'} | {type:'READ_OFFER';entityType:'trade'|'buyout'|'negotiation';entityId:string} | {type:'READ_ALL_NOTIFICATIONS'} | SquadAction | SeasonAction | BuyoutAction | {type:'START_NEGOTIATION';playerId:string}|{type:'OFFER_FREE_AGENT';sessionId:string;amountUnits:number}|{type:'END_NEGOTIATION';sessionId:string}|{type:'CONFIRM_SIGNING';sessionId:string}|{type:'TRANSFER_RULES';difficulty:'RELAXED'|'NORMAL'|'HARD';visibility:'PRIVATE'|'SEMI_TRANSPARENT'|'TRANSPARENT';walkAwayCooldownMs:number}| {
+export type ManagerAction = CupAction | {type:'UPDATE_FIXTURE_SCORERS';fixtureId:string;expectedHomeScore:number;expectedAwayScore:number;scorers:Record<string,{playerId:string;goals:number}[]>} | {type:'BUY_SECRET_PLAYER';secretSlotId:string} | {type:'REVEAL_SECRET_PLAYER'} | {type:'READ_OFFER';entityType:'trade'|'buyout'|'negotiation';entityId:string} | {type:'READ_ALL_NOTIFICATIONS'} | SquadAction | SeasonAction | BuyoutAction | {type:'START_NEGOTIATION';playerId:string}|{type:'OFFER_FREE_AGENT';sessionId:string;amountUnits:number}|{type:'END_NEGOTIATION';sessionId:string}|{type:'CONFIRM_SIGNING';sessionId:string}|{type:'TRANSFER_RULES';difficulty:'RELAXED'|'NORMAL'|'HARD';visibility:'PRIVATE'|'SEMI_TRANSPARENT'|'TRANSPARENT';walkAwayCooldownMs:number}| {
     type: 'INVITATION';
     accept: boolean;
 } | {

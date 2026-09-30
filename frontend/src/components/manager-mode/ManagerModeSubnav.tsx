@@ -10,6 +10,7 @@ interface Tab {
 }
 
 interface Props {
+  cupEnabled?:boolean;
   tournamentId: string;
   activeSection: string;
   isHost: boolean;
@@ -17,6 +18,8 @@ interface Props {
 }
 
 const TABS: Tab[] = [
+  {id:'cup',label:'Cup',icon:<svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M7 3h10v6a5 5 0 0 1-10 0V3ZM7 5H3v3a4 4 0 0 0 4 4m10-7h4v3a4 4 0 0 1-4 4M12 14v6m-5 1h10"/></svg>},
+  {id:'trophies',label:'Trophy Gallery',icon:<svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16v6c0 6-8 10-8 10S4 16 4 10V4ZM8 9h8m-8 4h8"/></svg>},
   {
     id: 'dashboard',
     label: 'Overview',
@@ -93,8 +96,9 @@ const TABS: Tab[] = [
   },
 ];
 
-export function ManagerModeSubnav({ tournamentId, activeSection, isHost, unreadNotifications }: Props) {
-  const visibleTabs = TABS.filter(t => !t.hostOnly || isHost);
+export function ManagerModeSubnav({ tournamentId, activeSection, isHost, unreadNotifications,cupEnabled }: Props) {
+  const order=['dashboard','squad','fixtures','standings','cup','transfers','teams','trophies','notifications','host'];
+  const visibleTabs = TABS.filter(t => (!t.hostOnly || isHost)&&(t.id!=='cup'||cupEnabled)).sort((a,b)=>order.indexOf(a.id)-order.indexOf(b.id));
 
   return (
     <div className="w-full border-b border-white/5 bg-[#060e1a]/80 backdrop-blur-sm sticky top-[80px] z-40">

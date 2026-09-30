@@ -7,7 +7,11 @@ import {allTeamLineupsPdf,transferAuditPdf} from './reports/report.pdf.js';
 import {realtimeManagerState} from './realtime-state.js';
 import {goldenBoot,historicalEligiblePlayers} from './squad/golden-boot.js';
 import {requireThat} from '../../domain/errors.js';
+import {clubHistory} from './cups/club-history.js';
+import {cupGroupStandings} from './cups/cup.engine.js';
 export function registerManagerRoutes(app: FastifyInstance, service: ManagerModeService) {
+    app.get('/api/manager-mode/:id/club-history',async(req,reply)=>{const id=z.object({id:z.string().max(100)}).parse(req.params).id;const t=await service.repository.find(id);requireThat(t,'TOURNAMENT_NOT_FOUND','Tournament not found.',404);requireThat(t.teams.some(x=>x.managerUserId===req.auth.userId),'NOT_TOURNAMENT_MEMBER','Membership required.',403);reply.header('Cache-Control','private, no-store');return clubHistory(t);});
+    app.get('/api/manager-mode/:id/cups',async(req,reply)=>{const id=z.object({id:z.string().max(100)}).parse(req.params).id;const t=await service.repository.find(id);requireThat(t,'TOURNAMENT_NOT_FOUND','Tournament not found.',404);requireThat(t.teams.some(x=>x.managerUserId===req.auth.userId),'NOT_TOURNAMENT_MEMBER','Membership required.',403);reply.header('Cache-Control','private, no-store');return (t.cupData?.competitions??[]).map(c=>({...c,standings:cupGroupStandings(t,c)}));});
     const reports=new ManagerReportService(service.repository);
     app.get('/api/manager-mode/:id/transfer-windows',async req=>reports.windows(params.parse(req.params).id,req.auth.userId));
     app.get('/api/manager-mode/:id/transfer-windows/:windowId/report.pdf',{config:{rateLimit:{max:8,timeWindow:'1 minute'}}},async(req,reply)=>{
@@ -28,8 +32,8 @@ export function registerManagerRoutes(app: FastifyInstance, service: ManagerMode
     app.get('/api/manager-mode/:id/fixtures/:fixtureId/scorers',async(req,reply)=>{
       const p=z.object({id:z.string().min(1).max(100),fixtureId:z.string().uuid()}).parse(req.params);
       const t=await service.repository.find(p.id);requireThat(t,'TOURNAMENT_NOT_FOUND','Tournament not found.',404);requireThat(t.hostUserId===req.auth.userId,'HOST_ONLY','Host access required.',403);
-      const f=t.fixtures.find(f=>f.id===p.fixtureId);requireThat(f,'FIXTURE_NOT_FOUND','Fixture not found.',404);
-      reply.header('Cache-Control','private, no-store');return {eligibleByTeam:Object.fromEntries([f.homeTeamId,f.awayTeamId].map(id=>[id,t.squadData?.lineups.find(l=>l.fixtureId===f.id&&l.teamId===id)?.eligiblePlayerIds??(f.status==='COMPLETED'?historicalEligiblePlayers(t,f,id):t.players.filter(p=>p.currentTeamId===id).map(p=>p.id))]))};
+      const cup=t.cupData?.competitions.find(c=>c.fixtures.some(f=>f.id===p.fixtureId));const f=t.fixtures.find(f=>f.id===p.fixtureId)??cup?.fixtures.find(f=>f.id===p.fixtureId);requireThat(f,'FIXTURE_NOT_FOUND','Fixture not found.',404);
+      reply.header('Cache-Control','private, no-store');return {eligibleByTeam:Object.fromEntries([f.homeTeamId,f.awayTeamId].map(id=>[id,(cup?.lineups??t.squadData?.lineups)?.find(l=>l.fixtureId===f.id&&l.teamId===id)?.eligiblePlayerIds??(f.status==='COMPLETED'?historicalEligiblePlayers(t,f,id):t.players.filter(p=>p.currentTeamId===id).map(p=>p.id))]))};
     });
     app.get('/api/manager-mode/:id/secret-player-purchases/:purchaseId/reveal',async(req,reply)=>{const p=z.object({id:z.string().uuid(),purchaseId:z.string().uuid()}).parse(req.params);reply.header('Cache-Control','private, no-store');return service.reveal(p.id,req.auth.userId,p.purchaseId);});
     app.get('/api/manager-mode', async (req) => service.list(req.auth.userId));

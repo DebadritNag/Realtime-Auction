@@ -5,6 +5,7 @@ import type { ManagerAction } from '@/services/manager-mode.service';
 import {api} from '@/services/api';
 
 interface Props {
+  cup?:import('../../../../backend/src/modules/manager-mode/cups/cup.types').CupCompetition;
   fixture: Fixture;
   state: TournamentState;
   onAction: (action: ManagerAction) => Promise<void>;
@@ -25,7 +26,7 @@ const statusLabel: Record<string, string> = {
   CANCELLED: 'Cancelled',
 };
 
-export function FixtureMatchCard({ fixture: f, state, onAction, busy }: Props) {
+export function FixtureMatchCard({ fixture: f, state, onAction, busy, cup }: Props) {
   const [editing, setEditing] = useState(false);
   const [scorersOnly,setScorersOnly]=useState(false),[error,setError]=useState(''),[loading,setLoading]=useState(false);
   const [eligibleByTeam,setEligibleByTeam]=useState<Record<string,string[]>|null>(null);
@@ -38,7 +39,8 @@ export function FixtureMatchCard({ fixture: f, state, onAction, busy }: Props) {
 
   const homeTeam = state.teams.find(t => t.id === f.homeTeamId);
   const awayTeam = state.teams.find(t => t.id === f.awayTeamId);
-  const canEdit = f.seasonId===state.seasonData?.currentSeasonId && state.isHost && state.status === 'ACTIVE' && state.modeStatus !== 'ENDED' && state.seasonData?.seasons.find(s=>s.id===state.seasonData?.currentSeasonId)?.status === 'ACTIVE';
+  const cupFixture=cup?.fixtures.find(x=>x.id===f.id);
+  const canEdit = f.seasonId===state.seasonData?.currentSeasonId && state.isHost && state.status === 'ACTIVE' && state.modeStatus !== 'ENDED' && (cup?cup.status!=='COMPLETED'&&(cupFixture?.stage==='GROUP'?cup.status==='GROUP_STAGE':!cup.ties.find(x=>x.id===cupFixture?.tieId)?.winnerTeamId):state.seasonData?.seasons.find(s=>s.id===state.seasonData?.currentSeasonId)?.status === 'ACTIVE');
   const isMyMatch = f.homeTeamId === state.myTeamId || f.awayTeamId === state.myTeamId;
   async function openEditor(only:boolean){
     setError('');setLoading(true);setScorersOnly(only);setHome(String(f.homeScore??0));setAway(String(f.awayScore??0));setScorers(savedScorers());
@@ -50,7 +52,7 @@ export function FixtureMatchCard({ fixture: f, state, onAction, busy }: Props) {
     e.preventDefault();
     setError('');try{
       const goals=Object.fromEntries([f.homeTeamId,f.awayTeamId].map(teamId=>[teamId,Object.entries(scorers[teamId]??{}).filter(([,count])=>count>0).map(([playerId,goals])=>({playerId,goals}))]));
-      await onAction(scorersOnly?{type:'UPDATE_FIXTURE_SCORERS',fixtureId:f.id,expectedHomeScore:f.homeScore!,expectedAwayScore:f.awayScore!,scorers:goals}:{type:'SCORE',fixtureId:f.id,homeScore:Number(home),awayScore:Number(away),scorers:goals});setEditing(false);
+      await onAction(cup?{type:'CUP_SCORE',fixtureId:f.id,homeScore:Number(home),awayScore:Number(away),scorers:goals}:scorersOnly?{type:'UPDATE_FIXTURE_SCORERS',fixtureId:f.id,expectedHomeScore:f.homeScore!,expectedAwayScore:f.awayScore!,scorers:goals}:{type:'SCORE',fixtureId:f.id,homeScore:Number(home),awayScore:Number(away),scorers:goals});setEditing(false);
     }catch(e){setError(e instanceof Error?e.message:'Unable to save goalscorers.');}
   };
 
@@ -124,7 +126,7 @@ export function FixtureMatchCard({ fixture: f, state, onAction, busy }: Props) {
             >
               {f.status === 'COMPLETED' ? 'Correct Result' : 'Enter Result'}
             </button>
-            )}{f.status==='COMPLETED'&&<button disabled={loading||busy} className="rounded-lg border border-amber-700/40 px-3 py-1.5 text-xs text-amber-200 disabled:opacity-40" onClick={()=>void openEditor(true)}>{loading?'Loading…':recorded?'Edit Goalscorers':'Add Goalscorers'}</button>}
+            )}{!cup&&f.status==='COMPLETED'&&<button disabled={loading||busy} className="rounded-lg border border-amber-700/40 px-3 py-1.5 text-xs text-amber-200 disabled:opacity-40" onClick={()=>void openEditor(true)}>{loading?'Loading…':recorded?'Edit Goalscorers':'Add Goalscorers'}</button>}
           </div>) : (
             <form onSubmit={handleSave} className="flex flex-wrap items-center gap-2 mt-1">
               <div className="flex items-center gap-2 bg-white/5 rounded-xl px-3 py-2 border border-white/10">
@@ -152,7 +154,7 @@ export function FixtureMatchCard({ fixture: f, state, onAction, busy }: Props) {
               >
                 Save
               </button>
-              {f.status === 'COMPLETED' && !scorersOnly && (
+              {f.status === 'COMPLETED' && !scorersOnly && !cup && (
                 <button
                   type="button" disabled={busy} onClick={handleReset}
                   className="cursor-pointer text-[12px] font-semibold text-slate-400 hover:text-white border border-white/10 hover:border-white/20 px-4 py-1.5 rounded-lg transition-colors disabled:opacity-50"

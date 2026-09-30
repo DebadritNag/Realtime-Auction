@@ -2,7 +2,7 @@
  * api.ts — Central REST client.
  *
  * NEXT_PUBLIC_API_URL accepts an origin or a URL ending with /api, e.g.:
- *   https://realtime-auction-z5s2.onrender.com/api
+ *   https://realtime-auction-250f.onrender.com
  */
 import { authService } from "./auth.service";
 

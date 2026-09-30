@@ -165,12 +165,14 @@ Bridges the schema mismatch between backend and frontend:
 ### Frontend (`frontend/.env.local`)
 
 ```
-NEXT_PUBLIC_API_URL=http://localhost:3001/api
-NEXT_PUBLIC_WS_URL=ws://localhost:3001/ws
+NEXT_PUBLIC_API_URL=https://realtime-auction-250f.onrender.com
+NEXT_PUBLIC_WS_URL=wss://realtime-auction-250f.onrender.com/ws
 NEXT_PUBLIC_USE_MOCK_DATA=false
 NEXT_PUBLIC_SUPABASE_URL=https://dvhzbkehgnkhernboigi.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key>
 ```
+
+For Vercel, set these API/WS values in Project Settings → Environment Variables for Production (and Preview if used), then redeploy. Public variables are embedded at build time; editing local `.env.local` does not update Vercel. Keep the existing Supabase frontend variables. On Render, `FRONTEND_ORIGIN` must include the exact frontend origin without a trailing slash. For local frontend development against Render, also allow `http://localhost:3000`.
 
 ### Backend (`backend/.env`)
 
