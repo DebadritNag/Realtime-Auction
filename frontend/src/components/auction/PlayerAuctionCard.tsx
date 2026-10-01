@@ -5,6 +5,7 @@ import { Player } from "@/types";
 import { Badge } from "@/components/ui/Badge";
 import { formatCr } from "@/lib/utils";
 import { Shield, Sparkles, UserRound } from "lucide-react";
+import { getPlayerImageCandidates, DEFAULT_PLAYER_IMAGE } from "@/lib/player-image";
 
 export interface PlayerAuctionCardProps {
   player: Player | null;
@@ -148,10 +149,13 @@ export const PlayerAuctionCard: React.FC<PlayerAuctionCardProps> = ({ player, va
 };
 
 function LivePlayerCard({player}: {player: Player | null}) {
-  const [failedPhoto, setFailedPhoto] = React.useState<string | null>(null);
+  const [failed, setFailed] = React.useState<string[]>([]);
   if (!player) return <section className="live-player-card live-player-empty" aria-label="Current player"><Shield size={32}/><h2>Waiting for the next player</h2><p>The next selection will appear when the server starts bidding.</p></section>;
   const stats = Object.entries(player.stats);
-  const photo = player.photoUrl && /^https?:\/\//.test(player.photoUrl) && failedPhoto !== player.photoUrl;
+  // Resolve local /images/players/{id}.webp first, then any photoUrl, then placeholder.
+  const candidates = getPlayerImageCandidates({ id: player.id, photoUrl: player.photoUrl });
+  const photoSrc = candidates.find(c => !failed.includes(c)) ?? candidates.at(-1)!;
+  const photo = photoSrc && photoSrc !== DEFAULT_PLAYER_IMAGE;
   return <section className="live-player-card" aria-label="Current player">
     <div className="live-player-heading"><span className="live-player-position">{player.subPosition || player.position} <span>· {player.pot}</span></span>
       <span className="live-player-nationality">{player.flagEmoji} {player.nationality || 'Nation unavailable'}</span></div>
@@ -163,7 +167,7 @@ function LivePlayerCard({player}: {player: Player | null}) {
       <div className="live-player-portrait">{photo ?
         // Player images originate from the configured server catalog.
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={player.photoUrl} alt={player.name} onError={()=>setFailedPhoto(player.photoUrl ?? null)}/> : <UserRound size={54} strokeWidth={1.2} aria-hidden="true"/>}</div>
+        <img src={photoSrc} alt={player.name} onError={()=>setFailed(f=>f.includes(photoSrc)?f:[...f,photoSrc])}/> : <UserRound size={54} strokeWidth={1.2} aria-hidden="true"/>}</div>
     </div>
     <div className="live-player-price"><span>Base price <strong>{formatCr(player.basePrice)}</strong></span>{player.ovr >= 90 && <span className="live-player-tier"><Sparkles size={12}/> Elite player</span>}</div>
     <dl className="live-player-stats">{stats.map(([name,value])=><div key={name}><dt>{name.toUpperCase()}</dt><dd>{value ?? '—'}</dd></div>)}</dl>

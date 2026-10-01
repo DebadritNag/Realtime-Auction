@@ -9,7 +9,7 @@ class ViewerBoundary extends Component<{children:ReactNode;label:string},{failed
  static getDerivedStateFromError(){return {failed:true};}
  render(){return this.state.failed?<TrophyFallback label={this.props.label}/>:this.props.children;}
 }
-export function CupTrophy3D({variant='CUP'}:{variant?:'CUP'|'LEAGUE_SHIELD'}){
+export function CupTrophy3D({variant='CUP',size='hero'}:{variant?:'CUP'|'LEAGUE_SHIELD';size?:'hero'|'compact'}){
  const container=useRef<HTMLDivElement>(null);
  const [visible,setVisible]=useState(false),[loaded,setLoaded]=useState(false),[reduced,setReduced]=useState(true),[hidden,setHidden]=useState(false),[paused,setPaused]=useState(false);
  useEffect(()=>{
@@ -20,7 +20,7 @@ export function CupTrophy3D({variant='CUP'}:{variant?:'CUP'|'LEAGUE_SHIELD'}){
   return()=>{observer.disconnect();media.removeEventListener('change',motion);document.removeEventListener('visibilitychange',visibility);};
  },[]);
  const isShield=variant==='LEAGUE_SHIELD',label=isShield?'League Shield':'Cup trophy',modelPath=isShield?'/models/trophies/league-shield.glb':'/models/trophies/cup.glb';
- return <div ref={container} className="relative h-[320px] min-w-0 sm:h-[410px]" aria-label={`Interactive ${label}`}>
+ return <div ref={container} className={`relative min-w-0 ${size==='compact'?'h-[250px] sm:h-[300px]':'h-[320px] sm:h-[410px]'}`} aria-label={`Interactive ${label}`}>
   <ViewerBoundary label={label}>{loaded?<Viewer active={visible&&!hidden} rotate={!paused&&!reduced} modelPath={modelPath} label={label}/>:<TrophyFallback loading label={label}/>}</ViewerBoundary>
   <div className="absolute inset-x-0 bottom-3 flex items-center justify-center gap-4 text-[11px] text-slate-400">
    <span className="hidden [@media(pointer:fine)]:inline">Drag to rotate · Scroll to inspect</span><span className="[@media(pointer:fine)]:hidden">Drag to rotate</span>

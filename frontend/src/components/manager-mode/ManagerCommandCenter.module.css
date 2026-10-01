@@ -1,0 +1,15 @@
+.hero { position:relative; overflow:hidden; border:1px solid rgb(212 175 55 / .24); border-radius:16px; background:#091524; }
+.hero::after { content:''; position:absolute; right:0; bottom:0; width:42%; height:100%; background:radial-gradient(ellipse at 58% 55%,rgb(225 181 75 / .12),transparent 68%); pointer-events:none; }
+.heroCopy { position:relative; z-index:1; padding:30px; }
+.showcase { position:relative; z-index:1; min-width:0; border-left:1px solid rgb(255 255 255 / .07); }
+.showcaseMeta { position:absolute; inset:auto 0 16px; z-index:2; text-align:center; font-size:11px; line-height:1.35; color:#b9c2d1; pointer-events:none; }
+.metric { border-left:1px solid rgb(255 255 255 / .08); padding:4px 0 4px 18px; }
+.metric:first-child { border-left:0; padding-left:0; }
+.form { display:flex; gap:7px; flex-wrap:wrap; }
+.form span { display:grid; place-items:center; width:30px; height:30px; border-radius:50%; font-size:11px; font-weight:700; }
+.formation { position:relative; min-height:220px; overflow:hidden; border:1px solid rgb(86 191 125 / .18); border-radius:12px; background:linear-gradient(90deg, rgb(39 115 72 / .13) 1px, transparent 1px) 0 0 / 33.333% 100%, linear-gradient(0deg, rgb(39 115 72 / .13) 1px, transparent 1px) 0 0 / 100% 33.333%, #071c18; }
+.formation::after { content:''; position:absolute; inset:11% 10%; border:1px solid rgb(100 205 145 / .18); border-radius:50%; }
+.spot { position:absolute; z-index:1; display:grid; place-items:center; width:30px; height:30px; border:1px solid rgb(154 239 189 / .46); border-radius:50%; background:#0e4732; color:#e7f9ed; font-size:9px; font-weight:800; transform:translate(-50%,-50%); }
+.raceRow { display:grid; grid-template-columns:28px minmax(0,1fr) auto; align-items:center; gap:10px; padding:11px 0; border-top:1px solid rgb(255 255 255 / .06); }
+.raceRow:first-of-type { border-top:0; }
+@media (max-width:767px) { .hero::after { width:100%; height:40%; } .heroCopy { padding:24px; } .showcase { border-left:0; border-top:1px solid rgb(255 255 255 / .07); } .metric { border-left:0; padding:10px 0; border-top:1px solid rgb(255 255 255 / .08); } .metric:first-child { border-top:0; } }

@@ -19,6 +19,7 @@ import { formatCrore } from '@/lib/money';
 import { ManagerModeLayout } from './ManagerModeLayout';
 import { FixtureMatchCard } from './FixtureMatchCard';
 import { ManagerModeSummaryCard } from './ManagerModeSummaryCard';
+import { ManagerCommandCenter } from './ManagerCommandCenter';
 
 // ─── shared style tokens ──────────────────────────────────────────────────────
 export const panel = 'rounded-2xl border border-white/8 bg-[#0a1628]/70 p-5 space-y-3';export const button =
@@ -147,7 +148,7 @@ export function PlayerCard({ p }: { p: ManagerPlayer }) {
   return (
     <article className={panel + ' !space-y-2'}>
       <div className="flex items-center gap-3">
-        <PlayerImage player={p} className="w-14 h-14 object-contain rounded-lg bg-white/5"/>
+        <PlayerImage player={p} className="w-14 h-14 rounded-lg"/>
         <div className="min-w-0">
           <h3 className="font-bold text-white truncate">{p.name}</h3>
           <p className="text-sm text-emerald-300">{p.overall!==null?p.overall+' OVR · ':''}{p.position}</p>
@@ -821,7 +822,7 @@ export function ManagerWorkspace({ section }: { section: string }) {
       case 'cup':return <ManagerCup state={state} action={action} busy={busy}/>;
       case 'trophies':return <TrophyGallery state={state}/>;
       case 'dashboard':
-        return <><SeasonPanel state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/><Dashboard state={state} action={action} busy={busy || state.modeStatus === 'ENDED'} /></>;
+        return <><SeasonPanel state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/><ManagerCommandCenter state={state}/></>;
       case 'squad':
         return <ManagerSquad state={state} action={action} busy={busy || state.modeStatus === 'ENDED'}/>;
       case 'fixtures':

@@ -7,6 +7,7 @@ import {ApiError} from '@/services/api';
 import {useManagerStore} from '@/stores/manager-mode.store';
 import {formatCrore} from '@/lib/money';
 import {button,panel} from './ManagerSetup';
+import {PlayerImage} from '@/components/shared/PlayerImage';
 import styles from './SecretPlayers.module.css';
 type Phase='IDLE'|'PURCHASING'|'PURCHASED_UNREVEALED'|'REVEALING'|'REVEALED'|'ERROR';
 type Slot=NonNullable<TournamentState['secretPlayers']>['slots'][number];
@@ -17,7 +18,7 @@ function Dialog({title,children,onClose}:{title:string;children:ReactNode;onClos
  return <dialog ref={ref} aria-label={title} onCancel={e=>{e.preventDefault();onClose();}} className={styles.dialog}><h3 className="text-xl font-bold mb-4">{title}</h3>{children}</dialog>;
 }
 function Unknown({number}:{number?:number}){return <div className="text-center space-y-4"><img src="/images/players/default-player.webp" alt="Unknown player" className="h-28 w-28 mx-auto object-contain"/><h3 className="font-bold tracking-wide">SECRET PLAYER{number?' #'+number:''}</h3><p className="text-slate-400">Name: <span className="text-white">???</span></p><p className="text-slate-400">Position: <span className="text-white">???</span></p></div>;}
-function Hero({player}:{player:ManagerPlayer}){return <div className="text-center space-y-3"><img src="/images/players/default-player.webp" alt="Player silhouette" className="h-28 w-28 mx-auto object-contain"/><h3 className="text-2xl font-bold">{player.name}</h3><p className="text-emerald-300">{player.position}</p><p className="text-xs font-bold text-amber-300">HERO • UNTRADEABLE</p></div>;}
+function Hero({player}:{player:ManagerPlayer}){return <div className="text-center space-y-3"><PlayerImage player={{...player,isSecretHero:true}} alt={player.name} className="h-28 w-28 mx-auto rounded-xl"/><h3 className="text-2xl font-bold">{player.name}</h3><p className="text-emerald-300">{player.position}</p><p className="text-xs font-bold text-amber-300">HERO • UNTRADEABLE</p></div>;}
 const messages:Record<string,string>={SECRET_PLAYER_ALREADY_CLAIMED:'This Secret Player was just claimed by another team.',SECRET_PLAYER_ALREADY_USED:'Your team has already used its one Hero entitlement.',INSUFFICIENT_BUDGET:'You need ₹45 Cr to buy this player.',TRANSFER_WINDOW_CLOSED:'The transfer window is closed.',SECRET_PLAYER_NOT_FOUND:'This Secret Player is no longer available.',MANAGER_DATABASE_UNAVAILABLE:'Tournament storage is temporarily unavailable. Retry this purchase to safely check its result.'};
 export function SecretPlayers({state,busy}:{state:TournamentState;action:(a:ManagerAction)=>Promise<void>;busy:boolean}){
  const sp=state.secretPlayers,mine=state.teams.find(t=>t.id===state.myTeamId)!;
