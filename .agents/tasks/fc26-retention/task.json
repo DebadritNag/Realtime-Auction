@@ -1,0 +1,7 @@
+﻿{
+  "task_id": "task-fc26-retention",
+  "task_description": "Add FC26 CSV database source, Underdog pool/tag/base prices (1/3/5 Cr) and a mandatory host-finalized pre-auction Player Retention phase (15 Cr, max 3 per team) to the existing Create Auction Setup and auction lifecycle. Full design in plan.md.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}
