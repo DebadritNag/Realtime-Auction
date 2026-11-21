@@ -18,7 +18,13 @@ export interface Team {
   startingBudgetUnits: number; spentUnits: number; playerIds: string[];
 }
 export interface Bid { id: string; roomId: string; playerId: string; teamId: string; amountUnits: number; at: number; round: number }
-export interface Purchase { id: string; playerId: string; teamId: string; priceUnits: number; bidCount: number; at: number; durationMs: number }
+export interface Purchase {
+  id: string; playerId: string; teamId: string; priceUnits: number; bidCount: number; at: number; durationMs: number;
+  // Absent on ordinary auction purchases and old snapshots.
+  acquisitionType?: 'AUCTION' | 'RETENTION'; isRetained?: boolean;
+}
+export interface RetentionPick { id: string; teamId: string; playerId: string; priceUnits: number; at: number; userId: string }
+export interface RoomRetention { phase: 'OPEN' | 'FINALIZED'; picks: RetentionPick[]; finalizedAt?: number }
 export interface ActiveAuction {
   skipVoterUserIds?: string[];
   playerId: string; currentBidUnits: number; highestBidderTeamId: string | null;
@@ -30,6 +36,8 @@ export interface Room {
   id: string; code: string; hostUserId: string; auctionName: string; status: RoomStatus;
   createdAt: number; settings: RoomSettings; teams: Team[]; players: AuctionPlayer[];
   active: ActiveAuction | null; playerQueue: string[]; purchases: Purchase[]; bids: Bid[];
+  // Pre-auction retention sub-phase of LOBBY; present only for rooms with settings.retention.enabled.
+  retention?: RoomRetention;
   playerHistory?: { type: 'PLAYER_UNSOLD' | 'PLAYER_RECALLED'; playerId: string; round: number; at: number; userId?: string; reason?: 'UNANIMOUS_SKIP' }[];
   // Anti-streak tracking: track the last pot used and how many times in a row
   lastPot?: string; consecutivePotCount?: number;

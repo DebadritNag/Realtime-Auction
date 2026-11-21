@@ -31,7 +31,7 @@ export function registerRoomRoutes(app: FastifyInstance, manager: RoomManager, r
     const code = params.parse(request.params).code;
     const team = await service.join(code, request.auth.userId, joinSchema.parse(request.body), request.auth.username);
     const room = await manager.loadRoom(code);
-    return { roomId: room.id, roomCode: code, team: publicTeam(team, room.settings), sequence: room.sequence };
+    return { roomId: room.id, roomCode: code, team: publicTeam(team, room.settings, room.retention), sequence: room.sequence };
   });
   app.post('/api/rooms/:code/leave', async (request, reply) => {
     z.object({}).strict().parse(request.body ?? {});
@@ -55,7 +55,7 @@ export function registerRoomRoutes(app: FastifyInstance, manager: RoomManager, r
     requireMember(room, request.auth.userId);
     const team = room.teams.find(t => t.id === input.teamId);
     requireThat(team, 'TEAM_NOT_FOUND', 'Team does not exist.', 404);
-    return { ...publicTeam(team, room.settings), players: room.players.filter(p => team.playerIds.includes(p.id)).map(publicPlayer) };
+    return { ...publicTeam(team, room.settings, room.retention), players: room.players.filter(p => team.playerIds.includes(p.id)).map(publicPlayer) };
   });
   app.get('/api/rooms/:code/history', async request => {
     const room = await manager.loadRoom(params.parse(request.params).code);

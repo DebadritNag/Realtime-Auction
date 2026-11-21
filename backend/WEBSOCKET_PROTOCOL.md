@@ -57,6 +57,8 @@ Times are epoch milliseconds. All exposed monetary values are Cr, not internal u
 | END_AUCTION | {roomCode, expectedSequence?}; host |
 | KICK_MEMBER | {roomCode, targetTeamId, expectedSequence?}; host, lobby |
 | UPDATE_SETTINGS | {roomCode, settings: partialSettings, expectedSequence?}; host, lobby. `settings.playerPoolSource` (`DEFAULT`/`FC26`) and `settings.retention.enabled` are synchronized to every member through ROOM_STATE.settings. FC26 players add optional `fullName`, `potential`, `positions`, `draftPool`, `playerTag`, `sourceCategory`; pots are GK/CB/FB/MID/ATT. |
+| RETAIN_PLAYER | {roomCode, playerId, expectedSequence?}; any member, for their own team only. Lobby, etention.enabled, retention phase OPEN. Costs a fixed 15 Cr (30 units), max 3 per team. Errors: RETENTION_NOT_ENABLED, RETENTION_CLOSED, RETENTION_PLAYER_NOT_FOUND (404), ALREADY_RETAINED_BY_TEAM, PLAYER_ALREADY_RETAINED, RETENTION_LIMIT_REACHED, SQUAD_FULL, INSUFFICIENT_PURSE. |
+| FINALIZE_RETENTIONS / RESET_RETENTIONS | {roomCode, expectedSequence?}; host, lobby. Finalize closes retention (zero picks is valid); reset removes every pick, restores purses and reopens retention. |
 | PING | {} or omitted payload; returns PONG |
 
 Subscribe before auction mutations. A socket can subscribe to multiple rooms. REST creates/joins membership; WS JOIN_ROOM does not create a team.
@@ -74,6 +76,9 @@ Subscribe before auction mutations. A socket can subscribe to multiple rooms. RE
 - TIMER_EXTENDED: playerId, endsAt.
 - PLAYER_SOLD: playerId, teamId, priceCr, remainingBudgetCr, teamPlayerCount. Resolve player/team details from ROOM_STATE.
 - PLAYER_UNSOLD: playerId.
+- PLAYER_RETAINED: pickId, teamId, playerId, priceCr, retainedCount, remainingBudgetCr (followed by TEAM_UPDATED and BUDGET_UPDATED).
+- RETENTION_FINALIZED: totalRetained, totalSpentCr.
+- RETENTION_RESET: removed or teamId/reason; sent on host reset, when a team with picks leaves or is kicked, and when the lobby is closed.
 - TEAM_UPDATED: teamId; updated squad follows in ROOM_STATE.
 - BUDGET_UPDATED: teamId, spentCr, remainingBudgetCr.
 - AUCTION_PAUSED: remainingTimeMs.
@@ -143,3 +148,6 @@ Every accepted bid clears existing votes and broadcasts BID_ACCEPTED reset feedb
 At unanimity the server reuses its unsold resolution, with PLAYER_UNSOLD `{playerId,reason:"UNANIMOUS_SKIP"}`. The player is recall-eligible, budgets are untouched, and the normal random selector runs after the configured transition delay (including when ordinary autoAdvance is disabled). If no waiting players remain, the auction remains between rounds for host recall/end. Persistence succeeds before events publish. The active vote array is discarded with the resolved player; new activations start empty. Pausing preserves votes but disallows cast/remove commands until resume.
 
 Votes persist in the existing active-room snapshot as optional `skipVoterUserIds`; older snapshots default to no votes. `unsoldReason` on the player and an appended playerHistory entry preserve UNANIMOUS_SKIP. Recall preserves history; the next activation clears the current outcome reason. No database tables are added.
+
+## Player retention (pre-auction)
+Lobby sub-phase, not a new room status. `ROOM_STATE.retention` = {enabled, config:{priceCr:15, maxPerTeam:3, minPerTeam:0}, phase:'OFF'|'OPEN'|'FINALIZED', picks:[{id, teamId, playerId, priceCr, at, player}], teams:[{teamId, retainedCount, remainingSlots, spentCr, remainingPurseCr}], totals:{retained, spentCr}, finalizedAt}. Teams add `retainedCount`, `retentionSpentCr` and `auctionPurseCr` (starting purse minus retention spend); `soldPlayers` entries add `acquisitionType` ('AUCTION'|'RETENTION') and `isRetained`. `START_AUCTION` fails with RETENTION_NOT_FINALIZED (409) until the host finalizes. After finalize, join, leave and kick fail with RETENTION_FINALIZED until the host resets; `startingBudgetCr`, `playerPoolSource` and `retention.enabled` cannot change while picks exist or retention is finalized (RETENTION_LOCKED, 409). REST: `GET /api/rooms/:code/retention/players?search&group&offset&limit<=100` (members only; groups ALL/GK/CB/FB/CM/WM/ST/W; retained players are excluded).

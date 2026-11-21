@@ -12,6 +12,7 @@ import { MemoryRoomRepository } from './repositories/memory.js';
 import { CatalogPlayerRepository } from './modules/players/player.service.js';
 import { connectDatabase } from './repositories/postgres.js';
 import { resolveFc26Config } from './modules/fc26/fc26.config.js';
+import { PostgresRetentionLedger } from './modules/retention/retention.ledger.js';
 import { MemoryFc26Catalog, PostgresFc26Catalog, type Fc26Catalog } from './modules/fc26/fc26.catalog.js';
 
 const env = readEnvironment();
@@ -75,7 +76,9 @@ catch (error) {
 }
 const auctionRepository=env.STORAGE==='file'?new FileRoomRepository(env.DATA_DIR):new MemoryRoomRepository();
 const auctionSource=(id:string)=>loadManagerAuction(managerDb,auctionRepository,id,app.log);
+const retentionLedger = managerDb ? new PostgresRetentionLedger(managerDb) : undefined;
 const { app } = await buildApp({
+  retentionLedger,
   managerAuctionSource: auctionSource,
   managerPrepareAuction: managerDb ? async(id,user)=>{const room=(await auctionRepository.listRecoverable()).find(r=>r.id===id);if(room)await archiveCompletedAuction(managerDb,room,user);} : undefined,
   database: managerDb??undefined,
@@ -90,6 +93,7 @@ const { app } = await buildApp({
   fc26,
 });
 
+retentionLedger?.setLogger(app.log);
 if(managerRepository instanceof PostgresManagerRepository)managerRepository.setLogger(app.log);
 if(managerDb)app.addHook('onClose',async()=>{await managerDb.end();});
 

@@ -2,6 +2,7 @@ import type { Room } from '../../domain/types.js';
 import { requireThat } from '../../domain/errors.js';
 import { settingsSchema } from '../../schemas/settings.js';
 import { toUnits } from '../../domain/money.js';
+import { RETENTION_MAX_PER_TEAM, RETENTION_PRICE_UNITS } from '../../domain/retention.js';
 export function assertRoom(room: Room): void {
   const invariant = (condition: unknown, message: string) => requireThat(condition, 'INVALID_STATE', message, 409);
   settingsSchema.parse(room.settings);
@@ -35,6 +36,24 @@ export function assertRoom(room: Room): void {
     invariant(purchases.reduce((sum, p) => sum + p.priceUnits, 0) === team.spentUnits, 'Budget ledger mismatch.');
     invariant(purchases.length === team.playerIds.length && purchases.every(p => team.playerIds.includes(p.playerId)), 'Squad ledger mismatch.');
   }
+  if (room.retention) {
+    const { picks, phase, finalizedAt } = room.retention;
+    invariant(phase === 'OPEN' || phase === 'FINALIZED', 'Invalid retention phase.');
+    invariant(picks.length === 0 || room.settings.retention.enabled, 'Retention picks exist while retention is disabled.');
+    invariant(phase !== 'FINALIZED' || (room.settings.retention.enabled && Number.isFinite(finalizedAt)), 'Retention finalized without being enabled.');
+    invariant(new Set(picks.map(p => p.id)).size === picks.length, 'Duplicate retention pick.');
+    invariant(new Set(picks.map(p => p.playerId)).size === picks.length, 'Player retained more than once.');
+    for (const team of room.teams) invariant(picks.filter(p => p.teamId === team.id).length <= RETENTION_MAX_PER_TEAM, 'Too many retained players.');
+    for (const pick of picks) {
+      invariant(room.teams.some(t => t.id === pick.teamId), 'Retention pick for a missing team.');
+      invariant(pick.priceUnits === RETENTION_PRICE_UNITS, 'Invalid retention price.');
+      const purchase = room.purchases.find(p => p.playerId === pick.playerId && p.acquisitionType === 'RETENTION');
+      invariant(purchase && purchase.teamId === pick.teamId && purchase.priceUnits === RETENTION_PRICE_UNITS, 'Retention purchase mismatch.');
+      invariant(room.players.some(p => p.id === pick.playerId && p.status === 'SOLD'), 'Retained player is not sold.');
+    }
+  }
+  const retentionPurchases = room.purchases.filter(p => p.acquisitionType === 'RETENTION');
+  invariant(retentionPurchases.every(p => room.retention?.picks.some(k => k.playerId === p.playerId && k.teamId === p.teamId)), 'Retention purchase without pick.');
   for (const player of room.players) {
     invariant(Number.isSafeInteger(player.basePriceUnits) && player.basePriceUnits >= toUnits(room.settings.minimumBasePriceCr), 'Invalid player base price.');
     invariant((player.status === 'SOLD') === owned.includes(player.id), 'Player sale and ownership mismatch.');

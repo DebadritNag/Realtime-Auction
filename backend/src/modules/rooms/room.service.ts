@@ -4,6 +4,7 @@ import { requireThat } from '../../domain/errors.js';
 import { toUnits } from '../../domain/money.js';
 import { parseSettings, type RoomSettings } from '../../schemas/settings.js';
 import type { RoomManager } from './room.manager.js';
+import { assertRetentionSettingsUnlocked, releaseTeamRetentions, requireRetentionOpenForMembership, syncRetentionWithSettings } from '../retention/retention.service.js';
 export function requireMember(room: Room, userId: string): Team {
   const team = room.teams.find(t => t.userId === userId);
   requireThat(team, 'NOT_ROOM_MEMBER', 'You are not a member of this room.', 403);
@@ -22,6 +23,7 @@ export class RoomService {
         return existing;
       }
       requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Join is only available in the lobby.', 409);
+      requireRetentionOpenForMembership(room);
       requireThat(room.teams.length < room.settings.numberOfTeams, 'ROOM_FULL', 'Room is full.', 409);
       requireThat(!room.teams.some(t => t.name.toLowerCase() === input.teamName.toLowerCase()), 'TEAM_NAME_TAKEN', 'Team name is already taken.', 409);
       const team: Team = { id: randomUUID(), userId, managerUsername, name: input.teamName, logoUrl: input.teamLogoUrl, logoEmoji: input.teamLogoEmoji,
@@ -36,6 +38,12 @@ export class RoomService {
       requireMember(room, userId);
       requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Teams cannot leave a started auction.', 409);
       requireThat(room.hostUserId !== userId, 'HOST_CANNOT_LEAVE', 'Host must close the room instead.');
+      requireRetentionOpenForMembership(room);
+      const leaving = room.teams.find(t => t.userId === userId)!;
+      if (room.retention?.picks.some(p => p.teamId === leaving.id)) {
+        releaseTeamRetentions(room, leaving.id);
+        events.push({ type: 'RETENTION_RESET', payload: { teamId: leaving.id, reason: 'MEMBER_REMOVED' } });
+      }
       room.teams = room.teams.filter(t => t.userId !== userId);
       events.push({ type: 'MEMBER_LEFT', payload: { userId } });
     });
@@ -47,7 +55,9 @@ export class RoomService {
       const settings = parseSettings({ ...room.settings, ...patch });
       await this.manager.assertPoolSource(settings);
       requireThat(settings.numberOfTeams >= room.teams.length, 'ROOM_FULL', 'Cannot reduce capacity below membership.');
+      assertRetentionSettingsUnlocked(room, settings);
       room.settings = settings;
+      syncRetentionWithSettings(room);
       for (const team of room.teams) team.startingBudgetUnits = toUnits(settings.startingBudgetCr);
       events.push({ type: 'ROOM_UPDATED' });
     });

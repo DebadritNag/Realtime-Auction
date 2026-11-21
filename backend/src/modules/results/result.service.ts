@@ -5,7 +5,7 @@ export function calculateResults(room: Room) {
   const teams = room.teams.map(team => {
     const purchases = room.purchases.filter(p => p.teamId === team.id);
     const players = room.players.filter(p => team.playerIds.includes(p.id));
-    return { ...publicTeam(team, room.settings), players: players.map(publicPlayer),
+    return { ...publicTeam(team, room.settings, room.retention), players: players.map(publicPlayer),
       totalSpentCr: toCr(team.spentUnits),
       highestPurchaseCr: purchases.length ? toCr(Math.max(...purchases.map(p => p.priceUnits))) : null,
       averagePurchaseCr: purchases.length ? toCr(team.spentUnits) / purchases.length : 0,
