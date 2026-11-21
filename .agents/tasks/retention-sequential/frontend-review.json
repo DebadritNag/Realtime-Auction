@@ -1,0 +1,11 @@
+{
+    "reviewDoc":  "c:\\Users\\ASUS\\projects\\Realtime -Auction\\.agents\\tasks\\retention-sequential\\frontend-review.md",
+    "verdict":  "APPROVED",
+    "findings":  [
+                     "Hardcoded \u0027/3\u0027 cap in RetainedPlayersPanel.tsx:36 and RetentionAnnouncementOverlay.tsx:52,79; read retention.config.maxPerTeam (confirmed, minor).",
+                     "UI tests use a fake in-memory server (retention-fixtures.mjs applyCommand); they verify rendering/wiring, not real backend contract (likely, minor).",
+                     "overview/formations/manager-mode UI tests and auction-ui.mjs (needs Supabase env) not run; run auction-ui.mjs where env exists (confirmed gap).",
+                     "Announcements older than 15s on reconnect are silently marked seen (possible, by design; page state remains correct).",
+                     "Finalize returns to lobby where host starts auction, per plan D7 (informational)."
+                 ]
+}
