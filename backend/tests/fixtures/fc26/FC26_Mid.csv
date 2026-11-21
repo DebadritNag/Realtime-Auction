@@ -1,0 +1,4 @@
+player_id,short_name,long_name,player_positions,overall,potential,age,club_name,league_name,nationality_name,preferred_foot,pace,shooting,passing,dribbling,defending,physic,attacking_finishing,ls,player_face_url
+4001,M. One,Mid One,CM,86,88,24,Alpha FC,Test League,Germany,Right,70,70,70,70,70,70,60,86+1,https://cdn.example.com/4001.png
+4002,M. Two,Mid Two,"CAM, ST",90,92,24,Delta FC,Test League,Argentina,Right,70,70,70,70,70,70,60,90+1,https://cdn.example.com/4002.png
+4003,M. Three,Mid Three,"LM, LW",84,86,24,Delta FC,Test League,Italy,Right,70,70,70,70,70,70,60,84+1,https://cdn.example.com/4003.png

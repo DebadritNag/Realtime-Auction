@@ -1,0 +1,5 @@
+player_id,short_name,long_name,player_positions,overall,potential,age,club_name,league_name,nationality_name,preferred_foot,pace,shooting,passing,dribbling,defending,physic,attacking_finishing,ls,player_face_url
+5001,A. One,Attacker One,ST,91,93,24,Alpha FC,Test League,Norway,Right,70,70,70,70,70,70,60,91+1,https://cdn.example.com/5001.png
+5002,A. Two,Attacker Two,"LW, RW",85,87,24,Beta FC,Test League,Japan,Right,70,70,70,70,70,70,60,85+1,https://cdn.example.com/5002.png
+4002,M. Two,Mid Two,"CAM, ST",90,92,24,Delta FC,Test League,Argentina,Right,70,70,70,70,70,70,60,90+1,https://cdn.example.com/4002.png
+5003,A. Bad,Attacker Bad,ST,abc,abc2,24,Beta FC,Test League,Japan,Right,70,70,70,70,70,70,60,abc+1,https://cdn.example.com/5003.png

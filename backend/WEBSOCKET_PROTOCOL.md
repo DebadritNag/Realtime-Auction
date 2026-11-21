@@ -56,7 +56,7 @@ Times are epoch milliseconds. All exposed monetary values are Cr, not internal u
 | START_RECALL | {roomCode, expectedSequence?}; host, round exhausted |
 | END_AUCTION | {roomCode, expectedSequence?}; host |
 | KICK_MEMBER | {roomCode, targetTeamId, expectedSequence?}; host, lobby |
-| UPDATE_SETTINGS | {roomCode, settings: partialSettings, expectedSequence?}; host, lobby |
+| UPDATE_SETTINGS | {roomCode, settings: partialSettings, expectedSequence?}; host, lobby. `settings.playerPoolSource` (`DEFAULT`/`FC26`) and `settings.retention.enabled` are synchronized to every member through ROOM_STATE.settings. FC26 players add optional `fullName`, `potential`, `positions`, `draftPool`, `playerTag`, `sourceCategory`; pots are GK/CB/FB/MID/ATT. |
 | PING | {} or omitted payload; returns PONG |
 
 Subscribe before auction mutations. A socket can subscribe to multiple rooms. REST creates/joins membership; WS JOIN_ROOM does not create a team.

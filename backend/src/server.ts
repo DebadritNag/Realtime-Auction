@@ -11,6 +11,8 @@ import { FileRoomRepository } from './repositories/file.js';
 import { MemoryRoomRepository } from './repositories/memory.js';
 import { CatalogPlayerRepository } from './modules/players/player.service.js';
 import { connectDatabase } from './repositories/postgres.js';
+import { resolveFc26Config } from './modules/fc26/fc26.config.js';
+import { MemoryFc26Catalog, PostgresFc26Catalog, type Fc26Catalog } from './modules/fc26/fc26.catalog.js';
 
 const env = readEnvironment();
 
@@ -55,6 +57,22 @@ if (managerDb) {
   console.warn('[manager-mode] DATABASE_URL not set — using in-memory repository (data lost on restart)');
 }
 
+// -- FC26 CSV database -----------------------------------------------------
+// Non-fatal boot import. Falls back to an in-memory catalog when the FC26 schema is not installed.
+const fc26Config = resolveFc26Config(env);
+let fc26: Fc26Catalog = managerDb ? new PostgresFc26Catalog(managerDb, fc26Config) : new MemoryFc26Catalog(fc26Config);
+const importFc26 = async (catalog: Fc26Catalog) => {
+  const report = await catalog.importAll();
+  await catalog.stats();
+  console.log(`[fc26] imported=${report.imported} skippedDuplicates=${report.skippedDuplicates} invalidRows=${report.invalidRows.length} missingFiles=${report.missingFiles.length}`);
+};
+try { await importFc26(fc26); }
+catch (error) {
+  const code = (error as { code?: string }).code;
+  console.warn(`[fc26] ${code === 'FC26_SCHEMA_MISSING' ? 'schema missing; apply migration 20261001090000 (backend/scripts/apply-fc26-schema.mjs)' : 'database import failed'}; using in-memory catalog`);
+  fc26 = new MemoryFc26Catalog(fc26Config);
+  try { await importFc26(fc26); } catch { console.warn('[fc26] in-memory import failed; FC26 source unavailable'); }
+}
 const auctionRepository=env.STORAGE==='file'?new FileRoomRepository(env.DATA_DIR):new MemoryRoomRepository();
 const auctionSource=(id:string)=>loadManagerAuction(managerDb,auctionRepository,id,app.log);
 const { app } = await buildApp({
@@ -69,6 +87,7 @@ const { app } = await buildApp({
   logLevel: env.LOG_LEVEL,
   repository: auctionRepository,
   playerRepository: await CatalogPlayerRepository.fromDefaultPool(),
+  fc26,
 });
 
 if(managerRepository instanceof PostgresManagerRepository)managerRepository.setLogger(app.log);

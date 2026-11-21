@@ -2,7 +2,8 @@ import { createHash, randomUUID } from 'node:crypto';
 import type { Room } from '../../domain/types.js';
 import { requireThat } from '../../domain/errors.js';
 import { toCr, toUnits } from '../../domain/money.js';
-import { settingsSchema } from '../../schemas/settings.js';
+import { settingsSchema, parseSettings } from '../../schemas/settings.js';
+import { fc26BasePriceUnits } from '../../domain/pricing.js';
 import type { RoomManager, PendingEvent } from '../rooms/room.manager.js';
 import { requireHost, requireMember } from '../rooms/room.service.js';
 import { transitionPlayer, transitionRoom } from './auction.state-machine.js';
@@ -67,11 +68,27 @@ export class AuctionEngine {
             requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Auction can only start from the lobby.', 409);
             settingsSchema.parse(room.settings);
             requireThat(room.teams.length >= room.settings.minimumParticipants, 'NOT_ENOUGH_PARTICIPANTS', 'Not enough participants.');
+            if (room.settings.playerPoolSource === 'FC26') {
+              const fc26 = this.manager.fc26;
+              requireThat(fc26, 'FC26_UNAVAILABLE', 'FC26 database is not configured on this server.', 503);
+              const { playerIds, potIds } = room.settings.playerPoolConfig;
+              // Players already owned (for example retained before the auction) stay in the room and leave the pool.
+              const kept = room.players.filter(p => p.status === 'SOLD');
+              const taken = new Set(kept.map(p => p.id));
+              const pool = (await fc26.list()).filter(p => !taken.has(p.id) && (!playerIds || playerIds.includes(p.id)) && (!potIds || potIds.includes(p.potId)));
+              requireThat(pool.length > 0, 'EMPTY_PLAYER_POOL', 'Player pool is empty.');
+              if (playerIds) requireThat(playerIds.every(id => taken.has(id) || pool.some(p => p.id === id)),
+                'INVALID_PLAYER_POOL', 'One or more selected players are missing or excluded by pot filters.');
+              // Base prices are recomputed here from rating and draft pool; stored or client values are never trusted.
+              room.players = [...kept, ...pool.map(p => ({ ...p, status: 'WAITING' as const, round: 0,
+                basePriceUnits: fc26BasePriceUnits({ overall: p.ovr, draftPool: p.draftPool ?? 'REGULAR' }, fc26.topRatingThreshold) }))];
+            } else {
             const pool = await this.manager.players.listPlayerPool(room.settings.playerPoolConfig, room.settings.numberOfTeams);
             requireThat(pool.length > 0, 'EMPTY_PLAYER_POOL', 'Player pool is empty.');
             if (room.settings.playerPoolConfig.playerIds) requireThat(room.settings.playerPoolConfig.playerIds.every(id => pool.some(p => p.id === id)),
               'INVALID_PLAYER_POOL', 'One or more selected players are missing or excluded by pot filters.');
             room.players = pool.map(p => ({ ...p, basePriceUnits: Math.max(p.basePriceUnits, toUnits(room.settings.minimumBasePriceCr)), status: 'WAITING', round: 0 }));
+            }
             // playerQueue stays empty — activateNext picks randomly from room.players each time.
             room.playerQueue = [];
             room.lastPot = undefined;
@@ -160,7 +177,8 @@ export class AuctionEngine {
             break;
           case 'UPDATE_SETTINGS': {
             requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Settings are locked.', 409);
-            const settings = settingsSchema.parse({ ...room.settings, ...command.payload.settings });
+            const settings = parseSettings({ ...room.settings, ...command.payload.settings });
+            await this.manager.assertPoolSource(settings);
             requireThat(settings.numberOfTeams >= room.teams.length, 'ROOM_FULL', 'Capacity below membership.');
             room.settings = settings;
             for (const item of room.teams) item.startingBudgetUnits = toUnits(settings.startingBudgetCr);

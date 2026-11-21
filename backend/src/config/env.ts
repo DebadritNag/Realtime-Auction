@@ -30,6 +30,15 @@ const envSchema = z.object({
   SUPABASE_ANON_KEY:         z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   DATABASE_URL:              z.string().optional(),
+  // ---- FC26 CSV database (server-side paths; never supplied by clients)
+  FC26_DATA_DIR:             z.string().min(1).optional(),
+  FC26_CSV_GK:               z.string().min(1).optional(),
+  FC26_CSV_CB:               z.string().min(1).optional(),
+  FC26_CSV_FULLBACKS:        z.string().min(1).optional(),
+  FC26_CSV_MID:              z.string().min(1).optional(),
+  FC26_CSV_ATT:              z.string().min(1).optional(),
+  FC26_CSV_UNDERDOG:         z.string().min(1).optional(),
+  FC26_TOP_RATING_THRESHOLD: z.coerce.number().int().min(50).max(99).default(90),
 
 });
 

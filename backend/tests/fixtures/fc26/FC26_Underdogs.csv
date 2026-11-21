@@ -1,0 +1,5 @@
+﻿player_id,short_name,long_name,player_positions,overall,potential,age,club_name,league_name,nationality_name,preferred_foot,pace,shooting,passing,dribbling,defending,physic,attacking_finishing,ls,player_face_url,draft_pool,underdog_tag,underdog_reason,underdog_position_group
+6001,U. Glove,Underdog Glove,GK,80,82,24,Omega FC,Test League,Chile,Right,,,,,,,,80+1,https://cdn.example.com/6001.png,UNDERDOG,Underdog Player,Reason 6001,GK
+6002,U. Wing,Underdog Wing,LB,81,83,24,Omega FC,Test League,Peru,Right,70,70,70,70,70,70,60,81+1,https://cdn.example.com/6002.png,UNDERDOG,Underdog Player,Reason 6002,Fullback
+6003,U. Star,Underdog Star,CAM,91,93,24,Omega FC,Test League,Uruguay,Right,70,70,70,70,70,70,60,91+1,https://cdn.example.com/6003.png,UNDERDOG,Underdog Player,Reason 6003,MID
+9001,U. Stone,Underdog Stone,CB,82,84,24,Gamma FC,Test League,Ghana,Right,70,70,70,70,70,70,60,82+1,https://cdn.example.com/9001.png,UNDERDOG,Underdog Player,Reason 9001,CB

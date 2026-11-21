@@ -11,6 +11,9 @@ Copy .env.example to .env for a local demo. Never commit secrets. Node's built-i
 | LOG_LEVEL | info |
 | STORAGE | file; memory is ephemeral |
 | DATA_DIR | ./data, resolved from the server working directory |
+| FC26_DATA_DIR | Directory holding the FC26 CSV files; default is the repository root |
+| FC26_CSV_GK, FC26_CSV_CB, FC26_CSV_FULLBACKS, FC26_CSV_MID, FC26_CSV_ATT, FC26_CSV_UNDERDOG | Optional per-file overrides (absolute, or relative to FC26_DATA_DIR). Defaults: FC26_GK.csv, FC26_CB.csv, FC26_Fullbacks.csv, FC26_Mid.csv, FC26_ATT.csv, FC26_Underdog.csv then FC26_Underdogs.csv |
+| FC26_TOP_RATING_THRESHOLD | Overall rating from which a regular FC26 player is Top (5 Cr); default 90, below that is Medium (3 Cr). Underdogs are always 1 Cr |
 | AUTH_MODE | jwt; use development explicitly for the static local allowlist |
 | DEV_AUTH_TOKENS | JSON token-to-user map; development only |
 | JWT_SECRET | At least 32 characters; Legacy HS256; used literally as UTF-8 bytes. Optional when JWKS is configured |

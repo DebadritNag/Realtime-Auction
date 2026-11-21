@@ -8,6 +8,9 @@ export interface Player {
   subPosition?: string; secondaryPositions?: string; league?: string; ratingTier?: string;
   id: string; name: string; position: 'GK' | 'DEF' | 'MID' | 'FWD' | 'ATT'; ovr: number;
   stats: Record<string, number>; basePriceUnits: number; potId: string;
+  // FC26 database fields (optional: absent for the default FC24 pool and for old snapshots).
+  fullName?: string; potential?: number; positions?: string[];
+  draftPool?: 'REGULAR' | 'UNDERDOG'; playerTag?: 'UNDERDOG'; sourceCategory?: string; sourceCategories?: string[];
 }
 export interface AuctionPlayer extends Player { status: PlayerStatus; round: number; unsoldReason?: 'UNANIMOUS_SKIP' }
 export interface Team {

@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { Room, Team } from '../../domain/types.js';
 import { requireThat } from '../../domain/errors.js';
 import { toUnits } from '../../domain/money.js';
-import { settingsSchema, type RoomSettings } from '../../schemas/settings.js';
+import { parseSettings, type RoomSettings } from '../../schemas/settings.js';
 import type { RoomManager } from './room.manager.js';
 export function requireMember(room: Room, userId: string): Team {
   const team = room.teams.find(t => t.userId === userId);
@@ -41,10 +41,11 @@ export class RoomService {
     });
   }
   async updateSettings(code: string, userId: string, patch: Partial<RoomSettings>): Promise<void> {
-    await this.manager.mutate(code, (room, events) => {
+    await this.manager.mutate(code, async (room, events) => {
       requireHost(room, userId);
       requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Settings are locked after auction start.', 409);
-      const settings = settingsSchema.parse({ ...room.settings, ...patch });
+      const settings = parseSettings({ ...room.settings, ...patch });
+      await this.manager.assertPoolSource(settings);
       requireThat(settings.numberOfTeams >= room.teams.length, 'ROOM_FULL', 'Cannot reduce capacity below membership.');
       room.settings = settings;
       for (const team of room.teams) team.startingBudgetUnits = toUnits(settings.startingBudgetCr);

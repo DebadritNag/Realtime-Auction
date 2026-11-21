@@ -3,7 +3,8 @@ import type { Room, AuthContext, ServerEvent } from '../../domain/types.js';
 import type { RoomRepository, PlayerRepository, RoomRuntimeHydrator } from '../../repositories/interfaces.js';
 import { requireThat, DomainError } from '../../domain/errors.js';
 import { SerialQueue, type RoomLock } from '../../utils/serial-queue.js';
-import { settingsSchema, type RoomSettings } from '../../schemas/settings.js';
+import { parseSettings, type RoomSettings } from '../../schemas/settings.js';
+import type { Fc26Catalog } from '../fc26/fc26.catalog.js';
 import { toUnits } from '../../domain/money.js';
 import type { Clock } from '../auction/timer.service.js';
 import { assertRoom } from '../auction/squad.service.js';
@@ -17,7 +18,14 @@ export class RoomManager {
   private readonly rooms = new Map<string, Room>();
   private readonly listeners = new Set<CommitListener>();
   constructor(readonly repository: RoomRepository, readonly players: PlayerRepository, readonly clock: Clock,
-    readonly lock: RoomLock = new SerialQueue(), private hydrator: RoomRuntimeHydrator = new ValidatingHydrator()) {}
+    readonly lock: RoomLock = new SerialQueue(), private hydrator: RoomRuntimeHydrator = new ValidatingHydrator(),
+    readonly fc26?: Fc26Catalog) {}
+  /** Reject the FC26 source when no FC26 players are loaded. */
+  async assertPoolSource(settings: RoomSettings): Promise<void> {
+    if (settings.playerPoolSource !== 'FC26') return;
+    requireThat(this.fc26 && (await this.fc26.stats()).total > 0, 'FC26_CATALOG_EMPTY',
+      'The FC26 database has no players. Import the FC26 CSV files first.', 409);
+  }
   subscribe(listener: CommitListener): () => void { this.listeners.add(listener); return () => this.listeners.delete(listener); }
   private publish(room: Room, events: PendingEvent[]): void {
     const envelopes = events.map(event => ({ type: event.type, roomId: room.id, sequence: room.sequence,
@@ -45,7 +53,8 @@ export class RoomManager {
   removeRuntime(code: string): void { this.rooms.delete(code); }
   async create(auth: AuthContext, input: { auctionName: string; teamName: string; teamLogoUrl?: string; teamLogoEmoji?: string; settings?: Partial<RoomSettings> }): Promise<Room> {
     return this.lock.runExclusive('__create__', async () => {
-      const settings = settingsSchema.parse(input.settings ?? {});
+      const settings = parseSettings(input.settings ?? {});
+      await this.assertPoolSource(settings);
       const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
       for (let attempt = 0; attempt < 20; attempt++) {
         const code = Array.from({ length: 6 }, () => alphabet[randomInt(alphabet.length)]).join('');

@@ -21,13 +21,15 @@ import { TimerService, systemClock, type Clock } from './modules/auction/timer.s
 import { DeterministicRecommendationService, type AuctionRecommendationService } from './modules/recommendations/recommendation.service.js';
 import { RealtimeHub } from './realtime/hub.js';
 import { registerRoomRoutes } from './modules/rooms/room.routes.js';
+import type { Fc26Catalog } from './modules/fc26/fc26.catalog.js';
+import { registerFc26Routes } from './modules/fc26/fc26.routes.js';
 
 export interface AppOptions {
   negotiationDialogue?: NegotiationDialogueProvider;
   managerAuctionSource?: (id:string)=>Promise<import('./domain/types.js').Room|null>; managerPrepareAuction?: (id:string,user:string)=>Promise<void>;
   managerRepository?: ManagerTournamentRepository; managerIdentities?: ManagerIdentityRepository;
   database?: Sql; authService: AuthService; repository?: RoomRepository; playerRepository?: PlayerRepository;
-  recommendationService?: AuctionRecommendationService; origins?: string[];
+  recommendationService?: AuctionRecommendationService; origins?: string[]; fc26?: Fc26Catalog;
   clock?: Clock; timersEnabled?: boolean; logger?: boolean; logLevel?: string;
 }
 export async function buildApp(options: AppOptions) {
@@ -47,7 +49,7 @@ export async function buildApp(options: AppOptions) {
   const auctionRepository = options.repository ?? new MemoryRoomRepository();
   const managerMode = new ManagerModeService(options.managerRepository ?? new UnavailableManagerRepository(), options.managerAuctionSource ?? (async id => (await auctionRepository.listRecoverable()).find(r => r.id === id) ?? null), options.managerIdentities, options.managerPrepareAuction, options.negotiationDialogue,app.log);
   const manager = new RoomManager(auctionRepository,
-    options.playerRepository ?? await CatalogPlayerRepository.fromDefaultPool(), clock);
+    options.playerRepository ?? await CatalogPlayerRepository.fromDefaultPool(), clock, undefined, undefined, options.fc26);
   const engine = new AuctionEngine(manager);
   const timers = new TimerService(clock, (code, id) => engine.onTimer(code, id),
     (_error, roomCode) => app.log.error({ roomCode, eventType: 'TIMER_RETRY' }, 'Timer transition failed; retrying'));
@@ -88,7 +90,8 @@ export async function buildApp(options: AppOptions) {
   app.get('/api/health', async () => ({ status: 'ok', serverTime: clock.now() }));
   registerManagerRoutes(app, managerMode);
   registerProfileRoutes(app, manager, options.database);
-  registerPlayerRoutes(app, manager.players);
+  registerPlayerRoutes(app, manager.players, manager.fc26);
+  registerFc26Routes(app, manager.fc26);
   registerRoomRoutes(app, manager, options.recommendationService ?? new DeterministicRecommendationService(), hub);
   app.get('/ws', { websocket: true }, (socket, request) => hub.attach(socket, request.auth));
   app.addHook('onClose', async () => { hub.close(); timers.close(); unsubscribe(); });

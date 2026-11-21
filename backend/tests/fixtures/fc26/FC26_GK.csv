@@ -1,0 +1,3 @@
+player_id,short_name,long_name,player_positions,overall,potential,age,club_name,league_name,nationality_name,preferred_foot,pace,shooting,passing,dribbling,defending,physic,attacking_finishing,ls,player_face_url
+1001,K. One,Keeper One,GK,85,86,28,Alpha FC,Test League,Spain,Right,,,,,,,,,https://cdn.example.com/1001.png
+1002,K. Two,Keeper Two,GK,82,83,28,Beta FC,Test League,Brazil,Right,,,,,,,,,https://cdn.example.com/1002.png

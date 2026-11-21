@@ -1,0 +1,4 @@
+player_id,short_name,long_name,player_positions,overall,potential,age,club_name,league_name,nationality_name,preferred_foot,pace,shooting,passing,dribbling,defending,physic,attacking_finishing,ls,player_face_url
+2001,C. One,Center One,CB,88,90,24,Alpha FC,Test League,England,Right,70,70,70,70,70,70,60,88+1,https://cdn.example.com/2001.png
+2002,C. Two,Center Two,"CB, LB",84,86,24,Beta FC,Test League,France,Right,70,70,70,70,70,70,60,84+1,https://cdn.example.com/2002.png
+9001,U. Stone,Underdog Stone,CB,90,92,24,Gamma FC,Test League,Ghana,Right,70,70,70,70,70,70,60,90+1,https://cdn.example.com/9001.png

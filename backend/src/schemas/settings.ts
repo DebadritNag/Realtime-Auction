@@ -18,6 +18,10 @@ export const settingsShape = z.object({
     playerIds: z.array(z.string().min(1).max(100)).min(1).max(2000).optional(),
     potIds: z.array(z.string().min(1).max(100)).min(1).max(100).optional(),
   }).strict().default({}),
+  // FC26 CSV database as the player source; DEFAULT keeps the bundled FC24 pool.
+  playerPoolSource: z.enum(['DEFAULT', 'FC26']).default('DEFAULT'),
+  // Only the on/off switch is configurable; price and limits are fixed constants on the server.
+  retention: z.object({ enabled: z.boolean().default(false) }).strict().default({}),
 }).strict();
 export const settingsSchema = settingsShape.superRefine((s, ctx) => {
   const invalid = (message: string) => ctx.addIssue({ code: 'custom', message });
@@ -25,8 +29,15 @@ export const settingsSchema = settingsShape.superRefine((s, ctx) => {
   if (s.minimumParticipants > s.numberOfTeams) invalid('minimumParticipants exceeds numberOfTeams');
   if (s.startingBudgetCr < s.minSquadSize * s.minimumBasePriceCr) invalid('Budget cannot fund the minimum squad');
   if (s.antiSnipingResetSeconds < s.antiSnipingThresholdSeconds) invalid('Anti-sniping reset must not shorten the timer');
+  if (s.retention.enabled && s.playerPoolSource !== 'FC26') invalid('Player retention requires the FC26 player source');
 });
 export type RoomSettings = z.infer<typeof settingsSchema>;
+/** The FC26 pool contains 1 Cr Underdogs, so the minimum base price is forced to 1 Cr for that source. */
+export function parseSettings(input: unknown): RoomSettings {
+  const candidate = input && typeof input === 'object' && (input as { playerPoolSource?: unknown }).playerPoolSource === 'FC26'
+    ? { ...(input as object), minimumBasePriceCr: 1 } : input;
+  return settingsSchema.parse(candidate);
+}
 export const roomCodeSchema = z.string().regex(/^[A-HJ-NP-Z2-9]{6}$/);
 export const nameSchema = z.string().trim().min(2).max(60).regex(/^[^\x00-\x1f\x7f<>]+$/);
 export const joinSchema = z.object({ teamName: nameSchema, teamLogoEmoji: z.string().min(1).max(16).optional(), teamLogoUrl: z.string().url().max(2048)

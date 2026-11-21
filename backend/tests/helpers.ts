@@ -6,9 +6,10 @@ import { AuctionEngine } from '../src/modules/auction/auction.engine.js';
 import type { RoomSettings } from '../src/schemas/settings.js';
 import type { AuctionCommand } from '../src/modules/auction/auction.schemas.js';
 import type { RoomRepository } from '../src/repositories/interfaces.js';
-export async function fixture(settings: Partial<RoomSettings> = {}, repository: RoomRepository = new MemoryRoomRepository(), playerCount = 2) {
+import type { Fc26Catalog } from '../src/modules/fc26/fc26.catalog.js';
+export async function fixture(settings: Partial<RoomSettings> = {}, repository: RoomRepository = new MemoryRoomRepository(), playerCount = 2, fc26?: Fc26Catalog) {
   const clock = { value: 1_000_000, now() { return this.value; } };
-  const manager = new RoomManager(repository, new CatalogPlayerRepository(demoPlayers.slice(0, playerCount)), clock);
+  const manager = new RoomManager(repository, new CatalogPlayerRepository(demoPlayers.slice(0, playerCount)), clock, undefined, undefined, fc26);
   const engine = new AuctionEngine(manager);
   const rooms = new RoomService(manager);
   const room = await manager.create({ userId: 'host' }, { auctionName: 'Test Auction', teamName: 'Host FC',

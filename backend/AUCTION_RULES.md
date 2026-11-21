@@ -54,4 +54,7 @@ END_AUCTION settles any accepted highest bid, including while paused, marks neve
 
 numberOfTeams=4; minimumParticipants=2; startingBudgetCr=100; minSquadSize=11; maxSquadSize=18; playerTimerSeconds=20; antiSnipingEnabled=true; threshold=3; reset=5; minimumBasePriceCr=1; allowCustomBids=true; autoAdvance=true; transitionDelaySeconds=3; playerPoolConfig={}.
 
+## FC26 database source
+Settings `playerPoolSource` (`DEFAULT` | `FC26`, default `DEFAULT`) and `retention.enabled` (default false; requires `FC26`). With `FC26` the pool is the imported FC26 CSV catalog in five pots: `GK`, `CB`, `FB`, `MID`, `ATT`. Underdog players (`draftPool=UNDERDOG`, `playerTag=UNDERDOG`) sit in the same pots by primary position. Base prices are computed on the server (`domain/pricing.ts`): Underdog 1 Cr, regular below the Top threshold (default 90 overall) 3 Cr, regular at or above it 5 Cr. The minimum base price is forced to 1 Cr for this source. Import: `GET /api/fc26/status`, `POST /api/fc26/import`, `GET /api/players?source=FC26`.
+
 Host occupies one team slot. Joining, leaving, kicking and settings changes are lobby-only. The host cannot leave or kick themselves. Running auctions continue without the host's socket.
