@@ -12,7 +12,7 @@ export const roomService={
  getState:(code:string)=>api.get<RoomStateDTO>('/rooms/'+validRoomCode(code)+'/state'),
  async getRoom(code:string){return mapRoom(await this.getState(code));},
  async createRoom(settings:RoomSettings,teamName?:string){
-  if(settings.playerPoolSource!=='default')throw new Error('Only the configured server player pool is available.');
+  if(settings.playerPoolSource!=='default'&&settings.playerPoolSource!=='fc26')throw new Error('Only the configured server player pools are available.');
   const user=await authService.getSession();
   const created=await api.post<{roomCode:string}>('/rooms',{auctionName:settings.auctionName,
    teamName:teamName||user?.defaultTeamName||((user?.username??'My')+' FC').slice(0,60),settings:settingsToDTO(settings)});

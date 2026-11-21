@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import type { PlayerDTO } from "@/types/backend";
 import { webSocketService } from "@/services/websocket.service";
 import { normalizeError } from "@/services/api";
+import { UnderdogTag } from "@/components/shared/UnderdogTag";
 
 export function RecallPlayersModal({ players, roomCode, enabled, onClose }: {
   players: PlayerDTO[]; roomCode: string; enabled: boolean; onClose: () => void;
@@ -51,7 +52,7 @@ export function RecallPlayersModal({ players, roomCode, enabled, onClose }: {
             className="h-5 w-5 shrink-0 accent-[#00ff87]" onChange={e => setSelected(current => {
               const next = new Set(current); if (e.target.checked) next.add(player.id); else next.delete(player.id); return next;
             })} />
-          <span className="min-w-0 flex-1"><strong className="block text-[#f8fafc]">{player.name}</strong>
+          <span className="min-w-0 flex-1"><strong className="block text-[#f8fafc]">{player.name}<UnderdogTag player={player} /></strong>
             <span className="text-xs text-[#94a3b8]">{player.ovr} OVR · {player.subPosition || player.position}{player.club ? " · " + player.club : ""}</span>
           </span>
           <span className="shrink-0 text-xs">₹{player.basePriceCr} Cr</span>

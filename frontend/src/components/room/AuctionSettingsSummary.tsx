@@ -7,10 +7,17 @@ import { Sliders, Shield, Clock, Coins, Users } from "lucide-react";
 
 export interface AuctionSettingsSummaryProps {
   settings: RoomSettings;
+  /** Live retention phase from ROOM_STATE, when retention is enabled. */
+  retentionPhase?: "OFF" | "OPEN" | "FINALIZED";
+}
+
+function phaseLabel(phase: AuctionSettingsSummaryProps["retentionPhase"]): string {
+  return phase === "FINALIZED" ? "On · finalized" : "On · 15 Cr each, up to 3 per team";
 }
 
 export const AuctionSettingsSummary: React.FC<AuctionSettingsSummaryProps> = ({
   settings,
+  retentionPhase,
 }) => {
   return (
     <div className="rounded-2xl bg-[#0e121a] border border-[#242c3d] p-5 shadow-lg space-y-4">
@@ -70,6 +77,26 @@ export const AuctionSettingsSummary: React.FC<AuctionSettingsSummaryProps> = ({
           </span>
           <span className="text-base font-black font-mono text-[#f8fafc]">
             {formatCr(settings.minPlayerBasePrice)}
+          </span>
+        </div>
+
+        {settings.playerPoolSource === "fc26" && (
+          <div className="bg-[#151a24] p-3 rounded-xl border border-[#242c3d]">
+            <span className="text-[10px] text-[#64748b] font-bold uppercase block mb-1">
+              PLAYER SOURCE
+            </span>
+            <span className="text-sm font-bold text-[#f8fafc]">FC26 Database</span>
+          </div>
+        )}
+
+        <div className="bg-[#151a24] p-3 rounded-xl border border-[#242c3d]" data-testid="retention-summary">
+          <span className="text-[10px] text-[#64748b] font-bold uppercase block mb-1">
+            PLAYER RETENTION
+          </span>
+          <span className="text-sm font-bold text-[#f8fafc]">
+            {settings.retentionEnabled
+              ? phaseLabel(retentionPhase)
+              : "Off"}
           </span>
         </div>
 

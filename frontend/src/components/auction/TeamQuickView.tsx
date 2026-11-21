@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { formatCr } from "@/lib/utils";
 import { ExternalLink, ShieldAlert } from "lucide-react";
+import { UnderdogTag, RetainedTag } from "@/components/shared/UnderdogTag";
 
 export interface TeamQuickViewProps {
   isOpen: boolean;
@@ -108,7 +109,7 @@ export const TeamQuickView: React.FC<TeamQuickViewProps> = ({
                       {player.ovr}
                     </Badge>
                     <div>
-                      <p className="font-bold text-[#f8fafc]">{player.name}</p>
+                      <p className="font-bold text-[#f8fafc]">{player.name}<UnderdogTag player={player} /><RetainedTag player={player} /></p>
                       <p className="text-[10px] text-[#64748b]">{player.club}</p>
                     </div>
                   </div>

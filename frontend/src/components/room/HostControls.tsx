@@ -12,6 +12,8 @@ export interface HostControlsProps {
   onEditSettings?: () => void;
   isStarting?: boolean;
   disabled?: boolean;
+  /** When set, START is disabled and this reason is shown (e.g. retention not finalized). */
+  startBlockedReason?: string | null;
 }
 
 export const HostControls: React.FC<HostControlsProps> = ({
@@ -22,6 +24,7 @@ export const HostControls: React.FC<HostControlsProps> = ({
   onEditSettings,
   isStarting = false,
   disabled = false,
+  startBlockedReason = null,
 }) => {
   if (!isHost) {
     return (
@@ -35,6 +38,9 @@ export const HostControls: React.FC<HostControlsProps> = ({
         <p className="text-xs text-[#94a3b8]">
           The host will initiate the live player auction when the required teams have joined.
         </p>
+        {startBlockedReason ? (
+          <p className="mt-1 text-xs text-amber-300" data-testid="start-blocked-reason">{startBlockedReason}</p>
+        ) : null}
       </div>
     );
   }
@@ -73,7 +79,8 @@ export const HostControls: React.FC<HostControlsProps> = ({
             size="lg"
             onClick={onStartAuction}
             isLoading={isStarting}
-            disabled={disabled}
+            disabled={disabled || Boolean(startBlockedReason)}
+            aria-describedby={startBlockedReason ? "start-blocked-reason" : undefined}
             className="flex-1 sm:flex-initial px-7"
             leftIcon={<Play className="w-4 h-4 fill-current" />}
           >
@@ -81,6 +88,9 @@ export const HostControls: React.FC<HostControlsProps> = ({
           </Button>
         </div>
       </div>
+      {startBlockedReason ? (
+        <p id="start-blocked-reason" className="text-left text-xs text-amber-300" data-testid="start-blocked-reason">{startBlockedReason}</p>
+      ) : null}
     </div>
   );
 };

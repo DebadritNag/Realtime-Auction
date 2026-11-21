@@ -4,6 +4,7 @@ import React from "react";
 import { AuctionAnalytics } from "@/types";
 import { formatCr } from "@/lib/utils";
 import { Sparkles, Flame, DollarSign, Swords, ShoppingBag, Shield } from "lucide-react";
+import { UnderdogTag } from "@/components/shared/UnderdogTag";
 
 export interface AuctionHighlightsProps {
   analytics: AuctionAnalytics;
@@ -33,6 +34,7 @@ export const AuctionHighlights: React.FC<AuctionHighlightsProps> = ({
             </div>
             <h4 className="text-xl font-black text-[#f8fafc] uppercase tracking-wide truncate">
               {analytics.mostExpensivePlayer.player.name}
+              <UnderdogTag player={analytics.mostExpensivePlayer.player} />
             </h4>
             <p className="text-xs text-[#94a3b8] mt-1">
               Signed by <strong className="text-[#f8fafc]">{analytics.mostExpensivePlayer.boughtByTeam}</strong>
@@ -67,6 +69,7 @@ export const AuctionHighlights: React.FC<AuctionHighlightsProps> = ({
             </div>
             <h4 className="text-xl font-black text-[#f8fafc] uppercase tracking-wide truncate">
               {analytics.longestBiddingWar.player.name}
+              <UnderdogTag player={analytics.longestBiddingWar.player} />
             </h4>
             <p className="text-xs text-[#94a3b8] mt-1">
               Final hammer at <strong className="font-mono text-white">{formatCr(analytics.longestBiddingWar.finalPrice)}</strong>

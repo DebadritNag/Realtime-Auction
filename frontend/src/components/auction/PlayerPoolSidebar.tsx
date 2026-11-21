@@ -5,6 +5,8 @@ import { Player, PotCategory } from "@/types";
 import { Badge } from "@/components/ui/Badge";
 import { formatCr } from "@/lib/utils";
 import { CheckCircle2, PlayCircle, Clock, Search, Layers } from "lucide-react";
+import { UnderdogTag, RetainedTag } from "@/components/shared/UnderdogTag";
+import { potLabel } from "@/lib/pots";
 
 export interface PlayerPoolSidebarProps {
   players: Player[];
@@ -20,7 +22,7 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
   const [selectedPot, setSelectedPot] = useState<PotCategory | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const potCategories = [{ id: "all", label: "All Pots" }, ...Array.from(new Set(players.map(p => p.pot))).map(id => ({id, label: id}))];
+  const potCategories = [{ id: "all", label: "All Pots" }, ...Array.from(new Set(players.map(p => p.pot))).map(id => ({id, label: potLabel(id)}))];
 
   const filteredPlayers = players.filter((p) => {
     const matchesPot = selectedPot === "all" || p.pot === selectedPot;
@@ -31,8 +33,11 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
     return matchesPot && matchesSearch;
   });
 
-  const soldCount = players.filter((p) => p.status === "sold").length;
-  const totalCount = players.length;
+  // Retained players were signed before bidding; they are listed with a RETAINED label
+  // but are not part of the auctioned pool progress.
+  const auctionPool = players.filter((p) => !p.isRetained);
+  const soldCount = auctionPool.filter((p) => p.status === "sold").length;
+  const totalCount = auctionPool.length;
 
   return (
     <div className="auction-pool-panel flex flex-col h-full bg-[#0e121a] rounded-2xl border border-[#242c3d] p-3 text-[#f8fafc] shadow-lg">
@@ -135,6 +140,8 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
                       }`}
                     >
                       {player.name}
+                      <UnderdogTag player={player} />
+                      <RetainedTag player={player} />
                     </span>
                     <span className="text-[10px] text-[#64748b] truncate">
                       {player.club} • {player.subPosition || player.position}

@@ -4,6 +4,7 @@ import React from "react";
 import { SoldOverlayState } from "@/stores/auction.store";
 import { formatCr } from "@/lib/utils";
 import { Check, Sparkles } from "lucide-react";
+import { UnderdogTag } from "@/components/shared/UnderdogTag";
 
 export interface SoldOverlayProps {
   soldData: SoldOverlayState;
@@ -40,6 +41,7 @@ export const SoldOverlay: React.FC<SoldOverlayProps> = ({
         {/* Player Name */}
         <h3 className="text-2xl sm:text-3xl font-black uppercase text-[#f8fafc] tracking-wide mt-2">
           {soldData.player.name}
+          <UnderdogTag player={soldData.player} />
         </h3>
         <p className="text-xs text-[#94a3b8] mt-0.5">
           {soldData.player.club} • {soldData.player.ovr} OVR {soldData.player.position}

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
 import type { Player, Team } from "@/types";
 import { generateTeamPdf } from "@/lib/pdf";
+import { UnderdogTag, RetainedTag } from "@/components/shared/UnderdogTag";
 import { ExternalLink, TrendingDown, TrendingUp, Minus, Users, Shield, Swords, Star, Download, Loader2 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -93,7 +94,7 @@ function PlayerCard({ player }: { player: Player }) {
 
       {/* Name + club */}
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold text-[#f8fafc] truncate leading-snug">{player.name}</p>
+        <p className="text-xs font-bold text-[#f8fafc] truncate leading-snug">{player.name}<UnderdogTag player={player} /><RetainedTag player={player} /></p>
         <p className="text-[10px] text-[#64748b] truncate leading-snug">
           {player.nationality ? `${player.nationality} · ` : ""}{player.club}
         </p>

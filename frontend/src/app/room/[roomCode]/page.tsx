@@ -12,6 +12,7 @@ import { RoomHeader } from "@/components/room/RoomHeader";
 import { TeamLobbyCard } from "@/components/room/TeamLobbyCard";
 import { AuctionSettingsSummary } from "@/components/room/AuctionSettingsSummary";
 import { HostControls } from "@/components/room/HostControls";
+import { RetentionScreen } from "@/components/retention/RetentionScreen";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Users } from "lucide-react";
@@ -101,6 +102,8 @@ export default function RoomLobbyPage({
   // they have team.connected correctly populated.  Fall back to the REST snapshot
   // from room.store until the socket delivers the first ROOM_STATE.
   const displayTeams = liveTeams.length > 0 ? liveTeams : room.teams;
+  const retentionEnabled = (snapshot?.settings.retention?.enabled ?? room.settings.retentionEnabled) === true;
+  const retentionPhase = snapshot?.retention?.phase;
 
   return (
     <>
@@ -122,7 +125,16 @@ export default function RoomLobbyPage({
             connectionStatus !== "SYNCED" ||
             displayTeams.length < (snapshot?.settings.minimumParticipants ?? 2)
           }
+          startBlockedReason={
+            retentionEnabled && retentionPhase !== "FINALIZED"
+              ? "Player retention must be finalized before the auction can start."
+              : null
+          }
         />
+
+        {retentionEnabled && snapshot?.retention ? (
+          <RetentionScreen roomCode={roomCode} snapshot={snapshot} isHost={isHost} />
+        ) : null}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Team cards */}
@@ -154,7 +166,7 @@ export default function RoomLobbyPage({
 
           {/* Settings */}
           <div className="lg:col-span-5 space-y-6">
-            <AuctionSettingsSummary settings={room.settings} />
+            <AuctionSettingsSummary settings={room.settings} retentionPhase={retentionPhase} />
           </div>
         </div>
       </div>

@@ -29,6 +29,14 @@ export interface Player {
   pot: PotCategory;
   photoUrl?: string;
   status: "waiting" | "live" | "sold" | "unsold" | "skipped";
+  /** FC26 fields; absent for the default pool. */
+  playerTag?: "UNDERDOG";
+  draftPool?: "REGULAR" | "UNDERDOG";
+  sourceCategory?: string;
+  positions?: string[];
+  potential?: number;
+  fullName?: string;
+  isRetained?: boolean;
   soldPrice?: number;
   soldToTeamId?: string;
   soldToTeamName?: string;
@@ -59,6 +67,10 @@ export interface Team {
   positions: SquadBreakdown;
   ready: boolean;
   connected: boolean;
+  /** Retention figures; zero when retention is off. Cr values. */
+  retainedCount?: number;
+  retentionSpent?: number;
+  auctionPurse?: number;
 }
 
 export interface User {
@@ -117,7 +129,8 @@ export interface RoomSettings {
   antiSnipingThresholdSeconds: number; // e.g. 5
   timerResetDurationSeconds: number; // e.g. 5
   minPlayerBasePrice: number; // e.g. 2
-  playerPoolSource: "default" | "csv" | "custom";
+  playerPoolSource: "default" | "csv" | "custom" | "fc26";
+  retentionEnabled?: boolean;
   filters?: {
     minOvr: number;
     maxOvr: number;

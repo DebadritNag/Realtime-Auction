@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
 import { formatCr } from "@/lib/utils";
 import { generateTeamPdf } from "@/lib/pdf";
+import { UnderdogTag, RetainedTag } from "@/components/shared/UnderdogTag";
 import { Shield, Users, DollarSign, Download, Loader2 } from "lucide-react";
 
 export interface SquadFormationViewProps {
@@ -86,7 +87,7 @@ export const SquadFormationView: React.FC<SquadFormationViewProps> = ({
                   </Badge>
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-[#f8fafc]">{p.name}</h4>
+                  <h4 className="font-bold text-sm text-[#f8fafc]">{p.name}<UnderdogTag player={p} /><RetainedTag player={p} /></h4>
                   <p className="text-[11px] text-[#64748b]">
                     {p.club} • {p.nationality}
                   </p>

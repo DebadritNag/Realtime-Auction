@@ -7,19 +7,38 @@ export interface SettingsDTO {
  playerTimerSeconds:number; antiSnipingEnabled:boolean; antiSnipingThresholdSeconds:number; antiSnipingResetSeconds:number;
  minimumBasePriceCr:number; allowCustomBids:boolean; autoAdvance:boolean; transitionDelaySeconds:number;
  playerPoolConfig:{playerIds?:string[];potIds?:string[]};
+ playerPoolSource?:'DEFAULT'|'FC26'; retention?:{enabled:boolean};
 }
 export interface PlayerDTO {
  id:string;name:string;position:'GK'|'DEF'|'MID'|'FWD';ovr:number;stats:Record<string,number>;basePriceCr:number;potId:string;
  status:'WAITING'|'ACTIVE'|'SOLD'|'UNSOLD'|'SKIPPED';round:number;unsoldReason?:'UNANIMOUS_SKIP';
  club?:string;nationality?:string;age?:number;preferredFoot?:string;photoUrl?:string;
  subPosition?:string; // specific football position, e.g. CB, LB, ST, CM
+ fullName?:string;potential?:number;positions?:string[];draftPool?:'REGULAR'|'UNDERDOG';playerTag?:'UNDERDOG';sourceCategory?:string;
 }
 export interface TeamDTO {
  id:string;userId:string;name:string;logoUrl?:string;logoEmoji?:string;startingBudgetCr:number;spentCr:number;
  remainingBudgetCr:number;playerIds:string[];playersOwned:number;maximumPermittedBidCr:number;minimumSquadMet:boolean;
  managerUsername?:string; // real username when available from hub connections
+ retainedCount?:number;retentionSpentCr?:number;auctionPurseCr?:number;
 }
-export interface PurchaseDTO {id:string;playerId:string;teamId:string;priceCr:number;bidCount:number;at:number;durationMs:number}
+export interface PurchaseDTO {id:string;playerId:string;teamId:string;priceCr:number;bidCount:number;at:number;durationMs:number;acquisitionType?:'AUCTION'|'RETENTION';isRetained?:boolean}
+export type RetentionPhase='OFF'|'OPEN'|'FINALIZED';
+export interface RetentionPickDTO {id:string;teamId:string;playerId:string;priceCr:number;at:number;player:PlayerDTO|null}
+export interface RetentionTeamDTO {teamId:string;retainedCount:number;remainingSlots:number;spentCr:number;remainingPurseCr:number}
+export interface RetentionStateDTO {
+ enabled:boolean;config:{priceCr:number;maxPerTeam:number;minPerTeam:number};phase:RetentionPhase;
+ picks:RetentionPickDTO[];teams:RetentionTeamDTO[];totals:{retained:number;spentCr:number};finalizedAt:number|null;
+}
+export type RetentionGroup='ALL'|'GK'|'CB'|'FB'|'CM'|'WM'|'ST'|'W';
+export interface RetentionPlayerDTO extends Omit<PlayerDTO,'status'|'round'>{retentionPriceCr:number;retainedByTeamId:string|null}
+export interface RetentionPlayersResponse {total:number;offset:number;limit:number;retentionPriceCr:number;players:RetentionPlayerDTO[]}
+export interface Fc26FileReportDTO {source:string;file:string;status:'READ'|'MISSING'|'UNREADABLE'|'INVALID';message?:string;rows:number;valid:number;invalid:number;imported:number;skippedDuplicates:number}
+export interface Fc26ImportReportDTO {
+ filesRead:number;missingFiles:string[];rowsRead:number;imported:number;skippedDuplicates:number;
+ invalidRows:{file:string;row:number;reason:string}[];perFile:Record<string,Fc26FileReportDTO>;underdogImported:number;
+}
+export interface Fc26StatusDTO {total:number;underdogs:number;byPot:Record<string,number>;topRatingThreshold:number;lastImport:Fc26ImportReportDTO|null}
 export interface BidDTO {id:string;roomId:string;playerId:string;teamId:string;amountCr:number;at:number;round:number}
 export interface RoomStateDTO {
  room:{id:string;code:string;auctionName:string;createdAt:number}; roomId:string;roomCode:string;settings:SettingsDTO;status:RoomStatus;
@@ -29,7 +48,7 @@ export interface RoomStateDTO {
  startedAt:number|null;endsAt:number|null;remainingTimeMs:number|null;biddingOpen:boolean;lastBidAt:number|null;
  bidCount:number;nextPlayerAt:number|null;serverTime:number;sequence:number;teams:TeamDTO[];currentUserTeam:TeamDTO;
  connectedUsers:string[];players:PlayerDTO[];playerQueue:string[];playerQueueSummary:{remaining:number};
- soldPlayers:PurchaseDTO[];unsoldPlayers:PlayerDTO[];
+ soldPlayers:PurchaseDTO[];unsoldPlayers:PlayerDTO[];retention?:RetentionStateDTO;
 }
 export interface RecommendationDTO {
  recommendedMinCr:number;recommendedMaxCr:number;suggestedCeilingCr:number;budgetRisk:'LOW'|'MEDIUM'|'HIGH';
@@ -49,6 +68,8 @@ export type ClientCommand =
  | {type:HostCommand;payload:RoomPayload;requestId?:string}
  | {type:'PLACE_BID';payload:RoomPayload & {amountCr:number;playerId?:string};requestId?:string}
  | {type:'VOTE_SKIP_PLAYER'|'REMOVE_SKIP_VOTE';payload:RoomPayload & {playerId:string;activationId:string};requestId?:string}
+ | {type:'RETAIN_PLAYER';payload:RoomPayload & {playerId:string};requestId?:string}
+ | {type:'FINALIZE_RETENTIONS'|'RESET_RETENTIONS';payload:RoomPayload;requestId?:string}
  | {type:'RECALL_PLAYERS';payload:RoomPayload & {playerIds:string[]};requestId?:string}
  | {type:'KICK_MEMBER';payload:RoomPayload & {targetTeamId:string};requestId?:string}
  | {type:'UPDATE_SETTINGS';payload:RoomPayload & {settings:Partial<SettingsDTO>};requestId?:string}
@@ -98,6 +119,9 @@ TRANSFER_WINDOW_CLOSED:{tournamentId:string};
  PLAYER_UNSOLD:{playerId:string;reason?:'UNANIMOUS_SKIP'};
  PLAYER_RECALLED:{playerId:string;status:'WAITING';round:number};
  TEAM_UPDATED:{teamId:string};
+ PLAYER_RETAINED:{pickId:string;teamId:string;playerId:string;priceCr:number;retainedCount:number;remainingBudgetCr:number};
+ RETENTION_FINALIZED:{totalRetained:number;totalSpentCr:number};
+ RETENTION_RESET:{removed?:number;teamId?:string;reason?:string};
  BUDGET_UPDATED:{teamId:string;spentCr:number;remainingBudgetCr:number};
  AUCTION_PAUSED:{remainingTimeMs:number|null};AUCTION_RESUMED:{endsAt:number|null};
  AUCTION_COMPLETED:Record<string,never>;
@@ -110,7 +134,7 @@ export function parseServerEvent(raw:string):ServerEvent | null {
  const value:unknown=JSON.parse(raw);
  if(!value || typeof value!=='object') throw new Error('Invalid server event');
  const e=value as Record<string,unknown>;
- const names=['NOTIFICATION_CREATED','MANAGER_MODE_PATCH','MANAGER_MODE_SUMMARY','PLAYER_RELEASED','FREE_AGENT_POOL_UPDATED','MANAGER_PLAYER_SOLD','SEASON_COMPLETED','LEAGUE_SHIELD_AWARDED','SEASON_BONUSES_AWARDED','NEXT_SEASON_STARTED','MANAGER_MODE_ENDED','BUYOUT_CREATED','BUYOUT_UPDATED','BUYOUT_ACCEPTED','BUYOUT_REJECTED','BUYOUT_COUNTERED','TEAM_BUDGET_UPDATED','NEGOTIATION_STARTED','NEGOTIATION_UPDATED','FREE_AGENT_OFFER_UPDATED','FREE_AGENT_ACCEPTED','FREE_AGENT_SIGNED','FREE_AGENT_SIGNED_ELSEWHERE','TRADE_CREATED','TRADE_UPDATED','PLAYER_TRANSFERRED','TRANSFER_WINDOW_OPENED','TRANSFER_WINDOW_CLOSED','MANAGER_MODE_STATE','MANAGER_MODE_INBOX','MANAGER_MODE_CREATED','MANAGER_MODE_UPDATED','MANAGER_MODE_DELETED','CONNECTED','ROOM_STATE','ROOM_UPDATED','MEMBER_JOINED','MEMBER_LEFT','PRESENCE_UPDATED','AUCTION_STARTED','PLAYER_STARTED','BID_UPDATED','TIMER_EXTENDED','PLAYER_SOLD','PLAYER_UNSOLD','SKIP_VOTE_UPDATED','PLAYER_RECALLED','TEAM_UPDATED','BUDGET_UPDATED','AUCTION_PAUSED','AUCTION_RESUMED','AUCTION_COMPLETED','COMMAND_ACK','BID_REJECTED','ERROR','PONG'];
+ const names=['NOTIFICATION_CREATED','MANAGER_MODE_PATCH','MANAGER_MODE_SUMMARY','PLAYER_RELEASED','FREE_AGENT_POOL_UPDATED','MANAGER_PLAYER_SOLD','SEASON_COMPLETED','LEAGUE_SHIELD_AWARDED','SEASON_BONUSES_AWARDED','NEXT_SEASON_STARTED','MANAGER_MODE_ENDED','BUYOUT_CREATED','BUYOUT_UPDATED','BUYOUT_ACCEPTED','BUYOUT_REJECTED','BUYOUT_COUNTERED','TEAM_BUDGET_UPDATED','NEGOTIATION_STARTED','NEGOTIATION_UPDATED','FREE_AGENT_OFFER_UPDATED','FREE_AGENT_ACCEPTED','FREE_AGENT_SIGNED','FREE_AGENT_SIGNED_ELSEWHERE','TRADE_CREATED','TRADE_UPDATED','PLAYER_TRANSFERRED','TRANSFER_WINDOW_OPENED','TRANSFER_WINDOW_CLOSED','MANAGER_MODE_STATE','MANAGER_MODE_INBOX','MANAGER_MODE_CREATED','MANAGER_MODE_UPDATED','MANAGER_MODE_DELETED','CONNECTED','ROOM_STATE','ROOM_UPDATED','MEMBER_JOINED','MEMBER_LEFT','PRESENCE_UPDATED','AUCTION_STARTED','PLAYER_STARTED','BID_UPDATED','TIMER_EXTENDED','PLAYER_SOLD','PLAYER_UNSOLD','SKIP_VOTE_UPDATED','PLAYER_RECALLED','TEAM_UPDATED','PLAYER_RETAINED','RETENTION_FINALIZED','RETENTION_RESET','BUDGET_UPDATED','AUCTION_PAUSED','AUCTION_RESUMED','AUCTION_COMPLETED','COMMAND_ACK','BID_REJECTED','ERROR','PONG'];
  names.push('CUP_SETTINGS_UPDATED', 'CUP_ENABLED','CUP_QUALIFIERS_CONFIRMED','CUP_DRAW_COMPLETED','CUP_FIXTURE_UPDATED','CUP_GROUP_STANDINGS_UPDATED','CUP_SEMI_FINAL_READY','CUP_FINAL_READY','CUP_COMPLETED','TROPHY_AWARDED','FIXTURE_RESULT_UPDATED','FIXTURE_SCORERS_UPDATED','PLAYER_STATS_UPDATED','STANDINGS_UPDATED','SECRET_PLAYER_CLAIMED','SECRET_PLAYER_POOL_UPDATED','SECRET_PLAYER_REVEALED','SQUAD_UPDATED','FIXTURE_FORMAT_UPDATED','FIXTURES_GENERATED');
  if(typeof e.type!=='string'||!Number.isSafeInteger(e.sequence)||typeof e.serverTime!=='number'||!Number.isFinite(e.serverTime)||!e.payload||typeof e.payload!=='object') throw new Error('Invalid server envelope');
  // New informational signals during a rolling deployment are not corrupt state.

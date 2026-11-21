@@ -6,6 +6,14 @@ import { useRoomStore } from "@/stores/room.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { RoomSettings } from "@/types";
 import { PlayerCatalogPreview } from "@/components/room/PlayerCatalogPreview";
+import { Fc26ImportPanel } from "@/components/fc26/Fc26ImportPanel";
+import { Database, Lock } from "lucide-react";
+
+// Retention rules are fixed by the server; shown here read-only.
+const RETENTION_PRICE_CR = 15;
+const RETENTION_MAX_PER_TEAM = 3;
+const RETENTION_MIN_PER_TEAM = 0;
+const FC26_MIN_BASE_PRICE_CR = 1;
 
 export default function CreateRoomPage() {
   const router = useRouter();
@@ -24,6 +32,7 @@ export default function CreateRoomPage() {
     timerResetDurationSeconds: 6,
     minPlayerBasePrice: 5,
     playerPoolSource: "default",
+    retentionEnabled: false,
     filters: {
       minOvr: 84,
       maxOvr: 93,
@@ -38,9 +47,36 @@ export default function CreateRoomPage() {
   const [sourceNotice, setSourceNotice] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSourceSelect = (source: "default" | "csv" | "custom") => {
-    if (source !== 'default') {setSourceNotice('Only the configured server player catalog is available.'); return;}
-    setFormData(prev => ({...prev, playerPoolSource: source})); setSourceNotice(null);
+  // null = unknown (not loaded or unavailable); 0 = catalog is empty.
+  const [fc26Total, setFc26Total] = useState<number | null>(null);
+  // Remembered so leaving FC26 restores the floor price the user had chosen.
+  const [savedMinBasePrice, setSavedMinBasePrice] = useState(5);
+
+  const handleSourceSelect = (source: "default" | "csv" | "custom" | "fc26") => {
+    if (source === 'csv' || source === 'custom') {setSourceNotice('Only the configured server player catalogs are available.'); return;}
+    if (formData.retentionEnabled && source !== 'fc26') {
+      setSourceNotice('Player Retention uses the FC26 database. Turn retention off to choose another source.');
+      return;
+    }
+    setSourceNotice(null);
+    setFormData(prev => {
+      if (source === 'fc26') {
+        if (prev.playerPoolSource !== 'fc26') setSavedMinBasePrice(prev.minPlayerBasePrice);
+        return {...prev, playerPoolSource: 'fc26', minPlayerBasePrice: FC26_MIN_BASE_PRICE_CR};
+      }
+      return {...prev, playerPoolSource: 'default',
+        minPlayerBasePrice: prev.playerPoolSource === 'fc26' ? savedMinBasePrice : prev.minPlayerBasePrice};
+    });
+  };
+
+  const handleRetentionToggle = (enabled: boolean) => {
+    setSourceNotice(null);
+    setFormData(prev => {
+      if (!enabled) return {...prev, retentionEnabled: false};
+      if (prev.playerPoolSource !== 'fc26') setSavedMinBasePrice(prev.minPlayerBasePrice);
+      return {...prev, retentionEnabled: true, playerPoolSource: 'fc26',
+        minPlayerBasePrice: FC26_MIN_BASE_PRICE_CR};
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,6 +99,11 @@ export default function CreateRoomPage() {
       setValidationError("Min squad size cannot exceed max squad size.");
       return;
     }
+    if (formData.playerPoolSource === "fc26" && fc26Total === 0) {
+      setValidationError("The FC26 database is empty. Import it before creating an FC26 auction.");
+      return;
+    }
+
     if (formData.startingBudget < formData.minSquadSize * formData.minPlayerBasePrice) {
       setValidationError(
         `Starting budget (₹${formData.startingBudget} Cr) cannot fund minimum squad (${formData.minSquadSize} × ₹${formData.minPlayerBasePrice} Cr = ₹${
@@ -610,6 +651,7 @@ export default function CreateRoomPage() {
                     type="number"
                     step="0.5"
                     min="0.5"
+                    disabled={formData.playerPoolSource === "fc26"}
                     value={formData.minPlayerBasePrice}
                     onChange={(e) =>
                       setFormData({
@@ -619,7 +661,9 @@ export default function CreateRoomPage() {
                     }
                   />
                   <p className="text-[9px] text-[#697E91] mt-1 leading-snug">
-                    Floor opening bid for unrated players
+                    {formData.playerPoolSource === "fc26"
+                      ? "Fixed at ₹1 Cr for the FC26 database; base prices come from player category."
+                      : "Floor opening bid for unrated players"}
                   </p>
                 </div>
               </div>
@@ -644,9 +688,9 @@ export default function CreateRoomPage() {
               </div>
             </div>
 
-            <PlayerCatalogPreview />
-            {/* 3 Selectable Option Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <PlayerCatalogPreview source={formData.playerPoolSource === "fc26" ? "FC26" : undefined} />
+            {/* Selectable Option Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* Option 1: Default Database */}
               <div
                 onClick={() => handleSourceSelect("default")}
@@ -751,9 +795,102 @@ export default function CreateRoomPage() {
                   </p>
                 </div>
               </div>
+
+              {/* Option 4: FC26 Database */}
+              <button
+                type="button"
+                aria-pressed={formData.playerPoolSource === "fc26"}
+                onClick={() => handleSourceSelect("fc26")}
+                className={`rounded-lg p-3 relative cursor-pointer text-left group flex flex-col justify-between transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a78bfa] ${
+                  formData.playerPoolSource === "fc26"
+                    ? "border-[1.5px] border-[#a78bfa] bg-[linear-gradient(180deg,rgba(167,139,250,0.14)_0%,rgba(9,24,37,0.95)_100%)] shadow-[0_0_12px_rgba(167,139,250,0.2)]"
+                    : "bg-[#0A1724]/70 border border-[#7495B2]/25 hover:border-[#a78bfa]/60"
+                }`}
+              >
+                <div>
+                  <div className="flex items-start justify-between">
+                    <div className="w-7 h-7 rounded bg-[#a78bfa]/15 flex items-center justify-center text-[#a78bfa] mb-2">
+                      <Database className="w-4 h-4" aria-hidden="true" />
+                    </div>
+                    {formData.playerPoolSource === "fc26" && (
+                      <span className="w-4 h-4 rounded-full bg-[#a78bfa] flex items-center justify-center text-[#020D15]">
+                        <svg className="w-3 h-3 stroke-current stroke-[3]" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"></path>
+                        </svg>
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="text-xs font-bold text-white mb-0.5">FC26 Database</h4>
+                  <p className="text-[10px] text-[#8EA3B5] leading-tight">
+                    FC26 players from the server CSV files, with underdogs and category-based base prices
+                  </p>
+                </div>
+              </button>
             </div>
+
+            {formData.playerPoolSource === "fc26" && <Fc26ImportPanel onCatalogChange={setFc26Total} />}
           </div>
           {/* END: FormCard3 */}
+
+          {/* BEGIN: FormCard4 - Player Retention */}
+          <div className="rounded-xl bg-[#081725] subtle-card-border p-4 sm:p-5 shadow-xl transition-all hover:border-[#7495B2]/40">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center space-x-3">
+                <span className="w-6 h-6 rounded-md bg-[#a78bfa]/20 text-[#a78bfa] border border-[#a78bfa]/40 flex items-center justify-center text-xs font-bold">
+                  4
+                </span>
+                <div>
+                  <h2 className="text-xs sm:text-[13px] font-extrabold uppercase tracking-wide text-white">
+                    PLAYER RETENTION
+                  </h2>
+                  <p className="text-[11px] text-[#7E92A5]">
+                    Let teams keep players before the auction starts.
+                  </p>
+                </div>
+              </div>
+
+              <label className="relative inline-flex items-center cursor-pointer shrink-0" aria-label="Toggle Player Retention">
+                <input
+                  type="checkbox"
+                  role="switch"
+                  checked={formData.retentionEnabled === true}
+                  onChange={(e) => handleRetentionToggle(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-10 h-5 bg-[#0B1E2E] peer-focus-visible:ring-2 peer-focus-visible:ring-[#a78bfa] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#a78bfa] motion-reduce:after:transition-none"></div>
+                <span className="ml-2 w-7 text-[11px] font-bold text-[#cbd5e1]">{formData.retentionEnabled ? "ON" : "OFF"}</span>
+              </label>
+            </div>
+
+            {formData.retentionEnabled && (
+              <div className="mt-3.5 space-y-3" data-testid="retention-config">
+                <p className="text-xs text-[#cbd5e1] leading-relaxed">
+                  Each team can retain up to 3 players from the available FC26 database before the auction. Every retained player costs 15 Cr and will be added directly to the team&apos;s squad.
+                </p>
+                <dl className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <div className="rounded-lg bg-[#0A1724] border border-[#7495B2]/25 p-2.5">
+                    <dt className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#8FA5B8]">
+                      <Lock className="w-3 h-3" aria-hidden="true" /> Retention price
+                    </dt>
+                    <dd className="mt-0.5 font-mono text-sm font-bold text-white">{RETENTION_PRICE_CR} Cr per player</dd>
+                    <p className="text-[9px] text-[#697E91]">Fixed. Teams cannot change it.</p>
+                  </div>
+                  <div className="rounded-lg bg-[#0A1724] border border-[#7495B2]/25 p-2.5">
+                    <dt className="text-[10px] font-bold uppercase tracking-wider text-[#8FA5B8]">Maximum per team</dt>
+                    <dd className="mt-0.5 font-mono text-sm font-bold text-white">{RETENTION_MAX_PER_TEAM} players</dd>
+                  </div>
+                  <div className="rounded-lg bg-[#0A1724] border border-[#7495B2]/25 p-2.5">
+                    <dt className="text-[10px] font-bold uppercase tracking-wider text-[#8FA5B8]">Minimum per team</dt>
+                    <dd className="mt-0.5 font-mono text-sm font-bold text-white">{RETENTION_MIN_PER_TEAM} players</dd>
+                  </div>
+                </dl>
+                <p className="text-[11px] text-[#8CA0B3]">
+                  Retention selection must be completed before the auction can start. Retention uses the FC26 database, so the source is locked while retention is on.
+                </p>
+              </div>
+            )}
+          </div>
+          {/* END: FormCard4 */}
 
           {/* BEGIN: ActionButton */}
           <div className="pt-1">

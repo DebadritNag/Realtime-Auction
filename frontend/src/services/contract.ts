@@ -10,7 +10,10 @@ export function mapPlayer(p:PlayerDTO,s:RoomStateDTO):Player{
  subPosition:p.subPosition||undefined,
  club:p.club??'',nationality:p.nationality??'',flagEmoji:'',age:p.age??null,preferredFoot:p.preferredFoot??null,
  basePrice:p.basePriceCr,stats:{pac:stat('pac','pace'),sho:stat('sho','shooting'),pas:stat('pas','passing'),dri:stat('dri','dribbling'),def:stat('def','defending'),phy:stat('phy','physical')},
- pot:p.potId,photoUrl:p.photoUrl,status:({WAITING:'waiting',ACTIVE:'live',SOLD:'sold',UNSOLD:'unsold',SKIPPED:'skipped'} as const)[p.status],
+ pot:p.potId,photoUrl:p.photoUrl,
+ ...(p.playerTag==='UNDERDOG'?{playerTag:'UNDERDOG' as const}:{}),draftPool:p.draftPool,sourceCategory:p.sourceCategory,positions:p.positions,potential:p.potential,fullName:p.fullName,
+ isRetained:purchase?.isRetained===true||purchase?.acquisitionType==='RETENTION',
+ status:({WAITING:'waiting',ACTIVE:'live',SOLD:'sold',UNSOLD:'unsold',SKIPPED:'skipped'} as const)[p.status],
  soldPrice:purchase?.priceCr,soldToTeamId:purchase?.teamId,soldToTeamName:s.teams.find(t=>t.id===purchase?.teamId)?.name};
 }
 // Resolve manager username: prefer backend-supplied username, fall back to neutral label
@@ -30,18 +33,21 @@ export function mapTeams(s:RoomStateDTO):Team[]{
    managerUsername:username,isCurrentUser,
    budgetTotal:t.startingBudgetCr,budgetSpent:t.spentCr,budgetRemaining:t.remainingBudgetCr,squadCount:t.playersOwned,squad,
    positions:{gk:squad.filter(p=>p.position==='GK').length,def:squad.filter(p=>p.position==='DEF').length,mid:squad.filter(p=>p.position==='MID').length,att:squad.filter(p=>p.position==='ATT').length,total:squad.length},
-   ready:false,connected:s.connectedUsers.includes(t.userId)};
+   ready:false,connected:s.connectedUsers.includes(t.userId),
+   retainedCount:t.retainedCount??0,retentionSpent:t.retentionSpentCr??0,auctionPurse:t.auctionPurseCr??t.startingBudgetCr};
  });
 }
 export function mapSettings(s:SettingsDTO,name:string):RoomSettings{
  return {auctionName:name,numberOfTeams:s.numberOfTeams,startingBudget:s.startingBudgetCr,minSquadSize:s.minSquadSize,maxSquadSize:s.maxSquadSize,
  playerTimerSeconds:s.playerTimerSeconds,antiSnipingEnabled:s.antiSnipingEnabled,antiSnipingThresholdSeconds:s.antiSnipingThresholdSeconds,
- timerResetDurationSeconds:s.antiSnipingResetSeconds,minPlayerBasePrice:s.minimumBasePriceCr,playerPoolSource:'default'};
+ timerResetDurationSeconds:s.antiSnipingResetSeconds,minPlayerBasePrice:s.minimumBasePriceCr,playerPoolSource:s.playerPoolSource==='FC26'?'fc26':'default',retentionEnabled:s.retention?.enabled===true};
 }
 export function settingsToDTO(s:Partial<RoomSettings>):Partial<SettingsDTO>{
  return Object.fromEntries(Object.entries({numberOfTeams:s.numberOfTeams,startingBudgetCr:s.startingBudget,minSquadSize:s.minSquadSize,maxSquadSize:s.maxSquadSize,
  playerTimerSeconds:s.playerTimerSeconds,antiSnipingEnabled:s.antiSnipingEnabled,antiSnipingThresholdSeconds:s.antiSnipingThresholdSeconds,
- antiSnipingResetSeconds:s.timerResetDurationSeconds,minimumBasePriceCr:s.minPlayerBasePrice}).filter(([,v])=>v!==undefined));
+ antiSnipingResetSeconds:s.timerResetDurationSeconds,minimumBasePriceCr:s.minPlayerBasePrice,
+ playerPoolSource:s.playerPoolSource===undefined?undefined:s.playerPoolSource==='fc26'?'FC26':'DEFAULT',
+ retention:s.retentionEnabled===undefined?undefined:{enabled:s.retentionEnabled}}).filter(([,v])=>v!==undefined));
 }
 export function mapRoom(s:RoomStateDTO):AuctionRoom{
  return {roomCode:s.roomCode,name:s.room.auctionName,hostId:s.host.userId,hostUsername:s.teams.find(t=>t.userId===s.host.userId)?.name??'Host',

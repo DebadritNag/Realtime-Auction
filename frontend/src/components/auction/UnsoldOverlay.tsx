@@ -4,6 +4,7 @@ import React from "react";
 import { UnsoldOverlayState } from "@/stores/auction.store";
 import { formatCr } from "@/lib/utils";
 import { RotateCcw } from "lucide-react";
+import { UnderdogTag } from "@/components/shared/UnderdogTag";
 
 export interface UnsoldOverlayProps {
   unsoldData: UnsoldOverlayState;
@@ -35,6 +36,7 @@ export const UnsoldOverlay: React.FC<UnsoldOverlayProps> = ({
 
         <h3 className="text-xl font-black uppercase text-[#f8fafc] mt-2">
           {unsoldData.player.name}
+          <UnderdogTag player={unsoldData.player} />
         </h3>
         {unsoldData.reason === "UNANIMOUS_SKIP" && <p className="text-xs text-[#94a3b8] mt-1">Unsold — unanimous participant vote</p>}
         <p className="text-xs text-[#94a3b8] mt-0.5">
