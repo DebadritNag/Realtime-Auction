@@ -3,7 +3,7 @@ import type { Room, AuthContext, ServerEvent } from '../../domain/types.js';
 import type { RoomRepository, PlayerRepository, RoomRuntimeHydrator } from '../../repositories/interfaces.js';
 import { requireThat, DomainError } from '../../domain/errors.js';
 import { SerialQueue, type RoomLock } from '../../utils/serial-queue.js';
-import { parseSettings, type RoomSettings } from '../../schemas/settings.js';
+import { parseSettings, settingsSchema, type RoomSettings } from '../../schemas/settings.js';
 import type { Fc26Catalog } from '../fc26/fc26.catalog.js';
 import { toUnits } from '../../domain/money.js';
 import type { Clock } from '../auction/timer.service.js';
@@ -12,7 +12,13 @@ import { assertRoom } from '../auction/squad.service.js';
 export interface PendingEvent { type: string; payload?: unknown }
 export type CommitListener = (room: Room, events: ServerEvent[]) => void;
 export class ValidatingHydrator implements RoomRuntimeHydrator {
-  hydrate(room: Room): Room { assertRoom(room); return structuredClone(room); }
+  hydrate(room: Room): Room {
+    // Normalize through the schema so snapshots saved before newer settings keys existed gain their defaults.
+    const copy = structuredClone(room);
+    copy.settings = settingsSchema.parse(copy.settings);
+    assertRoom(copy);
+    return copy;
+  }
 }
 export class RoomManager {
   private readonly rooms = new Map<string, Room>();

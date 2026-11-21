@@ -9,6 +9,9 @@ import { roomState } from '../src/modules/rooms/room-state.js';
 import { RETENTION_MAX_PER_TEAM, RETENTION_MIN_PER_TEAM, RETENTION_PRICE_CR, RETENTION_PRICE_UNITS } from '../src/domain/retention.js';
 import { assertRoom } from '../src/modules/auction/squad.service.js';
 import { fixture } from './helpers.js';
+import { RoomManager } from '../src/modules/rooms/room.manager.js';
+import { MemoryRoomRepository } from '../src/repositories/memory.js';
+import { CatalogPlayerRepository, demoPlayers } from '../src/modules/players/player.service.js';
 
 const FIXTURES = resolve(import.meta.dirname, 'fixtures/fc26');
 const loadCatalog = async () => { const c = new MemoryFc26Catalog(resolveFc26Config({ FC26_DATA_DIR: FIXTURES })); await c.importAll(); return c; };
@@ -414,5 +417,20 @@ describe('assertRoom retention invariants', () => {
     expect(tamper(r => { r.settings.retention.enabled = false; r.settings.playerPoolSource = 'DEFAULT'; })).toThrow();
     expect(tamper(r => { r.retention!.picks[0]!.priceUnits = 20; })).toThrow();
     expect(tamper(r => { r.retention!.picks = []; })).toThrow();
+  });
+});
+
+describe('legacy snapshots', () => {
+  it('hydrates a room saved without the retention/playerPoolSource settings as retention OFF', async () => {
+    const f = await fixture({});
+    const stored = structuredClone(await f.manager.repository.findByCode(f.room.code)) as unknown as { settings: Record<string, unknown> };
+    delete stored.settings.retention;
+    delete stored.settings.playerPoolSource;
+    const repo = new MemoryRoomRepository();
+    await repo.create(stored as never);
+    const fresh = new RoomManager(repo, new CatalogPlayerRepository(demoPlayers.slice(0, 2)), { now: () => 1_000_000 });
+    const loaded = await fresh.loadRoom(f.room.code);
+    expect(loaded.settings.retention).toEqual({ enabled: false });
+    expect(roomState(loaded, 'host', 0).retention).toMatchObject({ enabled: false, phase: 'OFF' });
   });
 });
