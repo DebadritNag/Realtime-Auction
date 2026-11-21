@@ -31,9 +31,9 @@ export function assignPot(primaryPosition: string, sources: readonly Fc26SourceC
   const chosen = regular.includes(natural) ? natural : regular[0] ?? natural;
   return { pot: chosen, sourceCategory: chosen };
 }
-export type PositionGroup = 'ALL' | 'GK' | 'CB' | 'FB' | 'CM' | 'WM' | 'ST' | 'W';
+export type PositionGroup = 'ALL' | 'GK' | 'CB' | 'FB' | 'CM' | 'CDM' | 'CMID' | 'CAM' | 'WM' | 'ST' | 'W';
 export const POSITION_GROUPS: Record<Exclude<PositionGroup, 'ALL'>, readonly string[]> = {
-  GK: ['GK'], CB: ['CB'], FB: ['LB', 'RB', 'LWB', 'RWB'], CM: ['CDM', 'CM', 'CAM'], WM: ['LM', 'RM'], ST: ['ST', 'CF'], W: ['LW', 'RW', 'LF', 'RF'],
+  GK: ['GK'], CB: ['CB'], FB: ['LB', 'RB', 'LWB', 'RWB'], CM: ['CDM', 'CM', 'CAM'], CDM: ['CDM'], CMID: ['CM'], CAM: ['CAM'], WM: ['LM', 'RM'], ST: ['ST', 'CF'], W: ['LW', 'RW', 'LF', 'RF'],
 };
 /** A player matches a group when ANY eligible position is in it. */
 export function matchesPositionGroup(positions: readonly string[], group: PositionGroup): boolean {

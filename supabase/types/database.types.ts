@@ -55,10 +55,16 @@ export type Database = {
         Update: { player_pool_source?: string; retention_enabled?: boolean; allow_custom_bids?: boolean; anti_sniping_enabled?: boolean; anti_sniping_reset_seconds?: number | null; anti_sniping_threshold_seconds?: number | null; code?: string; completed_at?: string | null; created_at?: string; host_user_id?: string; id?: string; maximum_squad_size?: number; minimum_base_price_units?: number; minimum_squad_size?: number; name?: string; number_of_teams?: number; player_timer_seconds?: number; started_at?: string | null; starting_budget_units?: number; status?: string; updated_at?: string }
         Relationships: []
       }
+      auction_retention_turns: {
+        Row: { confirmed_at: string; confirmed_by: string; event_id: string; id: string; kind: string; remaining_units: number; retained_count: number; room_id: string; spent_units: number; team_id: string; turn_order: number }
+        Insert: { confirmed_at: string; confirmed_by: string; event_id: string; id: string; kind: string; remaining_units: number; retained_count: number; room_id: string; spent_units: number; team_id: string; turn_order: number }
+        Update: { confirmed_at?: string; confirmed_by?: string; event_id?: string; id?: string; kind?: string; remaining_units?: number; retained_count?: number; room_id?: string; spent_units?: number; team_id?: string; turn_order?: number }
+        Relationships: []
+      }
       auction_retentions: {
-        Row: { created_at: string; fc26_player_id: string; finalized_at: string | null; id: string; player_id: string; retention_price_units: number; room_id: string; status: string; team_id: string }
-        Insert: { created_at?: string; fc26_player_id: string; finalized_at?: string | null; id?: string; player_id: string; retention_price_units: number; room_id: string; status: string; team_id: string }
-        Update: { created_at?: string; fc26_player_id?: string; finalized_at?: string | null; id?: string; player_id?: string; retention_price_units?: number; room_id?: string; status?: string; team_id?: string }
+        Row: { acquisition_type: string; confirmed_at: string | null; confirmed_by: string | null; retention_order: number | null; turn_id: string | null; created_at: string; fc26_player_id: string; finalized_at: string | null; id: string; player_id: string; retention_price_units: number; room_id: string; status: string; team_id: string }
+        Insert: { acquisition_type?: string; confirmed_at?: string | null; confirmed_by?: string | null; retention_order?: number | null; turn_id?: string | null; created_at?: string; fc26_player_id: string; finalized_at?: string | null; id?: string; player_id: string; retention_price_units: number; room_id: string; status: string; team_id: string }
+        Update: { acquisition_type?: string; confirmed_at?: string | null; confirmed_by?: string | null; retention_order?: number | null; turn_id?: string | null; created_at?: string; fc26_player_id?: string; finalized_at?: string | null; id?: string; player_id?: string; retention_price_units?: number; room_id?: string; status?: string; team_id?: string }
         Relationships: [
           { foreignKeyName: "auction_retentions_player_id_fkey"; columns: ["player_id"]; isOneToOne: false; referencedRelation: "football_players"; referencedColumns: ["id"] }
         ]

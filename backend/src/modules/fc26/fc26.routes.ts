@@ -23,18 +23,20 @@ export function registerFc26Routes(app: FastifyInstance, catalog: Fc26Catalog | 
     const { code } = z.object({ code: roomCodeSchema }).parse(request.params);
     const query = z.object({
       search: z.string().trim().max(100).optional(),
-      group: z.enum(['ALL', 'GK', 'CB', 'FB', 'CM', 'WM', 'ST', 'W']).default('ALL'),
+      group: z.enum(['ALL', 'GK', 'CB', 'FB', 'CM', 'CDM', 'CMID', 'CAM', 'WM', 'ST', 'W']).default('ALL'),
       offset: z.coerce.number().int().min(0).default(0),
       limit: z.coerce.number().int().min(1).max(100).default(50),
     }).strict().parse(request.query);
     const c = need();
     if (!manager) throw new DomainError('FC26_UNAVAILABLE', 'Room manager is not available.', 503);
     const room = await manager.loadRoom(code);
-    requireMember(room, request.auth.userId);
-    const excludeIds = (room.retention?.picks ?? []).map(p => p.playerId);
+    const viewer = requireMember(room, request.auth.userId);
+    // Confirmed picks and other teams' reservations are unavailable; the viewer's own selection stays listed and is flagged.
+    const own = new Set((room.retention?.drafts ?? []).filter(d => d.teamId === viewer.id).map(d => d.playerId));
+    const excludeIds = [...(room.retention?.picks ?? []).map(p => p.playerId), ...(room.retention?.drafts ?? []).filter(d => d.teamId !== viewer.id).map(d => d.playerId)];
     const found = await c.search({ query: query.search, group: query.group, offset: query.offset, limit: query.limit, excludeIds });
     return { total: found.total, offset: query.offset, limit: query.limit, retentionPriceCr: RETENTION_PRICE_CR,
-      players: found.players.map(p => ({ ...publicPlayer(p), retentionPriceCr: RETENTION_PRICE_CR, retainedByTeamId: null })) };
+      players: found.players.map(p => ({ ...publicPlayer(p), retentionPriceCr: RETENTION_PRICE_CR, retainedByTeamId: null, selected: own.has(p.id) })) };
   });
   app.post('/api/fc26/import', { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } }, async request => {
     z.object({}).strict().parse(request.body ?? {});

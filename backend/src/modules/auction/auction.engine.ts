@@ -11,9 +11,9 @@ import { minimumNextBid, validateBid } from './bid.service.js';
 import { remainingBudget } from './budget.service.js';
 import { skipVoteState, updateSkipVote } from './skip-vote.service.js';
 import { commandSchema, type AuctionCommand } from './auction.schemas.js';
-import { RETENTION_PRICE_CR } from '../../domain/retention.js';
-import { assertRetentionSettingsUnlocked, finalizeRetentions, releaseTeamRetentions, requireRetentionOpenForMembership,
-  resetRetentions, retainPlayer, retentionPhase, syncRetentionWithSettings } from '../retention/retention.service.js';
+import { assertRetentionSettingsUnlocked, completionAnnouncement, confirmTurn, draftPlayer, finalizeRetentions, pendingSpendUnits, purseAfterConfirmedUnits,
+  removeDraft, requireRetentionOpenForMembership, resetRetentions, retentionPhase, skipTurn, startRetention, syncRetentionWithSettings,
+  turnAnnouncement } from '../retention/retention.service.js';
 
 export class AuctionEngine {
   constructor(readonly manager: RoomManager) {}
@@ -53,13 +53,25 @@ export class AuctionEngine {
         events.push({ type: 'BID_UPDATED', payload: { playerId: player.id, amountCr: toCr(amount),
           highestBidderTeamId: team.id, minimumNextBidCr: toCr(minimumNextBid(room)!), endsAt: active.endsAt, bidCount: active.bidCount } });
       } else if (command.type === 'RETAIN_PLAYER') {
-        // Member-level: a manager can only retain for their own team. Prices and the player come from the server catalog.
+        // Member-level: the server decides whose turn it is. Prices and the player come from the server catalog.
         const player = this.manager.fc26 ? await this.manager.fc26.get(command.payload.playerId) : null;
-        const pick = retainPlayer(room, team, player, userId, now, this.manager.fc26?.topRatingThreshold ?? 90);
-        events.push({ type: 'PLAYER_RETAINED', payload: { pickId: pick.id, teamId: team.id, playerId: pick.playerId, priceCr: RETENTION_PRICE_CR,
-            retainedCount: room.retention!.picks.filter(p => p.teamId === team.id).length, remainingBudgetCr: toCr(remainingBudget(team)) } },
-          { type: 'TEAM_UPDATED', payload: { teamId: team.id } },
-          { type: 'BUDGET_UPDATED', payload: { teamId: team.id, spentCr: toCr(team.spentUnits), remainingBudgetCr: toCr(remainingBudget(team)) } });
+        const draft = draftPlayer(room, team, player, userId, now, this.manager.fc26?.topRatingThreshold ?? 90);
+        // Only the player id is broadcast: other teams learn that the player is unavailable, never who picked it.
+        events.push({ type: 'RETENTION_PLAYER_RESERVED', payload: { playerId: draft.playerId } });
+      } else if (command.type === 'REMOVE_RETENTION_PLAYER') {
+        const draft = removeDraft(room, team, userId, command.payload.playerId);
+        events.push({ type: 'RETENTION_PLAYER_RELEASED', payload: { playerId: draft.playerId } });
+      } else if (command.type === 'CONFIRM_RETENTION' || command.type === 'SKIP_RETENTION') {
+        const turn = command.type === 'CONFIRM_RETENTION' ? confirmTurn(room, team, userId, now) : skipTurn(room, team, userId, now);
+        const turnTeam = room.teams.find(t => t.id === turn.teamId)!;
+        events.push({ type: 'RETENTION_TEAM_CONFIRMED', payload: turnAnnouncement(room, turn) },
+          { type: 'TEAM_UPDATED', payload: { teamId: turnTeam.id } },
+          { type: 'BUDGET_UPDATED', payload: { teamId: turnTeam.id, spentCr: toCr(turnTeam.spentUnits + pendingSpendUnits(room, turnTeam.id)),
+            remainingBudgetCr: toCr(purseAfterConfirmedUnits(room, turnTeam)) } });
+        if (turn.nextTeamId) {
+          const next = room.teams.find(t => t.id === turn.nextTeamId)!;
+          events.push({ type: 'RETENTION_TURN_STARTED', payload: { teamId: next.id, teamName: next.name, order: turn.order + 1 } });
+        } else events.push({ type: 'RETENTION_ALL_COMPLETED', payload: completionAnnouncement(room) });
       } else if (command.type === 'VOTE_SKIP_PLAYER' || command.type === 'REMOVE_SKIP_VOTE') {
         const { playerId, activationId } = command.payload;
         const result = updateSkipVote(room, userId, playerId, activationId, command.type === 'REMOVE_SKIP_VOTE', now);
@@ -78,7 +90,7 @@ export class AuctionEngine {
           case 'START_AUCTION': {
             requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Auction can only start from the lobby.', 409);
             settingsSchema.parse(room.settings);
-            requireThat(retentionPhase(room) !== 'OPEN', 'RETENTION_NOT_FINALIZED', 'Finalize player retentions before starting the auction.', 409);
+            requireThat(['OFF', 'FINALIZED'].includes(retentionPhase(room)), 'RETENTION_NOT_FINALIZED', 'Finalize player retentions before starting the auction.', 409);
             requireThat(room.teams.length >= room.settings.minimumParticipants, 'NOT_ENOUGH_PARTICIPANTS', 'Not enough participants.');
             if (room.settings.playerPoolSource === 'FC26') {
               const fc26 = this.manager.fc26;
@@ -165,10 +177,19 @@ export class AuctionEngine {
             this.activateNext(room, events);
             break;
           }
+          case 'START_RETENTION': {
+            const retention = startRetention(room);
+            const order = retention.order!.map((teamId, index) => ({ teamId, name: room.teams.find(t => t.id === teamId)!.name, order: index + 1 }));
+            events.push({ type: 'RETENTION_STARTED', payload: { order, activeTeamId: retention.activeTeamId } },
+              { type: 'RETENTION_TURN_STARTED', payload: { teamId: order[0]!.teamId, teamName: order[0]!.name, order: 1 } });
+            break;
+          }
           case 'FINALIZE_RETENTIONS': {
-            const retention = finalizeRetentions(room, now);
+            const retention = finalizeRetentions(room, now, this.manager.fc26?.topRatingThreshold ?? 90);
             events.push({ type: 'RETENTION_FINALIZED', payload: { totalRetained: retention.picks.length,
-              totalSpentCr: toCr(retention.picks.reduce((sum, p) => sum + p.priceUnits, 0)) } });
+              totalSpentCr: toCr(retention.picks.reduce((sum, p) => sum + p.priceUnits, 0)), finalizedAt: retention.finalizedAt } });
+            for (const affected of room.teams) events.push({ type: 'TEAM_UPDATED', payload: { teamId: affected.id } },
+              { type: 'BUDGET_UPDATED', payload: { teamId: affected.id, spentCr: toCr(affected.spentUnits), remainingBudgetCr: toCr(remainingBudget(affected)) } });
             break;
           }
           case 'RESET_RETENTIONS': {
@@ -205,10 +226,6 @@ export class AuctionEngine {
             requireThat(command.payload.targetTeamId !== team.id, 'HOST_CANNOT_LEAVE', 'Host cannot kick themselves.');
             requireThat(room.teams.some(t => t.id === command.payload.targetTeamId), 'TEAM_NOT_FOUND', 'Team not found.', 404);
             requireRetentionOpenForMembership(room);
-            if (room.retention?.picks.some(p => p.teamId === command.payload.targetTeamId)) {
-              releaseTeamRetentions(room, command.payload.targetTeamId);
-              events.push({ type: 'RETENTION_RESET', payload: { teamId: command.payload.targetTeamId, reason: 'MEMBER_REMOVED' } });
-            }
             room.teams = room.teams.filter(t => t.id !== command.payload.targetTeamId);
             events.push({ type: 'MEMBER_LEFT', payload: { teamId: command.payload.targetTeamId } });
             break;

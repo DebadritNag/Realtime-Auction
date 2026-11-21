@@ -23,8 +23,27 @@ export interface Purchase {
   // Absent on ordinary auction purchases and old snapshots.
   acquisitionType?: 'AUCTION' | 'RETENTION'; isRetained?: boolean;
 }
-export interface RetentionPick { id: string; teamId: string; playerId: string; priceUnits: number; at: number; userId: string }
-export interface RoomRetention { phase: 'OPEN' | 'FINALIZED'; picks: RetentionPick[]; finalizedAt?: number }
+export type RetentionPhase = 'NOT_STARTED' | 'TEAM_SELECTING' | 'ALL_TEAMS_COMPLETED' | 'FINALIZED';
+/** Player data frozen at selection time so announcements and lists do not depend on the catalog. */
+export type RetentionSnapshot = Omit<Player, 'basePriceUnits'> & { basePriceUnits: number };
+/** Confirmed retention. Optional fields are absent on picks written by the first (free-for-all) implementation. */
+export interface RetentionPick {
+  id: string; teamId: string; playerId: string; priceUnits: number; at: number; userId: string;
+  turnId?: string; order?: number; confirmedAt?: number; confirmedBy?: string; snapshot?: RetentionSnapshot;
+}
+/** Unconfirmed selection of the active team. Never exposed to other viewers. */
+export interface RetentionDraft { teamId: string; playerId: string; snapshot: RetentionSnapshot; at: number }
+/** One completed team turn. `id` doubles as the announcement event id. */
+export interface RetentionTurn {
+  id: string; teamId: string; order: number; kind: 'RETAINED' | 'SKIPPED'; playerIds: string[];
+  spentUnits: number; remainingUnits: number; nextTeamId: string | null; allCompleted: boolean; at: number; confirmedBy: string;
+}
+export interface RoomRetention {
+  phase: RetentionPhase; picks: RetentionPick[]; finalizedAt?: number;
+  order?: string[]; activeTeamId?: string | null; turns?: RetentionTurn[]; drafts?: RetentionDraft[];
+  /** Announcement id for "all teams completed". */
+  completion?: { id: string; at: number };
+}
 export interface ActiveAuction {
   skipVoterUserIds?: string[];
   playerId: string; currentBidUnits: number; highestBidderTeamId: string | null;

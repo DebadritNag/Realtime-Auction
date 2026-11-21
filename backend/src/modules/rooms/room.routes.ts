@@ -55,7 +55,11 @@ export function registerRoomRoutes(app: FastifyInstance, manager: RoomManager, r
     requireMember(room, request.auth.userId);
     const team = room.teams.find(t => t.id === input.teamId);
     requireThat(team, 'TEAM_NOT_FOUND', 'Team does not exist.', 404);
-    return { ...publicTeam(team, room.settings, room.retention), players: room.players.filter(p => team.playerIds.includes(p.id)).map(publicPlayer) };
+    return { ...publicTeam(team, room.settings, room.retention), players: room.players.filter(p => team.playerIds.includes(p.id)).map(p => {
+      const purchase = room.purchases.find(x => x.playerId === p.id && x.teamId === team.id);
+      return { ...publicPlayer(p), acquisitionType: purchase?.acquisitionType ?? 'AUCTION', isRetained: purchase?.isRetained ?? false,
+        acquiredByTeamId: team.id, acquisitionPriceCr: purchase ? toCr(purchase.priceUnits) : null };
+    }) };
   });
   app.get('/api/rooms/:code/history', async request => {
     const room = await manager.loadRoom(params.parse(request.params).code);

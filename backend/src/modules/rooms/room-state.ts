@@ -1,33 +1,61 @@
-import type { Room } from '../../domain/types.js';
+import type { Player, Room, Team } from '../../domain/types.js';
 import { toCr } from '../../domain/money.js';
 import { minimumNextBid } from '../auction/bid.service.js';
 import { publicPlayer, publicTeam } from '../teams/team.service.js';
 import { skipVoteState } from '../auction/skip-vote.service.js';
 import { requireMember } from './room.service.js';
-import { RETENTION_MAX_PER_TEAM, RETENTION_MIN_PER_TEAM, RETENTION_PRICE_CR } from '../../domain/retention.js';
-import { retentionPhase } from '../retention/retention.service.js';
+import { RETENTION_MAX_PER_TEAM, RETENTION_MIN_PER_TEAM, RETENTION_PRICE_CR, RETENTION_PRICE_UNITS } from '../../domain/retention.js';
+import { completionAnnouncement, confirmedPicks, confirmedSpendUnits, pickSnapshot, purseAfterConfirmedUnits, retentionPhase, turnAnnouncement } from '../retention/retention.service.js';
 
-function retentionState(room: Room) {
-  const picks = room.retention?.picks ?? [];
+type TurnStatus = 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'SKIPPED';
+/** Per-viewer retention projection. Unconfirmed drafts are visible only to their owner; everyone else sees reserved player ids. */
+function retentionState(room: Room, viewer: Team) {
+  const retention = room.retention;
+  const picks = retention?.picks ?? [];
+  const turns = retention?.turns ?? [];
+  const phase = retentionPhase(room);
+  const order = retention?.order ?? [];
+  const activeTeamId = retention?.activeTeamId ?? null;
+  const drafts = retention?.drafts ?? [];
+  const ownDrafts = drafts.filter(d => d.teamId === viewer.id);
+  const isHost = room.hostUserId === viewer.userId;
+  const teamName = (id: string | null) => room.teams.find(t => t.id === id)?.name ?? null;
+  const status = (teamId: string): TurnStatus => {
+    const turn = turns.find(t => t.teamId === teamId);
+    return turn ? (turn.kind === 'SKIPPED' ? 'SKIPPED' : 'COMPLETED') : teamId === activeTeamId ? 'ACTIVE' : 'PENDING';
+  };
   return {
     enabled: room.settings.retention.enabled,
     config: { priceCr: RETENTION_PRICE_CR, maxPerTeam: RETENTION_MAX_PER_TEAM, minPerTeam: RETENTION_MIN_PER_TEAM },
-    phase: retentionPhase(room),
+    phase,
+    order: order.map((teamId, index) => ({ teamId, name: teamName(teamId) ?? '', order: index + 1, turnStatus: status(teamId) })),
+    activeTeamId, activeTeamName: teamName(activeTeamId),
+    progress: { completed: turns.length, total: order.length },
+    canAct: phase === 'TEAM_SELECTING' && activeTeamId === viewer.id,
+    canSkipForActive: phase === 'TEAM_SELECTING' && isHost,
     picks: picks.map(pick => {
-      const player = room.players.find(p => p.id === pick.playerId);
-      return { id: pick.id, teamId: pick.teamId, playerId: pick.playerId, priceCr: toCr(pick.priceUnits), at: pick.at, player: player ? publicPlayer(player) : null };
+      const snapshot = pickSnapshot(room, pick);
+      return { id: pick.id, teamId: pick.teamId, teamName: teamName(pick.teamId) ?? '', playerId: pick.playerId, priceCr: toCr(pick.priceUnits), at: pick.at,
+        order: pick.order ?? null, turnId: pick.turnId ?? null, confirmedAt: pick.confirmedAt ?? pick.at, acquisitionType: 'RETENTION' as const,
+        player: snapshot ? publicPlayer(snapshot as Player) : null };
     }),
+    turns: turns.map(turn => turnAnnouncement(room, turn)),
+    lastCompleted: turns.length ? turnAnnouncement(room, turns[turns.length - 1]!) : null,
+    completion: completionAnnouncement(room),
+    // Anonymous reservations: ids only, never the owner or the player data.
+    reservedPlayerIds: drafts.map(d => d.playerId),
+    ownDraft: { players: ownDrafts.map(d => ({ ...publicPlayer(d.snapshot as Player), retentionPriceCr: RETENTION_PRICE_CR })),
+      spentCr: toCr(ownDrafts.length * RETENTION_PRICE_UNITS), remainingPurseCr: toCr(purseAfterConfirmedUnits(room, viewer) - ownDrafts.length * RETENTION_PRICE_UNITS) },
     teams: room.teams.map(t => {
-      const own = picks.filter(p => p.teamId === t.id);
-      const spent = own.reduce((sum, p) => sum + p.priceUnits, 0);
-      return { teamId: t.id, retainedCount: own.length, remainingSlots: Math.max(0, RETENTION_MAX_PER_TEAM - own.length),
-        spentCr: toCr(spent), remainingPurseCr: toCr(t.startingBudgetUnits - t.spentUnits) };
+      const spent = confirmedSpendUnits(room, t.id);
+      const count = confirmedPicks(room, t.id).length;
+      return { teamId: t.id, retainedCount: count, remainingSlots: Math.max(0, RETENTION_MAX_PER_TEAM - count), spentCr: toCr(spent),
+        remainingPurseCr: toCr(purseAfterConfirmedUnits(room, t)), turnStatus: order.includes(t.id) ? status(t.id) : 'PENDING' as TurnStatus };
     }),
     totals: { retained: picks.length, spentCr: toCr(picks.reduce((sum, p) => sum + p.priceUnits, 0)) },
-    finalizedAt: room.retention?.finalizedAt ?? null,
+    finalizedAt: retention?.finalizedAt ?? null,
   };
-}
-export function roomState(room: Room, userId: string, serverTime: number, connectedUsers: string[] = [], usernames: Record<string, string> = {}) {
+}export function roomState(room: Room, userId: string, serverTime: number, connectedUsers: string[] = [], usernames: Record<string, string> = {}) {
   const team = requireMember(room, userId);
   const player = room.players.find(p => p.id === room.active?.playerId);
   const next = minimumNextBid(room);
@@ -53,7 +81,7 @@ export function roomState(room: Room, userId: string, serverTime: number, connec
     playerQueue: room.playerQueue, playerQueueSummary: { remaining: room.playerQueue.length + room.players.filter(p => p.status === 'WAITING').length },
     players: room.players.map(publicPlayer),
     soldPlayers: room.purchases.map(({ priceUnits, ...p }) => ({ ...p, acquisitionType: p.acquisitionType ?? 'AUCTION', isRetained: p.isRetained ?? false, priceCr: toCr(priceUnits) })),
-    retention: retentionState(room),
+    retention: retentionState(room, team),
     unsoldPlayers: room.players.filter(p => p.status === 'UNSOLD').map(publicPlayer),
   };
 }

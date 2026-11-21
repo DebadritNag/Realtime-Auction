@@ -8,6 +8,7 @@ import type { Fc26Catalog } from '../fc26/fc26.catalog.js';
 import { toUnits } from '../../domain/money.js';
 import type { Clock } from '../auction/timer.service.js';
 import { assertRoom } from '../auction/squad.service.js';
+import { normalizeLegacyRetention } from '../retention/retention.service.js';
 
 export interface PendingEvent { type: string; payload?: unknown }
 export type CommitListener = (room: Room, events: ServerEvent[]) => void;
@@ -16,6 +17,7 @@ export class ValidatingHydrator implements RoomRuntimeHydrator {
     // Normalize through the schema so snapshots saved before newer settings keys existed gain their defaults.
     const copy = structuredClone(room);
     copy.settings = settingsSchema.parse(copy.settings);
+    normalizeLegacyRetention(copy);
     assertRoom(copy);
     return copy;
   }

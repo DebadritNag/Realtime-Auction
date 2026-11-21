@@ -4,7 +4,7 @@ import { requireThat } from '../../domain/errors.js';
 import { toUnits } from '../../domain/money.js';
 import { parseSettings, type RoomSettings } from '../../schemas/settings.js';
 import type { RoomManager } from './room.manager.js';
-import { assertRetentionSettingsUnlocked, releaseTeamRetentions, requireRetentionOpenForMembership, syncRetentionWithSettings } from '../retention/retention.service.js';
+import { assertRetentionSettingsUnlocked, requireRetentionOpenForMembership, syncRetentionWithSettings } from '../retention/retention.service.js';
 export function requireMember(room: Room, userId: string): Team {
   const team = room.teams.find(t => t.userId === userId);
   requireThat(team, 'NOT_ROOM_MEMBER', 'You are not a member of this room.', 403);
@@ -39,11 +39,6 @@ export class RoomService {
       requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Teams cannot leave a started auction.', 409);
       requireThat(room.hostUserId !== userId, 'HOST_CANNOT_LEAVE', 'Host must close the room instead.');
       requireRetentionOpenForMembership(room);
-      const leaving = room.teams.find(t => t.userId === userId)!;
-      if (room.retention?.picks.some(p => p.teamId === leaving.id)) {
-        releaseTeamRetentions(room, leaving.id);
-        events.push({ type: 'RETENTION_RESET', payload: { teamId: leaving.id, reason: 'MEMBER_REMOVED' } });
-      }
       room.teams = room.teams.filter(t => t.userId !== userId);
       events.push({ type: 'MEMBER_LEFT', payload: { userId } });
     });

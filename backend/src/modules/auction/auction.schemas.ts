@@ -5,13 +5,13 @@ const host = z.object(common).strict();
 export const commandSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('PLACE_BID'), requestId: z.string().min(1).max(100).optional(),
     payload: z.object({ ...common, amountCr: z.number().finite().min(0).max(1_000_000), playerId: z.string().max(100).optional() }).strict() }).strict(),
-  ...(['START_AUCTION', 'PAUSE_AUCTION', 'RESUME_AUCTION', 'NEXT_PLAYER', 'MARK_UNSOLD', 'START_RECALL', 'END_AUCTION', 'FINALIZE_RETENTIONS', 'RESET_RETENTIONS'] as const).map(type =>
+  ...(['START_AUCTION', 'PAUSE_AUCTION', 'RESUME_AUCTION', 'NEXT_PLAYER', 'MARK_UNSOLD', 'START_RECALL', 'END_AUCTION', 'FINALIZE_RETENTIONS', 'RESET_RETENTIONS', 'START_RETENTION', 'CONFIRM_RETENTION', 'SKIP_RETENTION'] as const).map(type =>
     z.object({ type: z.literal(type), requestId: z.string().min(1).max(100).optional(), payload: host }).strict()),
   ...(['VOTE_SKIP_PLAYER', 'REMOVE_SKIP_VOTE'] as const).map(type =>
     z.object({ type: z.literal(type), requestId: z.string().min(1).max(100).optional(),
       payload: z.object({ ...common, playerId: z.string().min(1).max(100), activationId: z.string().uuid() }).strict() }).strict()),
-  z.object({ type: z.literal('RETAIN_PLAYER'), requestId: z.string().min(1).max(100).optional(),
-    payload: z.object({ ...common, playerId: z.string().min(1).max(100) }).strict() }).strict(),
+  ...(['RETAIN_PLAYER', 'REMOVE_RETENTION_PLAYER'] as const).map(type => z.object({ type: z.literal(type), requestId: z.string().min(1).max(100).optional(),
+    payload: z.object({ ...common, playerId: z.string().min(1).max(100) }).strict() }).strict()),
   z.object({ type: z.literal('RECALL_PLAYERS'), requestId: z.string().min(1).max(100).optional(),
     payload: z.object({ ...common, playerIds: z.array(z.string().min(1).max(100)).min(1).max(2000) }).strict() }).strict(),
   z.object({ type: z.literal('KICK_MEMBER'), requestId: z.string().min(1).max(100).optional(),
