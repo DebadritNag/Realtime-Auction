@@ -63,6 +63,7 @@ Times are epoch milliseconds. All exposed monetary values are Cr, not internal u
 | CONFIRM_RETENTION | {roomCode, expectedSequence?}; active team only. Locks 1..3 drafts as confirmed picks, completes the turn and advances to the next team (or ALL_TEAMS_COMPLETED). Zero drafts is rejected with USE_SKIP_RETENTION. |
 | SKIP_RETENTION | {roomCode, expectedSequence?}; active team's manager, or the host on its behalf (absent manager). Discards drafts, records a SKIPPED turn and advances. |
 | FINALIZE_RETENTIONS / RESET_RETENTIONS | {roomCode, expectedSequence?}; host, lobby. Finalize needs phase ALL_TEAMS_COMPLETED (RETENTION_NOT_COMPLETE otherwise), then adds every confirmed pick to its team squad (acquisitionType RETENTION, 15 Cr) and deducts the purses in one commit. Reset reverses a finalized state, clears drafts, picks and turns and returns to NOT_STARTED. |
+| PING | {} or omitted payload; returns PONG |
 
 Subscribe before auction mutations. A socket can subscribe to multiple rooms. REST creates/joins membership; WS JOIN_ROOM does not create a team.
 
@@ -79,11 +80,11 @@ Subscribe before auction mutations. A socket can subscribe to multiple rooms. RE
 - TIMER_EXTENDED: playerId, endsAt.
 - PLAYER_SOLD: playerId, teamId, priceCr, remainingBudgetCr, teamPlayerCount. Resolve player/team details from ROOM_STATE.
 - PLAYER_UNSOLD: playerId.
-- PLAYER_RETAINED: pickId, teamId, playerId, priceCr, retainedCount, remainingBudgetCr (followed by TEAM_UPDATED and BUDGET_UPDATED).
 - RETENTION_STARTED: order [{teamId, name, order}], activeTeamId. RETENTION_TURN_STARTED: teamId, teamName, order (sent for Team 1 and after every completed turn).
 - RETENTION_PLAYER_RESERVED / RETENTION_PLAYER_RELEASED: playerId only. Other teams see the player as unavailable, never which team selected it.
 - RETENTION_TEAM_CONFIRMED (one per completed turn, retained or skipped): eventId (unique per turn; clients dedupe on it), kind RETAINED|SKIPPED, teamId, teamName, teamOrder, totalTeams, players [{playerId, name, fullName, ovr, position, positions, club, nationality, imageUrl, playerTag, draftPool, priceCr}], spentCr, remainingPurseCr, nextTeamId, nextTeamName, nextTeamOrder, allCompleted, at. Followed by TEAM_UPDATED, BUDGET_UPDATED and RETENTION_TURN_STARTED or RETENTION_ALL_COMPLETED. Only confirmed data is sent.
 - RETENTION_ALL_COMPLETED: eventId, at, teams [{teamId, name, order, retainedCount, spentCr, remainingPurseCr}].
+- TEAM_UPDATED: teamId; updated squad follows in ROOM_STATE.
 - RETENTION_FINALIZED: totalRetained, totalSpentCr, finalizedAt (followed by TEAM_UPDATED and BUDGET_UPDATED per team). RETENTION_RESET: removed or reason; sent on host reset and when the lobby is closed.
 - BUDGET_UPDATED: teamId, spentCr, remainingBudgetCr.
 - AUCTION_PAUSED: remainingTimeMs.
@@ -154,6 +155,5 @@ At unanimity the server reuses its unsold resolution, with PLAYER_UNSOLD `{playe
 
 Votes persist in the existing active-room snapshot as optional `skipVoterUserIds`; older snapshots default to no votes. `unsoldReason` on the player and an appended playerHistory entry preserve UNANIMOUS_SKIP. Recall preserves history; the next activation clears the current outcome reason. No database tables are added.
 
-## Player retention (pre-auction)
 ## Player retention (pre-auction, sequential)
 Lobby sub-phase, not a new room status. Phases: NOT_STARTED, TEAM_SELECTING, ALL_TEAMS_COMPLETED, FINALIZED (`OFF` when disabled). The server owns the order and the active team; commands from other teams are rejected. `ROOM_STATE.retention` = {enabled, config:{priceCr:15, maxPerTeam:3, minPerTeam:0}, phase, order:[{teamId,name,order,turnStatus PENDING|ACTIVE|COMPLETED|SKIPPED}], activeTeamId, activeTeamName, progress:{completed,total}, canAct, canSkipForActive, picks:[confirmed picks with teamName, order, confirmedAt, acquisitionType, player], turns:[announcement payloads], lastCompleted, completion, reservedPlayerIds (anonymous ids of all unconfirmed drafts), ownDraft:{players, spentCr, remainingPurseCr} (only the draft owner receives its contents), teams:[{teamId, retainedCount, remainingSlots, spentCr, remainingPurseCr, turnStatus}], totals, finalizedAt}. A reconnecting client (REJOIN_ROOM / REQUEST_STATE) receives the same state and dedupes announcements by `eventId`. Until finalize, confirmed spend is subtracted from the public team fields (`spentCr`, `remainingBudgetCr`); `team.playerIds`, `players` and `soldPlayers` change only at finalize. `soldPlayers` entries carry `acquisitionType` and `isRetained`; GET /api/rooms/:code/teams/:teamId players carry `acquisitionType`, `isRetained`, `acquiredByTeamId`, `acquisitionPriceCr`. `START_AUCTION` fails with RETENTION_NOT_FINALIZED (409) unless the phase is FINALIZED. Once started, join, leave and kick fail with RETENTION_IN_PROGRESS until the host resets; `startingBudgetCr`, `playerPoolSource` and `retention.enabled` are locked (RETENTION_LOCKED, 409). REST: `GET /api/rooms/:code/retention/players?search&group&offset&limit<=100` (members only; groups ALL/GK/CB/FB/CM/CDM/CMID/CAM/WM/ST/W, where CM = CDM+CM+CAM and CMID = CM only; confirmed picks and other teams' reservations are excluded; the viewer's own drafts are flagged `selected`).

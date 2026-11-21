@@ -55,7 +55,9 @@ function retentionState(room: Room, viewer: Team) {
     totals: { retained: picks.length, spentCr: toCr(picks.reduce((sum, p) => sum + p.priceUnits, 0)) },
     finalizedAt: retention?.finalizedAt ?? null,
   };
-}export function roomState(room: Room, userId: string, serverTime: number, connectedUsers: string[] = [], usernames: Record<string, string> = {}) {
+}
+
+export function roomState(room: Room, userId: string, serverTime: number, connectedUsers: string[] = [], usernames: Record<string, string> = {}) {
   const team = requireMember(room, userId);
   const player = room.players.find(p => p.id === room.active?.playerId);
   const next = minimumNextBid(room);
