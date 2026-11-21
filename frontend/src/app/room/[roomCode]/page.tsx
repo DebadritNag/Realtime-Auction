@@ -12,7 +12,7 @@ import { RoomHeader } from "@/components/room/RoomHeader";
 import { TeamLobbyCard } from "@/components/room/TeamLobbyCard";
 import { AuctionSettingsSummary } from "@/components/room/AuctionSettingsSummary";
 import { HostControls } from "@/components/room/HostControls";
-import { RetentionScreen } from "@/components/retention/RetentionScreen";
+import { RetentionStatusCard } from "@/components/retention/RetentionStatusCard";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Users } from "lucide-react";
@@ -54,6 +54,13 @@ export default function RoomLobbyPage({
     if (snapshot?.status === "COMPLETED")
       router.replace(`/results/${roomCode}`);
   }, [snapshot?.status, roomCode, router]);
+
+  // ── Retention is a dedicated page while teams are selecting ───────────────
+  const livePhase = snapshot?.retention?.phase;
+  useEffect(() => {
+    if (snapshot?.status === "LOBBY" && (livePhase === "TEAM_SELECTING" || livePhase === "ALL_TEAMS_COMPLETED"))
+      router.replace(`/room/${roomCode}/retention`);
+  }, [snapshot?.status, livePhase, roomCode, router]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleStartAuction = () => {
@@ -133,7 +140,14 @@ export default function RoomLobbyPage({
         />
 
         {retentionEnabled && snapshot?.retention ? (
-          <RetentionScreen roomCode={roomCode} snapshot={snapshot} isHost={isHost} />
+          <RetentionStatusCard
+            roomCode={roomCode}
+            retention={snapshot.retention}
+            teams={snapshot.teams.map((t) => ({ id: t.id, name: t.name }))}
+            isHost={isHost}
+            canStart={connectionStatus === "SYNCED" && displayTeams.length >= (snapshot.settings.minimumParticipants ?? 2)}
+            startBlockedReason={`At least ${snapshot.settings.minimumParticipants ?? 2} teams must join before retention can start.`}
+          />
         ) : null}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

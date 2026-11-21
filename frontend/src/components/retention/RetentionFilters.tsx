@@ -6,17 +6,18 @@ import { cn } from "@/lib/utils";
 import type { RetentionGroup } from "@/types/backend";
 
 /** Chip label to backend group id. The backend owns which positions belong to each group. */
-export const RETENTION_FILTER_CHIPS: { label: string; group: RetentionGroup }[] = [
-  { label: "All", group: "ALL" },
-  { label: "GK", group: "GK" },
-  { label: "CB", group: "CB" },
-  { label: "LB / RB / LWB / RWB", group: "FB" },
-  { label: "CDM / CM / CAM", group: "CM" },
-  { label: "LM / RM", group: "WM" },
-  { label: "ST / CF", group: "ST" },
-  { label: "LW / RW / LF / RF", group: "W" },
+export const RETENTION_FILTER_CHIPS: { label: string; group: RetentionGroup; title: string }[] = [
+  { label: "All", group: "ALL", title: "All positions" },
+  { label: "GK", group: "GK", title: "Goalkeepers" },
+  { label: "CB", group: "CB", title: "Centre-backs" },
+  { label: "Fullbacks", group: "FB", title: "LB, RB, LWB, RWB" },
+  { label: "CDM", group: "CDM", title: "Defensive midfielders" },
+  { label: "CM", group: "CMID", title: "Central midfielders" },
+  { label: "CAM", group: "CAM", title: "Attacking midfielders" },
+  { label: "LM / RM", group: "WM", title: "Wide midfielders" },
+  { label: "ST / CF", group: "ST", title: "Strikers and centre-forwards" },
+  { label: "LW / RW", group: "W", title: "LW, RW, LF, RF" },
 ];
-
 export const SEARCH_DEBOUNCE_MS = 200;
 
 export interface RetentionFiltersProps {
@@ -55,9 +56,10 @@ export function RetentionFilters({ group, onGroupChange, onSearchChange }: Reten
             key={chip.group}
             type="button"
             aria-pressed={group === chip.group}
+            title={chip.title}
             onClick={() => onGroupChange(chip.group)}
             className={cn(
-              "cursor-pointer rounded-md border px-2.5 py-1 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff87]",
+              "cursor-pointer rounded-md border px-2.5 py-1.5 text-[11px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff87]",
               group === chip.group
                 ? "border-[#00ff87] bg-[#00ff87] text-[#08090d]"
                 : "border-[#242c3d] bg-[#151a24] text-[#cbd5e1] hover:border-[#37435e] hover:bg-[#1e2433]"

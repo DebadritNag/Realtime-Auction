@@ -6,6 +6,8 @@ import { Team } from "@/types";
 import { formatCr } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { ArrowUpRight } from "lucide-react";
+import { PurseBreakdown } from "@/components/shared/PurseBreakdown";
+import { AcquisitionBadge } from "@/components/shared/AcquisitionBadge";
 
 export interface TeamResultCardProps {
   team: Team;
@@ -85,6 +87,17 @@ export const TeamResultCard: React.FC<TeamResultCardProps> = ({
             </span>
           </div>
         </div>
+        <PurseBreakdown team={team} className="mb-3" />
+        {team.squad.some((p) => p.isRetained) ? (
+          <ul className="mb-3 space-y-1.5" aria-label={team.name + " retained players"} data-testid="result-retained-list">
+            {team.squad.filter((p) => p.isRetained).map((p) => (
+              <li key={p.id} className="flex items-center justify-between gap-2 text-xs text-[#f8fafc]">
+                <span className="truncate font-bold">{p.name}</span>
+                <AcquisitionBadge retained />
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </div>
 
       <Link href={`/team/${roomCode}/${team.id}`} className="w-full mt-2">

@@ -10,6 +10,7 @@ export interface RetentionPlayersQuery {
   limit?: number;
 }
 
+/** Thin command wrappers. The server owns the active team, limits, purse and availability. */
 export const retentionService = {
   players(roomCode: string, query: RetentionPlayersQuery = {}, signal?: AbortSignal) {
     const params = new URLSearchParams();
@@ -23,8 +24,13 @@ export const retentionService = {
       { signal }
     );
   },
-  retain: (roomCode: string, playerId: string) =>
+  start: (roomCode: string) => webSocketService.send({ type: 'START_RETENTION', payload: { roomCode } }),
+  select: (roomCode: string, playerId: string) =>
     webSocketService.send({ type: 'RETAIN_PLAYER', payload: { roomCode, playerId } }),
+  remove: (roomCode: string, playerId: string) =>
+    webSocketService.send({ type: 'REMOVE_RETENTION_PLAYER', payload: { roomCode, playerId } }),
+  confirm: (roomCode: string) => webSocketService.send({ type: 'CONFIRM_RETENTION', payload: { roomCode } }),
+  skip: (roomCode: string) => webSocketService.send({ type: 'SKIP_RETENTION', payload: { roomCode } }),
   finalize: (roomCode: string) =>
     webSocketService.send({ type: 'FINALIZE_RETENTIONS', payload: { roomCode } }),
   reset: (roomCode: string) =>

@@ -1,5 +1,6 @@
 "use client";
 
+import type { RetentionPhase } from "@/types/backend";
 import React from "react";
 import { RoomSettings } from "@/types";
 import { formatCr } from "@/lib/utils";
@@ -8,11 +9,14 @@ import { Sliders, Shield, Clock, Coins, Users } from "lucide-react";
 export interface AuctionSettingsSummaryProps {
   settings: RoomSettings;
   /** Live retention phase from ROOM_STATE, when retention is enabled. */
-  retentionPhase?: "OFF" | "OPEN" | "FINALIZED";
+  retentionPhase?: RetentionPhase;
 }
 
 function phaseLabel(phase: AuctionSettingsSummaryProps["retentionPhase"]): string {
-  return phase === "FINALIZED" ? "On · finalized" : "On · 15 Cr each, up to 3 per team";
+  if (phase === "FINALIZED") return "On · finalized";
+  if (phase === "TEAM_SELECTING") return "On · teams are selecting";
+  if (phase === "ALL_TEAMS_COMPLETED") return "On · awaiting host finalize";
+  return "On · 15 Cr each, up to 3 per team";
 }
 
 export const AuctionSettingsSummary: React.FC<AuctionSettingsSummaryProps> = ({

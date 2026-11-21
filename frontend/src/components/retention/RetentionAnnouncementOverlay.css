@@ -1,0 +1,80 @@
+/* Retention announcement overlay. Dark stadium theme, gold and green accents. */
+.ra-backdrop {
+  position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center;
+  padding: 1rem; overflow-y: auto;
+  background: radial-gradient(ellipse at 50% 30%, rgba(0, 255, 135, 0.10), transparent 60%), rgba(3, 6, 10, 0.88);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  animation: ra-fade 220ms ease-out both;
+}
+.ra-panel {
+  position: relative; width: 100%; max-width: 40rem; max-height: calc(100dvh - 2rem); overflow-y: auto;
+  border: 1px solid rgba(245, 197, 66, 0.35); border-radius: 1.25rem; padding: 1.75rem 1.25rem 1.25rem;
+  background: linear-gradient(180deg, #121826 0%, #0b0f17 100%); color: #f8fafc; text-align: center;
+  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(0, 255, 135, 0.08) inset;
+  animation: ra-rise 380ms cubic-bezier(0.2, 0.9, 0.3, 1.05) both;
+}
+.ra-retained .ra-panel { border-color: rgba(245, 197, 66, 0.45); }
+.ra-skipped .ra-panel { border-color: rgba(148, 163, 184, 0.3); box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.8); }
+.ra-complete .ra-panel { max-width: 46rem; border-color: rgba(0, 255, 135, 0.45); }
+.ra-badge { width: 2.25rem; height: 2.25rem; margin: 0 auto 0.5rem; color: #f5c542; }
+.ra-skipped .ra-badge { color: #94a3b8; }
+.ra-complete .ra-badge { color: #00ff87; }
+.ra-close {
+  position: absolute; top: 0.6rem; right: 0.6rem; display: inline-flex; align-items: center; justify-content: center;
+  width: 2.25rem; height: 2.25rem; border-radius: 0.6rem; border: 1px solid #242c3d; background: #151a24; color: #cbd5e1;
+  cursor: pointer; transition: color 200ms, background-color 200ms, border-color 200ms;
+}
+.ra-close:hover { color: #f8fafc; background: #1e2433; border-color: #37435e; }
+.ra-close:focus-visible, .ra-link:focus-visible { outline: 2px solid #00ff87; outline-offset: 2px; }
+.ra-eyebrow { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: #94a3b8; }
+.ra-title { margin-top: 0.35rem; font-size: clamp(1.25rem, 4.6vw, 1.9rem); font-weight: 900; letter-spacing: 0.02em; line-height: 1.15; color: #f8fafc; }
+.ra-retained .ra-title, .ra-complete .ra-title { background: linear-gradient(90deg, #f5c542, #00ff87); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.ra-team { margin-top: 0.4rem; font-size: clamp(1.1rem, 4vw, 1.5rem); font-weight: 800; color: #f8fafc; }
+.ra-calm { margin-top: 1rem; font-size: 0.9rem; color: #94a3b8; }
+.ra-players { margin: 1.1rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.6rem; }
+.ra-player {
+  display: flex; align-items: center; gap: 0.75rem; text-align: left; padding: 0.6rem 0.75rem;
+  border: 1px solid #242c3d; border-radius: 0.85rem; background: #151a24;
+  animation: ra-rise 420ms cubic-bezier(0.2, 0.9, 0.3, 1.05) both;
+}
+.ra-player:nth-child(2) { animation-delay: 90ms; }
+.ra-player:nth-child(3) { animation-delay: 180ms; }
+.ra-player-photo { width: 3.25rem; height: 3.75rem; border-radius: 0.6rem; }
+.ra-stats { margin: 1.1rem 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+.ra-stats > div { padding: 0.55rem 0.4rem; border-radius: 0.75rem; background: #0b0f17; border: 1px solid #1e2433; }
+.ra-stats dt { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #94a3b8; }
+.ra-stats dd { margin: 0.2rem 0 0; font-family: ui-monospace, monospace; font-size: 1.05rem; font-weight: 900; color: #f8fafc; }
+.ra-next {
+  margin-top: 1.1rem; display: inline-flex; align-items: center; gap: 0.4rem; justify-content: center; flex-wrap: wrap;
+  padding: 0.5rem 0.9rem; border-radius: 999px; border: 1px solid rgba(0, 255, 135, 0.35); background: rgba(0, 255, 135, 0.08);
+  font-size: 0.8rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #00ff87;
+}
+.ra-link {
+  margin: 0.9rem auto 0; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.8rem; font-weight: 700;
+  color: #f5c542; text-decoration: underline; text-underline-offset: 3px;
+}
+.ra-table-wrap { margin-top: 1rem; overflow-x: auto; border: 1px solid #242c3d; border-radius: 0.85rem; }
+.ra-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: left; }
+.ra-table th, .ra-table td { padding: 0.5rem 0.65rem; border-bottom: 1px solid #1e2433; }
+.ra-table thead th { font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: #94a3b8; background: #0b0f17; }
+.ra-table tbody th { font-weight: 800; color: #f8fafc; }
+.ra-table tbody tr:last-child > * { border-bottom: 0; }
+.ra-order { display: inline-flex; width: 1.3rem; height: 1.3rem; align-items: center; justify-content: center; margin-right: 0.35rem; border-radius: 999px; background: #1e2433; font-size: 0.65rem; color: #f5c542; }
+.ra-confetti { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }
+.ra-confetti span {
+  position: absolute; top: -0.75rem; width: 0.5rem; height: 0.9rem; border-radius: 1px; background: #00ff87; opacity: 0.85;
+  will-change: transform; animation: ra-fall 3.2s linear infinite;
+}
+.ra-confetti span[data-gold] { background: #f5c542; }
+@keyframes ra-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ra-rise { from { opacity: 0; transform: translateY(18px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes ra-fall { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(110vh) rotate(540deg); } }
+@media (max-width: 420px) {
+  .ra-panel { padding: 1.5rem 0.85rem 1rem; }
+  .ra-stats { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ra-backdrop, .ra-panel, .ra-player { animation: none; }
+  .ra-confetti { display: none; }
+  .ra-close { transition: none; }
+}

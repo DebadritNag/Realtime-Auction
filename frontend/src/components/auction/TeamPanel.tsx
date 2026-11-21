@@ -76,6 +76,12 @@ export const TeamPanel: React.FC<TeamPanelProps> = ({
                 </div>
               </div>
 
+              {(team.retainedCount ?? 0) > 0 ? (
+                <p className="mb-1 flex items-center justify-between rounded border border-[#f5c542]/25 bg-[#f5c542]/5 px-2 py-0.5 text-[10px] font-mono text-[#f5c542]" data-testid="team-panel-retained">
+                  <span>Retained {team.retainedCount}</span>
+                  <span>Retention {formatCr(team.retentionSpent ?? 0)} · Auction {formatCr(Math.max(0, team.budgetSpent - (team.retentionSpent ?? 0)))}</span>
+                </p>
+              ) : null}
               {/* Position Quota Breakdown */}
               <div className="flex items-center justify-between text-[10px] font-mono bg-[#080a0f]/60 rounded px-2 py-1 border border-[#1e2536] text-[#94a3b8]">
                 <span>GK {team.positions?.gk ?? 0}</span>

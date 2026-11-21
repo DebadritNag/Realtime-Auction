@@ -8,6 +8,8 @@ import { Toast } from "@/components/ui/Toast";
 import { formatCr } from "@/lib/utils";
 import { generateTeamPdf } from "@/lib/pdf";
 import { UnderdogTag, RetainedTag } from "@/components/shared/UnderdogTag";
+import { AcquisitionBadge } from "@/components/shared/AcquisitionBadge";
+import { PurseBreakdown } from "@/components/shared/PurseBreakdown";
 import { Shield, Users, DollarSign, Download, Loader2 } from "lucide-react";
 
 export interface SquadFormationViewProps {
@@ -91,6 +93,7 @@ export const SquadFormationView: React.FC<SquadFormationViewProps> = ({
                   <p className="text-[11px] text-[#64748b]">
                     {p.club} • {p.nationality}
                   </p>
+                  <AcquisitionBadge variant="detail" layout="stack" retained={p.isRetained} teamName={p.soldToTeamName ?? team.name} costCr={p.soldPrice} className="mt-1.5" />
                 </div>
               </div>
 
@@ -175,6 +178,7 @@ export const SquadFormationView: React.FC<SquadFormationViewProps> = ({
         </div>
       </div>
 
+      <PurseBreakdown team={team} />
       {pdfError && (
         <Toast type="error" message={pdfError} onClose={() => setPdfError(null)} />
       )}

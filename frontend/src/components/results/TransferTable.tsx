@@ -5,7 +5,8 @@ import { Player } from "@/types";
 import { Badge } from "@/components/ui/Badge";
 import { formatCr } from "@/lib/utils";
 import { Search } from "lucide-react";
-import { UnderdogTag, RetainedTag } from "@/components/shared/UnderdogTag";
+import { UnderdogTag } from "@/components/shared/UnderdogTag";
+import { AcquisitionBadge } from "@/components/shared/AcquisitionBadge";
 
 export interface TransferRecord {
   player: Player;
@@ -66,7 +67,8 @@ export const TransferTable: React.FC<TransferTableProps> = ({ transfers }) => {
                 <td className="px-4 py-3 font-bold text-[#f8fafc]">
                   {t.player.name}
                   <UnderdogTag player={t.player} />
-                  <RetainedTag player={t.player} />
+                  {t.player.isRetained ? <span className="ml-1.5"><AcquisitionBadge retained /></span> : null}
+                  <AcquisitionBadge variant="detail" layout="stack" retained={t.player.isRetained} teamName={t.teamName} costCr={t.price} className="mt-1 max-w-[16rem] font-normal" />
                 </td>
                 <td className="px-4 py-3">
                   <Badge variant="position" position={t.player.position} size="sm">

@@ -160,7 +160,7 @@ function LivePlayerCard({player}: {player: Player | null}) {
   const photoSrc = candidates.find(c => !failed.includes(c)) ?? candidates.at(-1)!;
   const photo = photoSrc && photoSrc !== DEFAULT_PLAYER_IMAGE;
   return <section className="live-player-card" aria-label="Current player">
-    <div className="live-player-heading"><span className="live-player-position">{player.subPosition || player.position} <span>· {potLabel(player.pot)}</span></span>
+    <div className="live-player-heading"><span className="live-player-position">{player.subPosition || player.position} <span>· {potLabel(player.pot)}{player.positions && player.positions.length > 1 ? ' · also ' + player.positions.filter(p => p !== (player.subPosition || player.position)).join(' / ') : ''}</span></span>
       <span className="live-player-nationality">{player.flagEmoji} {player.nationality || 'Nation unavailable'}</span></div>
     <div className="live-player-identity">
       <div className="live-player-rating"><strong>{player.ovr}</strong><span>OVR</span></div>

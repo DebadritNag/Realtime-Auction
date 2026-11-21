@@ -8,6 +8,7 @@ import { useAuctionStore } from "@/stores/auction.store";
 import { AppHeader } from "./AppHeader";
 import { Footer } from "./Footer";
 import { MobileNav } from "./MobileNav";
+import { RetentionAnnouncementOverlay } from "@/components/retention/RetentionAnnouncementOverlay";
 
 const PROTECTED = /^\/(home|create|join|room|auction|results|team|profile|manager-mode)(\/|$)/;
 const AUTH_PAGES = /^\/auth\//;
@@ -20,7 +21,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isProtected = PROTECTED.test(pathname);
   const isAuthPage = AUTH_PAGES.test(pathname);
   const roomCode =
-    pathname.match(/^\/(?:room|auction)\/([^/]+)$/)?.[1]?.toUpperCase() ?? null;
+    pathname.match(/^\/(?:room|auction)\/([^/]+)(?:\/retention)?$/)?.[1]?.toUpperCase() ?? null;
 
   // Boot auth once per mount
   useEffect(() => { void initializeAuth(); }, [initializeAuth]);
@@ -73,6 +74,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </main>
       {!pathname.startsWith("/auction/") && <Footer />}
       {!pathname.startsWith("/auction/") && <MobileNav />}
+      {roomCode && isAuthenticated && <RetentionAnnouncementOverlay />}
     </div>
   );
 }

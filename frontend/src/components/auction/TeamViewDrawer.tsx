@@ -18,6 +18,8 @@ import { Toast } from "@/components/ui/Toast";
 import type { Player, Team } from "@/types";
 import { generateTeamPdf } from "@/lib/pdf";
 import { UnderdogTag, RetainedTag } from "@/components/shared/UnderdogTag";
+import { AcquisitionBadge } from "@/components/shared/AcquisitionBadge";
+import { PurseBreakdown } from "@/components/shared/PurseBreakdown";
 import { ExternalLink, TrendingDown, TrendingUp, Minus, Users, Shield, Swords, Star, Download, Loader2 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -110,6 +112,7 @@ function PlayerCard({ player }: { player: Player }) {
             <StatPill label="PHY" value={player.stats.phy} />
           </div>
         )}
+        <AcquisitionBadge variant="detail" layout="stack" retained={player.isRetained} teamName={player.soldToTeamName} costCr={player.soldPrice} className="mt-1.5" />
       </div>
 
       {/* Purchase price */}
@@ -314,6 +317,8 @@ export const TeamViewDrawer: React.FC<Props> = ({
               </span>
             </div>
           </div>
+
+          <PurseBreakdown team={activeTeam} />
 
           {/* ── Position breakdown ─────────────────────────────────────── */}
           <div>

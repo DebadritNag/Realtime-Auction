@@ -1,77 +1,52 @@
 "use client";
 import React from "react";
-import { Wallet } from "lucide-react";
-import { cn, formatCr } from "@/lib/utils";
-import type { RetentionStateDTO, TeamDTO } from "@/types/backend";
+import { CheckCircle2, CircleDashed, Hourglass, SkipForward } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { RetentionStateDTO, RetentionTurnStatus } from "@/types/backend";
 
-export interface RetentionTeamSwitcherProps {
-  teams: TeamDTO[];
-  retention: RetentionStateDTO;
-  currentTeamId: string;
-  viewTeamId: string;
-  onSelect: (teamId: string) => void;
-}
+const STATUS: Record<RetentionTurnStatus, { label: string; tone: string; Icon: typeof CheckCircle2 }> = {
+  COMPLETED: { label: "Completed", tone: "border-[#00ff87]/40 bg-[#00ff87]/10 text-[#00ff87]", Icon: CheckCircle2 },
+  SKIPPED: { label: "Skipped", tone: "border-[#94a3b8]/40 bg-[#94a3b8]/10 text-[#cbd5e1]", Icon: SkipForward },
+  ACTIVE: { label: "Selecting", tone: "border-[#f5c542]/60 bg-[#f5c542]/10 text-[#f5c542]", Icon: Hourglass },
+  PENDING: { label: "Waiting", tone: "border-[#242c3d] bg-[#151a24] text-[#94a3b8]", Icon: CircleDashed },
+};
 
-/** Lists every team. Only the signed-in user's own team can retain; others are read-only. */
-export function RetentionTeamSwitcher({ teams, retention, currentTeamId, viewTeamId, onSelect }: RetentionTeamSwitcherProps) {
-  const view = teams.find((t) => t.id === viewTeamId) ?? teams[0];
-  const stats = retention.teams.find((t) => t.teamId === view?.id);
-  const max = retention.config.maxPerTeam;
-  if (!view) return null;
+/** Progress across every team in retention order. Read-only; the server decides who is active. */
+export function RetentionProgress({ retention, currentTeamId }: { retention: RetentionStateDTO; currentTeamId: string }) {
+  const { completed, total } = retention.progress;
   return (
-    <section aria-label="Teams" className="space-y-3">
-      <div role="tablist" aria-label="Participating teams" className="flex flex-wrap gap-2">
-        {teams.map((team) => {
-          const count = retention.teams.find((t) => t.teamId === team.id)?.retainedCount ?? 0;
-          const selected = team.id === view.id;
+    <section aria-label="Retention progress" className="space-y-2" data-testid="retention-progress">
+      <div className="flex items-center justify-between text-xs">
+        <h3 className="font-bold uppercase tracking-wider text-[#94a3b8]">Progress</h3>
+        <p className="font-mono font-bold text-[#f8fafc]" data-testid="retention-progress-count">{completed} of {total} teams done</p>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-[#1e2433]" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={completed} aria-label="Teams completed">
+        <div className="h-full rounded-full bg-[#00ff87] transition-[width] duration-300 motion-reduce:transition-none" style={{ width: (total ? (completed / total) * 100 : 0) + "%" }} />
+      </div>
+      <ol className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap" data-testid="retention-progress-list">
+        {retention.order.map((team) => {
+          const status = STATUS[team.turnStatus];
+          const stats = retention.teams.find((t) => t.teamId === team.teamId);
           return (
-            <button
-              key={team.id}
-              type="button"
-              role="tab"
-              aria-selected={selected}
-              onClick={() => onSelect(team.id)}
-              className={cn(
-                "cursor-pointer rounded-lg border px-3 py-1.5 text-left text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff87]",
-                selected
-                  ? "border-[#00ff87]/60 bg-[#00ff87]/10 text-[#f8fafc]"
-                  : "border-[#242c3d] bg-[#151a24] text-[#cbd5e1] hover:border-[#37435e] hover:bg-[#1e2433]"
-              )}
+            <li
+              key={team.teamId}
+              data-testid="retention-progress-item"
+              data-status={team.turnStatus}
+              aria-current={team.turnStatus === "ACTIVE" ? "step" : undefined}
+              className={cn("flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs", status.tone)}
             >
-              <span className="font-bold">{team.name}</span>
-              {team.id === currentTeamId ? (
-                <span className="ml-1.5 rounded bg-[#00ff87] px-1 text-[9px] font-black uppercase text-[#08090d]">You</span>
+              <status.Icon className="h-4 w-4" aria-hidden="true" />
+              <span className="font-black">Team {team.order}</span>
+              <span className="max-w-[9rem] truncate font-bold text-[#f8fafc]">{team.name}</span>
+              {team.teamId === currentTeamId ? <span className="rounded bg-[#00ff87] px-1 text-[9px] font-black uppercase text-[#08090d]">You</span> : null}
+              <span className="text-[10px] font-bold uppercase">{status.label}</span>
+              {team.turnStatus === "COMPLETED" || team.turnStatus === "SKIPPED" ? (
+                <span className="font-mono text-[11px] text-[#cbd5e1]">{stats?.retainedCount ?? 0}/{retention.config.maxPerTeam}</span>
               ) : null}
-              <span className="ml-2 font-mono text-[11px] text-[#94a3b8]">{count}/{max}</span>
-            </button>
+            </li>
           );
         })}
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 rounded-xl border border-[#242c3d] bg-[#0e121a] p-3 text-xs sm:grid-cols-4" data-testid="retention-team-summary">
-        <div className="col-span-2 sm:col-span-1">
-          <p className="text-[10px] font-bold uppercase text-[#64748b]">Team</p>
-          <p className="truncate text-sm font-black text-[#f8fafc]" data-testid="retention-team-name">{view.name}</p>
-          <p className="truncate text-[11px] text-[#94a3b8]" data-testid="retention-team-manager">
-            Manager: {view.managerUsername ? "@" + view.managerUsername : "not available"}
-          </p>
-        </div>
-        <div>
-          <p className="flex items-center gap-1 text-[10px] font-bold uppercase text-[#64748b]"><Wallet className="h-3 w-3" aria-hidden="true" /> Remaining purse</p>
-          <p className="font-mono text-sm font-black text-amber-400" data-testid="retention-team-purse">{formatCr(stats?.remainingPurseCr ?? view.remainingBudgetCr)}</p>
-        </div>
-        <div>
-          <p className="text-[10px] font-bold uppercase text-[#64748b]">Retained players</p>
-          <p className="font-mono text-sm font-black text-[#f8fafc]" data-testid="retention-team-count">{stats?.retainedCount ?? 0}/{max}</p>
-        </div>
-        <div>
-          <p className="text-[10px] font-bold uppercase text-[#64748b]">Remaining slots</p>
-          <p className="font-mono text-sm font-black text-[#f8fafc]" data-testid="retention-team-slots">{stats?.remainingSlots ?? max}</p>
-        </div>
-      </div>
-      {view.id !== currentTeamId ? (
-        <p className="text-[11px] text-[#94a3b8]">You are viewing another team. Only its manager can retain players for it.</p>
-      ) : null}
+      </ol>
     </section>
   );
 }

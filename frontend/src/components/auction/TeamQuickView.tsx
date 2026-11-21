@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/Badge";
 import { formatCr } from "@/lib/utils";
 import { ExternalLink, ShieldAlert } from "lucide-react";
 import { UnderdogTag, RetainedTag } from "@/components/shared/UnderdogTag";
+import { AcquisitionBadge } from "@/components/shared/AcquisitionBadge";
+import { PurseBreakdown } from "@/components/shared/PurseBreakdown";
 
 export interface TeamQuickViewProps {
   isOpen: boolean;
@@ -63,6 +65,8 @@ export const TeamQuickView: React.FC<TeamQuickViewProps> = ({
           </div>
         </div>
 
+        <PurseBreakdown team={team} />
+
         {/* Squad Composition */}
         <div className="bg-[#151a24] p-4 rounded-xl border border-[#242c3d]">
           <h4 className="text-xs font-bold uppercase tracking-wider text-[#94a3b8] mb-3">
@@ -111,6 +115,7 @@ export const TeamQuickView: React.FC<TeamQuickViewProps> = ({
                     <div>
                       <p className="font-bold text-[#f8fafc]">{player.name}<UnderdogTag player={player} /><RetainedTag player={player} /></p>
                       <p className="text-[10px] text-[#64748b]">{player.club}</p>
+                      <AcquisitionBadge variant="detail" layout="stack" retained={player.isRetained} teamName={player.soldToTeamName} costCr={player.soldPrice} className="mt-1" />
                     </div>
                   </div>
                   <span className="font-mono font-bold text-amber-400">
