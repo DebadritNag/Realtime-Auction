@@ -1,0 +1,7 @@
+{
+  "task_id": "continue-rejoin-auction",
+  "task_description": "Implement PART 7 (Continue an existing unfinished auction) and PART 8 (Automatic reconnection and rejoin) as one feature: server-derived ongoing-auction list/summary/rejoin APIs, restored state incl. activity feed, durable restart recovery, presence + host connection view, safer WS auth, resilient frontend reconnect, ongoing-auctions UI. Full plan: C:\\Users\\ASUS\\projects\\Realtime -Auction\\.agents\\tasks\\continue-rejoin-auction\\plan.md",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
+  "blocked_reason": null
+}
