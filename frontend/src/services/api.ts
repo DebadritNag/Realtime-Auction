@@ -14,13 +14,22 @@ export class ApiError extends Error {
     message: string,
     public code = "REQUEST_FAILED",
     public status?: number,
-    public issues?: { message: string }[]
+    public issues?: { message: string }[],
+    public retryAfterMs?: number
   ) {
     super(message);
     this.name = "ApiError";
   }
 }
 
+/** Retry-After as delta-seconds or an HTTP date; undefined when absent or invalid. */
+export function parseRetryAfter(value: string | null): number | undefined {
+  if (!value) return undefined;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return Math.round(seconds * 1000);
+  const date = Date.parse(value);
+  return Number.isNaN(date) ? undefined : Math.max(0, date - Date.now());
+}
 export function normalizeError(error: unknown): ApiError {
   return error instanceof ApiError
     ? error
@@ -91,7 +100,8 @@ export async function apiFetch<T>(
         `Request failed (${response.status})`,
       err?.code,
       response.status,
-      err?.issues
+      err?.issues,
+      parseRetryAfter(response.headers.get("retry-after"))
     );
   }
 

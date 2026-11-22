@@ -10,7 +10,7 @@ export const auctionService={
   const [s,details]=await Promise.all([roomService.getState(code),api.get<TeamDTO & {players:PlayerDTO[]}>('/rooms/'+validRoomCode(code)+'/teams/'+encodeURIComponent(id))]);
   const team=mapTeams({...s,teams:[details],players:details.players})[0];return {team,squad:team.squad};
  },
- recommendation:(code:string)=>api.get<RecommendationDTO>('/rooms/'+validRoomCode(code)+'/recommendation'),
+ recommendation:(code:string,signal?:AbortSignal)=>api.get<RecommendationDTO>('/rooms/'+validRoomCode(code)+'/recommendation',{signal}),
  async getResultsAnalytics(code:string):Promise<AuctionAnalytics>{
   const [r,s]=await Promise.all([api.get<ResultsDTO>('/rooms/'+validRoomCode(code)+'/results'),roomService.getState(code)]);
   const player=(id:string)=>s.players.find(p=>p.id===id);

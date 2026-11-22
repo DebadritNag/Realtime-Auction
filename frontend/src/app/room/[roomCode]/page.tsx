@@ -33,6 +33,8 @@ export default function RoomLobbyPage({
   const snapshot     = useAuctionStore(s => s.snapshot);
   const liveTeams    = useAuctionStore(s => s.teams);       // has correct .connected from connectedUsers
   const liveError    = useAuctionStore(s => s.bidErrorNotice);
+  const roomMissing  = useAuctionStore(s => s.roomMissing);
+  const syncNotice   = useAuctionStore(s => s.syncNotice);
   const connectionStatus = useConnectionStore(s => s.status);
 
   // Leave-room confirmation modal
@@ -81,7 +83,7 @@ export default function RoomLobbyPage({
   };
 
   // ── Loading / error guards ─────────────────────────────────────────────────
-  if (isLoading || (!room && !liveError)) {
+  if (!roomMissing && (isLoading || (!room && !liveError && !syncNotice))) {
     return (
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 space-y-6">
         <Skeleton className="h-24 w-full rounded-2xl" />
@@ -91,12 +93,13 @@ export default function RoomLobbyPage({
     );
   }
 
-  if (error || liveError || !room) {
+  // "Room Not Found" only when the authoritative lookup said so; other failures never hide a loaded room.
+  if (roomMissing || !room) {
     return (
       <div className="mx-auto max-w-xl px-4 py-20">
         <ErrorState
-          title="Room Not Found"
-          message={error || liveError || `Unable to connect to room "${roomCode}".`}
+          title={roomMissing ? "Room Not Found" : "Unable to load room"}
+          message={roomMissing ? "Room does not exist." : error || liveError || syncNotice || `Unable to connect to room "${roomCode}".`}
           onRetry={() => {
             useAuctionStore.getState().leaveAuction();
             useAuctionStore.getState().initAuction(roomCode);
@@ -123,6 +126,10 @@ export default function RoomLobbyPage({
           connectionStatus={connectionStatus}
           onLeave={() => setShowLeaveModal(true)}
         />
+
+        {(liveError || syncNotice) && (
+          <p role="status" className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-300">{liveError || syncNotice}</p>
+        )}
 
         <HostControls
           isHost={isHost}

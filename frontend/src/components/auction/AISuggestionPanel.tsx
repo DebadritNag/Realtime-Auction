@@ -7,16 +7,19 @@ import { Bot, CheckCircle, AlertTriangle, Sparkles } from "lucide-react";
 
 export interface AISuggestionPanelProps {
   suggestion: AISuggestion | null;
+  /** "unavailable" shows a non-blocking notice; it never affects bidding. */
+  status?: "idle" | "loading" | "ready" | "unavailable";
 }
 
 export const AISuggestionPanel: React.FC<AISuggestionPanelProps> = ({
   suggestion,
+  status,
 }) => {
   if (!suggestion) {
     return (
       <div className="auction-ai-panel rounded-2xl bg-[#0e121a] border border-[#242c3d] p-4 text-center text-xs text-[#64748b]">
         <Bot className="w-5 h-5 mx-auto mb-2 opacity-50 text-[#00ff87]" />
-        <span>Recommendations will appear when available.</span>
+        <span>{status === "unavailable" ? "Recommendations temporarily unavailable. The auction is not affected." : "Recommendations will appear when available."}</span>
       </div>
     );
   }

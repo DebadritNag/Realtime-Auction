@@ -59,6 +59,9 @@ export default function LiveAuctionPage({
   const currentPot = useAuctionStore((state) => state.currentPot);
   const teams = useAuctionStore((state) => state.teams);
   const aiSuggestion = useAuctionStore((state) => state.aiSuggestion);
+  const recommendationStatus = useAuctionStore((state) => state.recommendationStatus);
+  const roomMissing = useAuctionStore((state) => state.roomMissing);
+  const syncNotice = useAuctionStore((state) => state.syncNotice);
   const soldOverlay = useAuctionStore((state) => state.soldOverlay);
   const unsoldOverlay = useAuctionStore((state) => state.unsoldOverlay);
   const bidErrorNotice = useAuctionStore((state) => state.bidErrorNotice);
@@ -172,8 +175,10 @@ export default function LiveAuctionPage({
       {/* Connection / loading banner — shown until first ROOM_STATE arrives */}
       {!snapshot && (
         <div className="flex items-center justify-center gap-3 py-3 px-4 text-sm border-b border-[#263342] bg-[#0d1620]">
-          {bidErrorNotice ? (
-            <span className="text-rose-400">{bidErrorNotice}</span>
+          {roomMissing ? (
+            <span className="text-rose-400">Room not found. It may have been closed or never existed.</span>
+          ) : bidErrorNotice || syncNotice ? (
+            <span className="text-rose-400">{bidErrorNotice || syncNotice}</span>
           ) : connectionStatus === "CONNECTING" || connectionStatus === "RECONNECTING" ? (
             <>
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
@@ -311,7 +316,7 @@ export default function LiveAuctionPage({
           </div>
 
           <div className="auction-assistant-slot">
-            <AISuggestionPanel suggestion={aiSuggestion} />
+            <AISuggestionPanel suggestion={aiSuggestion} status={recommendationStatus} />
           </div>
         </div>
       </div>
@@ -398,7 +403,7 @@ export default function LiveAuctionPage({
         title="AI AUCTION VALUATION"
       >
         <div className="p-2">
-          <AISuggestionPanel suggestion={aiSuggestion} />
+          <AISuggestionPanel suggestion={aiSuggestion} status={recommendationStatus} />
         </div>
       </Drawer>
 

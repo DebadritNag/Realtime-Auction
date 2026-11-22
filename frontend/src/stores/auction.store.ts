@@ -3,36 +3,46 @@ import type { Player,Team,Bid,AISuggestion } from '@/types';
 import type { RoomStateDTO,ServerEvent,HostCommand } from '@/types/backend';
 import { webSocketService } from '@/services/websocket.service';
 import { roomService } from '@/services/room.service';
-import { auctionService } from '@/services/auction.service';
 import { mapPlayer,mapTeams,mapRecommendation } from '@/services/contract';
 import { useRoomStore } from './room.store';
-import { normalizeError } from '@/services/api';
+import { normalizeError,ApiError } from '@/services/api';
+import { recommendationFetcher,type RecommendationStatus } from '@/services/recommendation.service';
+import { backoffDelay } from '@/services/websocket.service';
 import { croreToUnits } from '@/lib/money';
 import { FRESH_ANNOUNCEMENT_MS,fromCompletion,fromTurn,loadSeen,saveSeen,trimSeen,type RetentionAnnouncement } from '@/lib/retention-announcements';
 /** Live activity line. Filled only from backend-confirmed events. */
 export interface ActivityEntry {id:string;kind:'BID'|'SOLD'|'UNSOLD'|'RECALLED'|'SQUAD'|'RETENTION';at:number;teamName?:string;playerName?:string;amountCr?:number;detail?:string}
 export interface SoldOverlayState {active:boolean;player:Player|null;winningTeam:Team|null;price:number}
 export interface UnsoldOverlayState {active:boolean;player:Player|null;recallCount:number;reason?:'UNANIMOUS_SKIP'}
+export interface PoolNotice {batchId:string;count:number;playerIds:string[];at:number}
 export interface AntiSnipingNotice {active:boolean;secondsAdded:number;message:string}
 interface Store{
  roomCode:string|null;snapshot:RoomStateDTO|null;sequence:number;auctionStatus:string;activePlayer:Player|null;
  currentBid:number;highestBidder:Team|null;endsAt:number|null;remainingTimeMs:number|null;serverTimeOffset:number;
  minimumNextBid:number;maximumPermittedBid:number;currentPot:string;teams:Team[];players:Player[];recentBids:Bid[];aiSuggestion:AISuggestion|null;
+ /** Only an authoritative room lookup (REST /state 404 ROOM_NOT_FOUND or WS ROOM_NOT_FOUND) may set roomMissing. */
+ roomMissing:boolean;syncNotice:string|null;recommendationStatus:RecommendationStatus;
  skipVoteNotice:string|null;soldOverlay:SoldOverlayState;unsoldOverlay:UnsoldOverlayState;antiSnipingNotice:AntiSnipingNotice|null;bidErrorNotice:string|null;
  retentionAnnouncement:RetentionAnnouncement|null;retentionQueue:RetentionAnnouncement[];retentionSeen:string[];activityFeed:ActivityEntry[];
  dismissRetentionAnnouncement:()=>void;
+ /** Set only by a server PLAYER_POOL_UPDATED event, once per batch. Never by ROOM_STATE or a local import response. */
+ poolNotice:PoolNotice|null;dismissPoolNotice:()=>void;
  initAuction:(code:string)=>void;leaveAuction:()=>void;handleServerEvent:(e:ServerEvent)=>void;
  placeBid:(amount:number)=>void;hostCommand:(type:HostCommand)=>Promise<void>;hostPause:()=>void;hostResume:()=>void;hostSkip:()=>void;hostEnd:()=>void;
  reconnect:()=>void;clearBidError:()=>void;clearAntiSnipingNotice:()=>void;dismissSoldOverlay:()=>void;dismissUnsoldOverlay:()=>void;
 }
 let unsubscribe:(()=>void)|undefined;let generation=0;
-let recommendationTimer:ReturnType<typeof setTimeout>|undefined;
+let syncTimer:ReturnType<typeof setTimeout>|undefined;
+const SYNC_RETRY_LIMIT=5;
 let noticeTimer:ReturnType<typeof setTimeout>|undefined;
 let seenLoadedKey:string|null=null;
+const seenPoolBatches=new Set<string>();
 const FEED_LIMIT=60;
 const SEQUENCE_EXEMPT=new Set(['ROOM_STATE','PRESENCE_UPDATED','ERROR','BID_REJECTED','COMMAND_ACK','PONG','CONNECTED']);
 const initial={
+ poolNotice:null as PoolNotice|null,
  retentionAnnouncement:null,retentionQueue:[] as RetentionAnnouncement[],retentionSeen:[] as string[],activityFeed:[] as ActivityEntry[],
+ roomMissing:false,syncNotice:null as string|null,recommendationStatus:'idle' as RecommendationStatus,
  skipVoteNotice:null,roomCode:null,snapshot:null,sequence:0,auctionStatus:'LOBBY',activePlayer:null,currentBid:0,highestBidder:null,endsAt:null,
  remainingTimeMs:null,serverTimeOffset:0,minimumNextBid:0,maximumPermittedBid:0,currentPot:'',teams:[],players:[],recentBids:[],aiSuggestion:null,
  soldOverlay:{active:false,player:null,winningTeam:null,price:0},unsoldOverlay:{active:false,player:null,recallCount:0},antiSnipingNotice:null,bidErrorNotice:null,
@@ -76,11 +86,25 @@ export const useAuctionStore=create<Store>((set,get)=>({
   get().leaveAuction();set({roomCode:code});const current=++generation;
   unsubscribe=webSocketService.subscribe(e=>get().handleServerEvent(e));
   // REST handles direct refresh/membership errors; socket replaces this with its newest snapshot.
-  void roomService.getState(code).then(s=>{if(current===generation)get().handleServerEvent({type:'ROOM_STATE',payload:s,roomId:s.roomId,sequence:s.sequence,serverTime:s.serverTime});})
-   .catch(e=>{if(current===generation)set({bidErrorNotice:normalizeError(e).message});});
+  const loadState=(attempt:number)=>{
+   void roomService.getState(code).then(s=>{if(current===generation)get().handleServerEvent({type:'ROOM_STATE',payload:s,roomId:s.roomId,sequence:s.sequence,serverTime:s.serverTime});})
+    .catch(e=>{
+     if(current!==generation)return;
+     const err=normalizeError(e);
+     // Only the authoritative lookup answering 404 ROOM_NOT_FOUND proves the room is gone.
+     if(err instanceof ApiError&&err.status===404&&err.code==='ROOM_NOT_FOUND'){set({roomMissing:true,syncNotice:null});return;}
+     // Anything else (429, 5xx, network, 401/403) keeps the last known state and retries a bounded number of times.
+     set({syncNotice:err.message});
+     if(attempt>=SYNC_RETRY_LIMIT||err.status===401||err.status===403)return;
+     clearTimeout(syncTimer);
+     syncTimer=setTimeout(()=>{if(current===generation&&!get().snapshot)loadState(attempt+1);},Math.max(err.retryAfterMs??0,backoffDelay(attempt)));
+    });
+  };
+  loadState(0);
   webSocketService.connect(code);
  },
- leaveAuction:()=>{generation++;unsubscribe?.();unsubscribe=undefined;clearTimeout(recommendationTimer);clearTimeout(noticeTimer);webSocketService.disconnect();seenLoadedKey=null;set(initial);useRoomStore.getState().reset();},
+ leaveAuction:()=>{generation++;unsubscribe?.();unsubscribe=undefined;recommendationFetcher.reset();clearTimeout(syncTimer);clearTimeout(noticeTimer);webSocketService.disconnect();seenLoadedKey=null;seenPoolBatches.clear();set(initial);useRoomStore.getState().reset();},
+ dismissPoolNotice:()=>set({poolNotice:null}),
  dismissRetentionAnnouncement:()=>{const s=get();const [next,...rest]=s.retentionQueue;set({retentionAnnouncement:next??null,retentionQueue:rest});},
  handleServerEvent:event=>{
   const state=get();
@@ -92,7 +116,8 @@ export const useAuctionStore=create<Store>((set,get)=>({
    const s=event.payload;if(s.roomCode!==state.roomCode||s.sequence<state.sequence)return;
    const teams=mapTeams(s),players=s.players.map(p=>mapPlayer(p,s));
    const playerChanged=s.activePlayerId!==state.activePlayer?.id || s.activationId!==state.snapshot?.activationId;
-   set({snapshot:s,sequence:s.sequence,auctionStatus:s.status==='RUNNING'?'LIVE':s.status,teams,players,
+   clearTimeout(syncTimer);
+   set({roomMissing:false,syncNotice:null,snapshot:s,sequence:s.sequence,auctionStatus:s.status==='RUNNING'?'LIVE':s.status,teams,players,
     activePlayer:players.find(p=>p.id===s.activePlayerId)??null,currentBid:s.currentBidCr??0,
     highestBidder:teams.find(t=>t.id===s.highestBidderTeamId)??null,minimumNextBid:s.minimumNextBidCr??0,
     maximumPermittedBid:s.maximumPermittedBidCr,endsAt:s.endsAt,remainingTimeMs:s.remainingTimeMs,
@@ -103,12 +128,13 @@ export const useAuctionStore=create<Store>((set,get)=>({
     ...(s.recentBids?{recentBids:s.recentBids.map(b=>{const team=teams.find(t=>t.id===b.teamId);return {id:b.id,amount:b.amountCr,teamId:b.teamId,teamName:team?.name??b.teamName,teamShortName:team?.shortName,teamLogo:team?.logo,bidderId:team?.managerId,bidderUsername:team?.managerUsername,timestamp:b.at} as Bid;})}:{})});
    useRoomStore.getState().applySnapshot(s);
    syncAnnouncements(s,event.serverTime);
-   clearTimeout(recommendationTimer);
-   if(s.activePlayerId){
-    recommendationTimer=setTimeout(()=>{void auctionService.recommendation(s.roomCode).then(r=>{
-     if(get().snapshot?.activePlayerId===r.playerId&&get().sequence===r.sequence)set({aiSuggestion:mapRecommendation(r)});
-    }).catch(()=>{if(get().roomCode===s.roomCode)set({aiSuggestion:null});});},350);
-   }
+   // Recommendations are informational: fetched only when the active player or the current bid changes, never per snapshot.
+   if(s.status==='RUNNING'&&s.activePlayerId){
+    recommendationFetcher.request(s.roomCode,s.roomCode+'|'+(s.activationId??s.activePlayerId)+'|'+(s.currentBidCr??0),{
+     result:r=>{if(get().roomCode===s.roomCode&&get().snapshot?.activePlayerId===r.playerId)set({aiSuggestion:mapRecommendation(r)});},
+     status:recommendationStatus=>{if(get().roomCode===s.roomCode)set({recommendationStatus});},
+    });
+   }else{recommendationFetcher.reset();set({recommendationStatus:'idle',aiSuggestion:null});}
   }else if(event.type==='PRESENCE_UPDATED'&&state.snapshot){
    const s={...state.snapshot,connectedUsers:event.payload.connectedUsers,...(event.payload.teamPresence?{teamPresence:event.payload.teamPresence}:{})};
    set({snapshot:s,teams:mapTeams(s)});useRoomStore.getState().applySnapshot(s);
@@ -116,6 +142,13 @@ export const useAuctionStore=create<Store>((set,get)=>({
    const team=state.teams.find(t=>t.id===event.payload.highestBidderTeamId);
    if(team)set({recentBids:[{id:String(event.sequence),amount:event.payload.amountCr,teamId:team.id,teamName:team.name,teamShortName:team.shortName,teamLogo:team.logo,bidderId:team.managerId,bidderUsername:team.managerUsername,timestamp:event.serverTime},...state.recentBids].slice(0,20),
     activityFeed:feedWith(state.activityFeed,{id:event.sequence+'-bid',kind:'BID',at:event.serverTime,teamName:team.name,playerName:state.players.find(p=>p.id===event.payload.playerId)?.name,amountCr:event.payload.amountCr})});
+  }else if(event.type==='PLAYER_POOL_UPDATED'){
+   // Only the pool notice changes; the live lot, bid, bidder and timer come from their own events and snapshots.
+   const p=event.payload;
+   if(p.addedCount>0&&!seenPoolBatches.has(p.batchId)){
+    seenPoolBatches.add(p.batchId);
+    set({poolNotice:{batchId:p.batchId,count:p.addedCount,playerIds:p.addedPlayerIds,at:event.serverTime}});
+   }
   }else if(event.type==='SKIP_VOTE_UPDATED'){
    if(event.payload.reason==='BID_ACCEPTED')set({skipVoteNotice:'Skip votes reset after a valid bid.'});
   }else if(event.type==='PLAYER_STARTED'){
@@ -142,7 +175,7 @@ export const useAuctionStore=create<Store>((set,get)=>({
    const added=Math.max(0,Math.round((event.payload.endsAt-(state.endsAt??event.payload.endsAt))/1000));
    set({antiSnipingNotice:{active:true,secondsAdded:added,message:'Deadline extended by the server'}});
    clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>set({antiSnipingNotice:null}),3500);
-  }else if(event.type==='BID_REJECTED'||event.type==='ERROR')set({bidErrorNotice:event.payload.message});
+  }else if(event.type==='BID_REJECTED'||event.type==='ERROR')set({bidErrorNotice:event.payload.message,...(event.type==='ERROR'&&event.payload.reason==='ROOM_NOT_FOUND'?{roomMissing:true}:{})});
  },
  placeBid:amount=>{
   const s=get().snapshot;if(!s?.activePlayerId)return;
