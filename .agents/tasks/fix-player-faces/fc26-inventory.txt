@@ -1,0 +1,207 @@
+﻿206 unique; files exist: 117
+231747 | K. Mbapp├⌐ | Kylian Mbapp├⌐ Lottin | Real Madrid | France | FILE | https://r2.thesportsdb.com/images/media/player/thumb/v08cj31778816426.jpg
+209331 | M. Salah | Mohamed Salah Hamed Ghaly | Liverpool | Egypt | FILE | https://r2.thesportsdb.com/images/media/player/thumb/o7y57t1718438615.jpg
+239085 | E. Haaland | Erling Braut H├Ñland | Manchester City | Norway | FILE | https://r2.thesportsdb.com/images/media/player/thumb/bb1agj1727415216.jpg
+231443 | O. Demb├⌐l├⌐ | Masour Ousmane Demb├⌐l├⌐ | Paris Saint-Germain | France | FILE | https://r2.thesportsdb.com/images/media/player/thumb/2w39ps1778803599.jpg
+277643 | Lamine Yamal | Lamine Yamal | FC Barcelona | Spain | - | 
+256630 | F. Wirtz | Florian Richard Wirtz | Liverpool | Germany | FILE | https://r2.thesportsdb.com/images/media/player/thumb/k2mwrs1779386689.jpg
+238794 | Vini Jr. | Vinicius Jos├⌐ Paix├úo de Oliveira Junior | Real Madrid | Brazil | FILE | https://r2.thesportsdb.com/images/media/player/thumb/lxf1he1771264845.jpg
+202126 | H. Kane | Harry Edward Kane | FC Bayern M├╝nchen | England | FILE | https://r2.thesportsdb.com/images/media/player/thumb/xytqwt1431626675.jpg
+233419 | Raphinha | Raphael Dias Belloli | FC Barcelona | Brazil | FILE | https://r2.thesportsdb.com/images/media/player/thumb/14kuzy1771260047.jpg
+256790 | J. Musiala | Jamal Musiala | FC Bayern M├╝nchen | Germany | FILE | https://r2.thesportsdb.com/images/media/player/thumb/y998n31779384099.jpg
+246669 | B. Saka | Bukayo Saka | Arsenal | England | FILE | https://r2.thesportsdb.com/images/media/player/thumb/axl31b1769332282.jpg
+233731 | A. Isak | Alexander Isak | Liverpool | Sweden | FILE | https://r2.thesportsdb.com/images/media/player/thumb/537p7s1778608689.jpg
+231478 | L. Mart├¡nez | Lautaro Javier Mart├¡nez | Inter | Argentina | FILE | https://r2.thesportsdb.com/images/media/player/thumb/y9j7e11719034723.jpg
+188545 | R. Lewandowski | Robert Lewandowski | FC Barcelona | Poland | FILE | https://r2.thesportsdb.com/images/media/player/thumb/1ogy3i1771254580.jpg
+257534 | C. Palmer | Cole Jermaine Palmer | Chelsea | England | - | 
+246191 | J. Alvarez | Juli├ín ├ülvarez | Atl├⌐tico Madrid | Argentina | - | 
+247635 | K. Kvaratskhelia | Khvicha kvaratskhelia | Paris Saint-Germain | Georgia | FILE | https://r2.thesportsdb.com/images/media/player/thumb/l1gq7e1770217076.jpg
+232293 | V. Osimhen | Victor James Osimhen | Galatasaray SK | Nigeria | FILE | https://r2.thesportsdb.com/images/media/player/thumb/snhzzq1702566147.jpg
+241651 | V. Gy├╢keres | Viktor Einar Gy├╢keres | Arsenal | Sweden | - | 
+215441 | S. Guirassy | Serhou Yadaly Guirassy | Borussia Dortmund | Guinea | - | 
+256516 | Nico Williams | Nicholas Williams Arthuer | Athletic Club | Spain | - | 
+247827 | M. Olise | Michael Akpovie Olise | FC Bayern M├╝nchen | France | - | 
+158023 | L. Messi | Lionel Andr├⌐s Messi Cuccitini | Inter Miami | Argentina | FILE | https://r2.thesportsdb.com/images/media/player/thumb/kpfsvp1725295651.jpg
+211110 | P. Dybala | Paulo Bruno Exequiel Dybala | Roma | Argentina | FILE | https://r2.thesportsdb.com/images/media/player/thumb/csf3qy1515954038.jpg
+271421 | D. Dou├⌐ | D├⌐sir├⌐ Dou├⌐ | Paris Saint-Germain | France | - | 
+243812 | Rodrygo | Rodrygo Silva de Goes | Real Madrid | Brazil | FILE | https://r2.thesportsdb.com/images/media/player/thumb/81sef31771265827.jpg
+237692 | P. Foden | Philip Walter Foden | Manchester City | England | FILE | https://r2.thesportsdb.com/images/media/player/thumb/19o7yc1749157221.jpg
+243014 | B. Mbeumo | Bryan Tetsadong Marceau Mbeumo | Manchester United | Cameroon | - | 
+244260 | Dani Olmo | Daniel Olmo Carvajal | FC Barcelona | Spain | FILE | https://r2.thesportsdb.com/images/media/player/thumb/b075cd1786385273.jpg
+194765 | A. Griezmann | Antoine Griezmann | Atl├⌐tico Madrid | France | FILE | https://r2.thesportsdb.com/images/media/player/thumb/xpmyw01702565423.jpg
+20801 | Cristiano Ronaldo | Cristiano Ronaldo dos Santos Aveiro | Al Nassr | Portugal | FILE | https://r2.thesportsdb.com/images/media/player/thumb/bkre241600892282.jpg
+200104 | H. Son | Heung-min Son | Los Angeles FC | Korea Republic | FILE | https://r2.thesportsdb.com/images/media/player/thumb/gp3tuk1708336729.jpg
+165153 | K. Benzema | Karim Benzema | Al Ittihad | France | FILE | https://r2.thesportsdb.com/images/media/player/thumb/0bzer81704623143.jpg
+241084 | L. D├¡az | Luis Fernando D├¡az Marulanda | FC Bayern M├╝nchen | Colombia | FILE | https://r2.thesportsdb.com/images/media/player/thumb/qkw97r1779753703.jpg
+228093 | M. Thuram | Marcus Lilian Thuram-Ulien | Inter | France | - | 
+234236 | P. Schick | Patrik Schick | Bayer 04 Leverkusen | Czechia | FILE | https://r2.thesportsdb.com/images/media/player/thumb/5392y81578228284.jpg
+257279 | ├ülex Baena | Alejandro Baena Rodr├¡guez | Atl├⌐tico Madrid | Spain | - | 
+264652 | B. Barcola | Bradley Barcola | Paris Saint-Germain | France | - | 
+244675 | Sancet | Oihan Sancet Tirapu | Athletic Club | Spain | - | 
+245367 | X. Simons | Xavier Quentin Shay Simons | Tottenham Hotspur | Netherlands | - | 
+242516 | C. Gakpo | Cody Math├¿s Gakpo | Liverpool | Netherlands | FILE | https://r2.thesportsdb.com/images/media/player/thumb/m9g2ki1669145821.jpg
+241852 | M. Diaby | Moussa Diaby | Al Ittihad | France | FILE | https://r2.thesportsdb.com/images/media/player/thumb/4fn3ce1710323483.jpg
+256675 | O. Marmoush | Omar Khaled Mohamed Marmoush | Manchester City | Egypt | - | 
+241721 | Rafael Le├úo | Rafael Alexandre da Concei├º├úo Le├úo | AC Milan | Portugal | FILE | https://r2.thesportsdb.com/images/media/player/thumb/m1sh9x1549742563.jpg
+230899 | A. Lookman | Ademola Olajade Alade Aylola Lookman | Atalanta | Nigeria | FILE | https://r2.thesportsdb.com/images/media/player/thumb/y5wkl71740779922.jpg
+216549 | A. S├╕rloth | Alexander S├╕rloth | Atl├⌐tico Madrid | Norway | - | 
+227796 | C. Pulisic | Christian Mate Puli┼íi─ç | AC Milan | United States | - | 
+210035 | Grimaldo | Alejandro Grimaldo Garc├¡a | Bayer 04 Leverkusen | Spain | FILE | https://r2.thesportsdb.com/images/media/player/thumb/14eqd51786385517.jpg
+220502 | M. Zaccagni | Mattia Zaccagni | Lazio | Italy | FILE | https://r2.thesportsdb.com/images/media/player/thumb/ely35j1546372853.jpg
+221697 | O. Watkins | Oliver George Arthur Watkins | Aston Villa | England | - | 
+203376 | V. van Dijk | Virgil van Dijk | Liverpool | Netherlands | FILE | https://r2.thesportsdb.com/images/media/player/thumb/9fe0tn1720452118.jpg
+232580 | Gabriel | Gabriel dos Santos Magalh├úes | Arsenal | Brazil | FILE | https://r2.thesportsdb.com/images/media/player/thumb/gfr8ai1740140196.jpg
+237383 | A. Bastoni | Alessandro Bastoni | Inter | Italy | FILE | https://r2.thesportsdb.com/images/media/player/thumb/kgodvf1602959273.jpg
+243715 | W. Saliba | William Alain Andr├⌐ Gabriel Saliba | Arsenal | France | FILE | https://r2.thesportsdb.com/images/media/player/thumb/w0sp3q1779262968.jpg
+241486 | J. Kound├⌐ | Jules Olivier Kound├⌐ | FC Barcelona | France | FILE | https://r2.thesportsdb.com/images/media/player/thumb/ghod9q1778805401.jpg
+213331 | J. Tah | Jonathan Glao Tah | FC Bayern M├╝nchen | Germany | - | 
+207865 | Marquinhos | Marcos Ao├ís Corr├¬a | Paris Saint-Germain | Brazil | FILE | https://r2.thesportsdb.com/images/media/player/thumb/sejelk1770217582.jpg
+256196 | W. Pacho | Willian Joel Pacho Tenorio | Paris Saint-Germain | Ecuador | - | 
+237678 | I. Konat├⌐ | Ibrahima Konat├⌐ | Liverpool | France | - | 
+239818 | R├║ben Dias | R├║ben dos Santos Gato Alves Dias | Manchester City | Portugal | FILE | https://r2.thesportsdb.com/images/media/player/thumb/9kws2w1684833492.jpg
+205452 | A. R├╝diger | Antonio R├╝diger | Real Madrid | Germany | FILE | https://r2.thesportsdb.com/images/media/player/thumb/qtv86p1779385132.jpg
+229558 | D. Upamecano | Dayotchanculle Oswald Upamecano | FC Bayern M├╝nchen | France | FILE | https://r2.thesportsdb.com/images/media/player/thumb/a66k1g1778818296.jpg
+247819 | N. Schlotterbeck | Nico Cedric Schlotterbeck | Borussia Dortmund | Germany | FILE | https://r2.thesportsdb.com/images/media/player/thumb/syw8dg1779385730.jpg
+239580 | Bremer | Gleison Bremer Silva Nascimento | Juventus | Brazil | FILE | https://r2.thesportsdb.com/images/media/player/thumb/icn9je1716707438.jpg
+204525 | I├▒igo Mart├¡nez | ├ì├▒igo Mart├¡nez Berridi | Al Nassr | Spain | FILE | https://r2.thesportsdb.com/images/media/player/thumb/lxg7lp1574502820.jpg
+241637 | A. Tchouam├⌐ni | Aur├⌐lien Djani Tchouameni | Real Madrid | France | FILE | https://r2.thesportsdb.com/images/media/player/thumb/co0ahr1778818162.jpg
+251517 | J. Gvardiol | Jo┼íko Gvardiol | Manchester City | Croatia | FILE | https://r2.thesportsdb.com/images/media/player/thumb/dku11k1703326585.jpg
+248550 | Vivian | Daniel Vivian Moreno | Athletic Club | Spain | - | 
+240130 | ├ëder Milit├úo | ├ëder Gabriel Milit├úo | Real Madrid | Brazil | FILE | https://r2.thesportsdb.com/images/media/player/thumb/evk18a1771266122.jpg
+226851 | B. Pavard | Benjamin Pavard | Olympique de Marseille | France | FILE | https://r2.thesportsdb.com/images/media/player/thumb/36hwgb1660764260.jpg
+199845 | F. Acerbi | Francesco Acerbi | Inter | Italy | FILE | https://r2.thesportsdb.com/images/media/player/thumb/2o1pgk1577107421.jpg
+198176 | S. de Vrij | Stefan de Vrij | Inter | Netherlands | - | 
+204638 | W. Orban | Vilmos Tam├ís Orb├ín | RB Leipzig | Hungary | FILE | https://r2.thesportsdb.com/images/media/player/thumb/66prf81517767361.jpg
+256197 | P. Hincapi├⌐ | Piero Mart├¡n Hincapi├⌐ Reyna | Arsenal | Ecuador | - | 
+278016 | Murillo | Murillo Santiago Costa dos Santos | Nottingham Forest | Brazil | - | 
+253163 | R. Araujo | Ronald Federico Ara├║jo da Silva | FC Barcelona | Uruguay | FILE | https://r2.thesportsdb.com/images/media/player/thumb/z4bmo21771260643.jpg
+247103 | D. Hancko | D├ívid Hancko | Atl├⌐tico Madrid | Slovakia | - | 
+233486 | R. Le Normand | Robin Le Normand | Atl├⌐tico Madrid | Spain | - | 
+238095 | N. Milenkovi─ç | Nikola Milenkovi─ç | Nottingham Forest | Serbia | - | 
+244263 | A. Rrahmani | Amir Kadri Rrahmani | Napoli | Kosovo | - | 
+217870 | G. Di Lorenzo | Giovanni Di Lorenzo | Napoli | Italy | FILE | https://r2.thesportsdb.com/images/media/player/thumb/pxjt3d1771246716.jpg
+229582 | G. Mancini | Gianluca Mancini | Roma | Italy | FILE | https://r2.thesportsdb.com/images/media/player/thumb/9tf0bn1546084688.jpg
+216460 | J. Gim├⌐nez | Jos├⌐ Mar├¡a Gim├⌐nez de Vargas | Atl├⌐tico Madrid | Uruguay | FILE | https://r2.thesportsdb.com/images/media/player/thumb/fphr8u1718082723.jpg
+208920 | N. Ak├⌐ | Nathan Benjamin Ak├⌐ | Manchester City | Netherlands | - | 
+278349 | D. Huijsen | Dean Donny Huijsen | Real Madrid | Spain | - | 
+278046 | Pau Cubars├¡ | Pau Cubars├¡ Paredes | FC Barcelona | Spain | - | 
+243241 | A. Buongiorno | Alessandro Buongiorno | Napoli | Italy | - | 
+251805 | J. Timber | Jurri├½n David Norman Timber | Arsenal | Netherlands | - | 
+264453 | M. van de Ven | Micky van de Ven | Tottenham Hotspur | Netherlands | - | 
+251809 | S. Botman | Sven Adriaan Botman | Newcastle United | Netherlands | FILE | https://r2.thesportsdb.com/images/media/player/thumb/16xv6e1770796369.jpg
+232488 | C. Romero | Cristian Gabriel Romero | Tottenham Hotspur | Argentina | FILE | https://r2.thesportsdb.com/images/media/player/thumb/16rd0s1780011158.jpg
+247257 | Iba├▒ez | Roger Iba├▒ez da Silva | Al Ahli SFC | Brazil | - | 
+241159 | M. Gu├⌐hi | Addji Keaninkin Marc-Israel Gu├⌐hi | Crystal Palace | England | - | 
+235243 | M. de Ligt | Matthijs de Ligt | Manchester United | Netherlands | FILE | https://r2.thesportsdb.com/images/media/player/thumb/aaayxv1770993878.jpg
+227678 | E. Konsa | Ezri Konsa Ngoyo | Aston Villa | England | - | 
+237086 | Kim Min Jae | Min-jae Kim | FC Bayern M├╝nchen | Korea Republic | FILE | https://r2.thesportsdb.com/images/media/player/thumb/flx3cd1778971805.jpg
+212218 | A. Laporte | Aymeric Jean Louis Gerard Alphonse Laporte | Athletic Club | Spain | FILE | https://r2.thesportsdb.com/images/media/player/thumb/zldp8b1779732163.jpg
+210413 | A. Romagnoli | Alessio Romagnoli | Lazio | Italy | FILE | https://r2.thesportsdb.com/images/media/player/thumb/w2yvzf1520100924.jpg
+197445 | D. Alaba | David Olatukunbo Alaba | Real Madrid | Austria | FILE | https://r2.thesportsdb.com/images/media/player/thumb/sdcmqe1702815753.jpg
+220793 | D. S├ínchez | Davinson S├ínchez Mina | Galatasaray SK | Colombia | - | 
+235212 | A. Hakimi | Achraf Hakimi | Paris Saint-Germain | Morocco | FILE | https://r2.thesportsdb.com/images/media/player/thumb/lwhwh71770216476.jpg
+239053 | F. Valverde | Federico Santiago Valverde Dipetta | Real Madrid | Uruguay | FILE | https://r2.thesportsdb.com/images/media/player/thumb/38ndp21771266409.jpg
+212622 | J. Kimmich | Joshua Walter Kimmich | FC Bayern M├╝nchen | Germany | FILE | https://r2.thesportsdb.com/images/media/player/thumb/7r22gx1779383592.jpg
+252145 | Nuno Mendes | Nuno Alexandre Tavares Mendes | Paris Saint-Germain | Portugal | FILE | https://r2.thesportsdb.com/images/media/player/thumb/ocycug1770217690.jpg
+231281 | T. Alexander-Arnold | Trent John Alexander-Arnold | Real Madrid | England | FILE | https://r2.thesportsdb.com/images/media/player/thumb/e35duu1771262822.jpg
+204963 | Carvajal | Daniel Carvajal Ramos | Real Madrid | Spain | FILE | https://r2.thesportsdb.com/images/media/player/thumb/gapy0m1771264214.jpg
+226268 | F. Dimarco | Federico Dimarco | Inter | Italy | FILE | https://r2.thesportsdb.com/images/media/player/thumb/q7lkrg1546596582.jpg
+234396 | A. Davies | Alphonso Boyle Davies | FC Bayern M├╝nchen | Canada | FILE | https://r2.thesportsdb.com/images/media/player/thumb/0p7ekk1660764614.jpg
+239231 | Marc Cucurella | Marc Cucurella Saseta | Chelsea | Spain | - | 
+232656 | T. Hern├índez | Theo Bernard Fran├ºois Hern├índez | Al Hilal | France | FILE | https://r2.thesportsdb.com/images/media/player/thumb/n0yoi71778804799.jpg
+233096 | D. Dumfries | Denzel Justus Morris Dumfries | Inter | Netherlands | FILE | https://r2.thesportsdb.com/images/media/player/thumb/7uz0v61544971521.jpg
+210514 | Jo├úo Cancelo | Jo├úo Pedro Cavaco Cancelo | Al Hilal | Portugal | FILE | https://r2.thesportsdb.com/images/media/player/thumb/8vj8tm1771260403.jpg
+226161 | Marcos Llorente | Marcos Llorente Moreno | Atl├⌐tico Madrid | Spain | FILE | https://r2.thesportsdb.com/images/media/player/thumb/nssdrm1779732330.jpg
+248243 | E. Camavinga | Eduardo Celmi Camavinga | Real Madrid | France | FILE | https://r2.thesportsdb.com/images/media/player/thumb/5w5ge71771264039.jpg
+263578 | Balde | Alejandro Balde Mart├¡nez | FC Barcelona | Spain | FILE | https://r2.thesportsdb.com/images/media/player/thumb/ll7swk1577132138.jpg
+253149 | J. Frimpong | Jeremie Agyekum Frimpong | Liverpool | Netherlands | FILE | https://r2.thesportsdb.com/images/media/player/thumb/4vfl5h1611865283.jpg
+231936 | B. White | Benjamin William White | Arsenal | England | - | 
+209989 | T. Partey | Thomas Teye Partey | Villarreal CF | Ghana | FILE | https://r2.thesportsdb.com/images/media/player/thumb/lnsxw11705917605.jpg
+260908 | M. Kerkez | Milos kerkez | Liverpool | Hungary | - | 
+243576 | Pedro Porro | Pedro Antonio Porro Sauceda | Tottenham Hotspur | Spain | FILE | https://r2.thesportsdb.com/images/media/player/thumb/mqd2th1786385866.jpg
+236703 | D. Raum | David Raum | RB Leipzig | Germany | - | 
+216267 | A. Robertson | Andrew Henry Robertson | Liverpool | Scotland | FILE | https://r2.thesportsdb.com/images/media/player/thumb/mvmpbc1710165540.jpg
+229348 | A. Robinson | Antonee Robinson | Fulham FC | United States | - | 
+203574 | J. Stones | John Stones | Manchester City | England | FILE | https://r2.thesportsdb.com/images/media/player/thumb/iub2p21763068622.jpg
+225375 | K. Laimer | Konrad Laimer | FC Bayern M├╝nchen | Austria | FILE | https://r2.thesportsdb.com/images/media/player/thumb/vm9ui01770541591.jpg
+227647 | M. Mittelst├ñdt | Maximilian Mittelst├ñdt | VfB Stuttgart | Germany | - | 
+200724 | Nacho Fern├índez | Jos├⌐ Ignacio Fern├índez Iglesias | Al Qadsiah FC | Spain | - | 
+232639 | R. Doan | Ritsu Doan | Eintracht Frankfurt | Japan | - | 
+243854 | M. Simakan | Mohamed Simakan | Al Nassr | France | - | 
+261865 | Miguel Guti├⌐rrez | Miguel Guti├⌐rrez Ortega | Napoli | Spain | - | 
+242641 | R. A├»t-Nouri | Rayan A├»t Nouri | Manchester City | Algeria | - | 
+238074 | R. James | Reece James | Chelsea | England | FILE | https://r2.thesportsdb.com/images/media/player/thumb/uqrxvv1431677357.jpg
+258648 | Carlos Augusto | Carlos Augusto Zopalato Neves | Inter | Brazil | - | 
+237646 | D. Mu├▒oz | Daniel Mu├▒oz Mej├¡a | Crystal Palace | Colombia | - | 
+208574 | F. Kosti─ç | Filip Kosti─ç | Juventus | Serbia | FILE | https://r2.thesportsdb.com/images/media/player/thumb/zgsfpn1578087120.jpg
+228618 | F. Mendy | Ferland Sinna Mendy | Real Madrid | France | FILE | https://r2.thesportsdb.com/images/media/player/thumb/r218wb1771266209.jpg
+211688 | Gay├á | Jos├⌐ Luis Gay├á Pe├▒a | Valencia CF | Spain | FILE | https://r2.thesportsdb.com/images/media/player/thumb/kt63701532712803.jpg
+210881 | J. McGinn | John McGinn | Aston Villa | Scotland | - | 
+230621 | G. Donnarumma | Gianluigi Donnarumma | Manchester City | Italy | FILE | https://r2.thesportsdb.com/images/media/player/thumb/7kahd81704447713.jpg
+212831 | Alisson | Alisson Rams├⌐s Becker | Liverpool | Brazil | FILE | https://r2.thesportsdb.com/images/media/player/thumb/yi6dt21746034945.jpg
+192119 | T. Courtois | Thibaut Nicolas Marc Courtois | Real Madrid | Belgium | FILE | https://r2.thesportsdb.com/images/media/player/thumb/54zonn1779039115.jpg
+200389 | J. Oblak | Jan Oblak | Atl├⌐tico Madrid | Slovenia | FILE | https://r2.thesportsdb.com/images/media/player/thumb/tyue7b1505763846.jpg
+215698 | M. Maignan | Mike Peterson Maignan | AC Milan | France | FILE | https://r2.thesportsdb.com/images/media/player/thumb/8owaul1735364851.jpg
+220901 | David Raya | David Raya Mart├¡n | Arsenal | Spain | - | 
+177683 | Y. Sommer | Yann Sommer | Inter | Switzerland | FILE | https://r2.thesportsdb.com/images/media/player/thumb/1t4z0g1702025825.jpg
+235073 | G. Kobel | Gregor Kobel | Borussia Dortmund | Switzerland | FILE | https://r2.thesportsdb.com/images/media/player/thumb/dl2yx01605709279.jpg
+192448 | M. ter Stegen | Marc-Andr├⌐ ter Stegen | FC Barcelona | Germany | FILE | https://r2.thesportsdb.com/images/media/player/thumb/maz3sd1514553586.jpg
+230869 | Unai Sim├│n | Unai Sim├│n Mendibil | Athletic Club | Spain | FILE | https://r2.thesportsdb.com/images/media/player/thumb/7mte7u1603316714.jpg
+193080 | De Gea | David de Gea Quintana | Fiorentina | Spain | - | 
+202811 | E. Mart├¡nez | Dami├ín Emiliano Mart├¡nez Romero | Aston Villa | Argentina | FILE | https://r2.thesportsdb.com/images/media/player/thumb/7drp311770201331.jpg
+210257 | Ederson | Ederson Santana de Moraes | Fenerbah├ºe SK | Brazil | FILE | https://r2.thesportsdb.com/images/media/player/thumb/lqvotq1741317988.jpg
+185122 | P. Gul├ícsi | P├⌐ter Gul├ícsi | RB Leipzig | Hungary | FILE | https://r2.thesportsdb.com/images/media/player/thumb/rklmtd1727502355.jpg
+234577 | Diogo Costa | Diogo Meireles da Costa | FC Porto | Portugal | - | 
+252154 | M. Carnesecchi | Marco Carnesecchi | Atalanta | Italy | - | 
+262621 | G. Mamardashvili | Giorgi Mamardashvili | Liverpool | Georgia | - | 
+204935 | J. Pickford | Jordan Lee Pickford | Everton | England | - | 
+167495 | M. Neuer | Manuel Peter Neuer | FC Bayern M├╝nchen | Germany | FILE | https://r2.thesportsdb.com/images/media/player/thumb/2wx5jc1779384216.jpg
+186153 | W. Szcz─Ösny | Wojciech Tomasz Szcz─Ösny | FC Barcelona | Poland | FILE | https://r2.thesportsdb.com/images/media/player/thumb/3epoxq1713428540.jpg
+252371 | J. Bellingham | Jude Victor William Bellingham | Real Madrid | England | FILE | https://r2.thesportsdb.com/images/media/player/thumb/rfg8xd1771263826.jpg
+231866 | Rodri | Rodrigo Hern├índez Cascante | Manchester City | Spain | FILE | https://r2.thesportsdb.com/images/media/player/thumb/r6vlwa1545242094.jpg
+251854 | Pedri | Pedro Gonz├ílez L├│pez | FC Barcelona | Spain | FILE | https://r2.thesportsdb.com/images/media/player/thumb/2rpez61786385788.jpg
+255253 | Vitinha | V├¡tor Machado Ferreira | Paris Saint-Germain | Portugal | - | 
+256079 | M. Caicedo | Mois├⌐s Isaac Caicedo Corozo | Chelsea | Ecuador | - | 
+222665 | M. ├ÿdegaard | Martin ├ÿdegaard | Arsenal | Norway | FILE | https://r2.thesportsdb.com/images/media/player/thumb/ttlff21727415365.jpg
+239837 | A. Mac Allister | Alexis Mac Allister | Liverpool | Argentina | FILE | https://r2.thesportsdb.com/images/media/player/thumb/9n5dnd1751999911.jpg
+234378 | D. Rice | Declan Rice | Arsenal | England | FILE | https://r2.thesportsdb.com/images/media/player/thumb/ty3z7g1705918131.jpg
+212198 | Bruno Fernandes | Bruno Miguel Borges Fernandes | Manchester United | Portugal | FILE | https://r2.thesportsdb.com/images/media/player/thumb/1kfayc1700821747.jpg
+228702 | F. de Jong | Frenkie de Jong | FC Barcelona | Netherlands | FILE | https://r2.thesportsdb.com/images/media/player/thumb/fgse2c1771254363.jpg
+192985 | K. De Bruyne | Kevin De Bruyne | Napoli | Belgium | FILE | https://r2.thesportsdb.com/images/media/player/thumb/627wh81779038446.jpg
+224232 | N. Barella | Nicol├▓ Barella | Inter | Italy | FILE | https://r2.thesportsdb.com/images/media/player/thumb/mnj6hw1546611238.jpg
+241096 | S. Tonali | Sandro Tonali | Newcastle United | Italy | FILE | https://r2.thesportsdb.com/images/media/player/thumb/fm42f81770797717.jpg
+247851 | Bruno Guimar├úes | Bruno Guimar├úes Rodrigues Moura | Newcastle United | Brazil | FILE | https://r2.thesportsdb.com/images/media/player/thumb/emzl1v1749155913.jpg
+240638 | T. Reijnders | Tijjani Martinus Jan Reijnders | Manchester City | Netherlands | - | 
+208128 | H. ├çalhano─ƒlu | Hakan ├çalhano─ƒlu | Inter | T├╝rkiye | FILE | https://r2.thesportsdb.com/images/media/player/thumb/ays7ot1737352882.jpg
+272834 | Jo├úo Neves | Jo├úo Pedro Gon├ºalves Neves | Paris Saint-Germain | Portugal | - | 
+246104 | R. Gravenberch | Ryan Jiro Gravenberch | Liverpool | Netherlands | - | 
+226271 | Fabi├ín Ruiz | Fabi├ín Ruiz Pe├▒a | Paris Saint-Germain | Spain | - | 
+199503 | G. Xhaka | Granit Xhaka | Sunderland | Switzerland | FILE | https://r2.thesportsdb.com/images/media/player/thumb/xhgqbw1678275167.jpg
+236610 | M. Kean | Moise Bioty Kean | Fiorentina | Italy | - | 
+224371 | J. Bowen | Jarrod Bowen | West Ham United | England | - | 
+260247 | M. Rogers | Morgan Elliot Rogers | Aston Villa | England | - | 
+257289 | H. Ekitik├⌐ | Hugo Ekitik├⌐ | Liverpool | France | - | 
+207421 | L. Trossard | Leandro Trossard | Arsenal | Belgium | - | 
+242458 | A. Dovbyk | Artem Dovbyk | Roma | Ukraine | - | 
+236461 | J. Mateta | Jean-Philippe Mateta | Crystal Palace | France | - | 
+247679 | V. Boniface | Victor Okoh Boniface | SV Werder Bremen | Nigeria | - | 
+257470 | A. Elanga | Anthony David Junior Elanga | Newcastle United | Sweden | - | 
+212228 | I. Toney | Ivan Benjamin Elijah Toney | Al Ahli SFC | England | - | 
+245155 | M. Kudus | Mohammed Kudus | Tottenham Hotspur | Ghana | - | 
+225539 | D. Solanke | Dominic Ayodele Solanke-Mitchell | Tottenham Hotspur | England | - | 
+229237 | M. Akanji | Manuel Obafemi Akanji | Inter | Switzerland | FILE | https://r2.thesportsdb.com/images/media/player/thumb/rkw8nb1703327216.jpg
+192366 | N. Otamendi | Nicol├ís Hern├ín Gonzalo Otamendi | SL Benfica | Argentina | FILE | https://r2.thesportsdb.com/images/media/player/thumb/c735ni1780010283.jpg
+207862 | M. Ginter | Matthias Lukas Ginter | SC Freiburg | Germany | FILE | https://r2.thesportsdb.com/images/media/player/thumb/yhfv0j1578119146.jpg
+229476 | W. Anton | Waldemar Anton | Borussia Dortmund | Germany | - | 
+236532 | R. Koch | Robin Leon Koch | Eintracht Frankfurt | Germany | - | 
+262118 | T. Livramento | Valentino Francisco Livramento | Newcastle United | England | - | 
+259583 | D. Udogie | Iyenoma Destiny Udogie | Tottenham Hotspur | Italy | - | 
+236772 | D. Szoboszlai | Dominik Szoboszlai | Liverpool | Hungary | FILE | https://r2.thesportsdb.com/images/media/player/thumb/1tnwli1746377031.jpg
+244669 | M. Hjulmand | Morten Blom Due Hjulmand | Sporting CP | Denmark | - | 
+236987 | B. Kamara | Boubacar Bernard Kamara | Aston Villa | France | - | 
+216201 | I├▒aki Williams | I├▒aki Williams Arthuer | Athletic Club | Ghana | - | 
+256853 | M. Tillman | Malik Leon Tillman | Bayer 04 Leverkusen | United States | - | 
+251470 | C. De Ketelaere | Charles De Ketelaere | Atalanta | Belgium | - | 
+236015 | M. Gibbs-White | Morgan Anthony Gibbs-White | Nottingham Forest | England | - | 
+255565 | K. Mitoma | Kaoru Mitoma | Brighton & Hove Albion | Japan | - | 
+241236 | A. Semenyo | Antoine Serlom Semenyo | AFC Bournemouth | Ghana | - | 
