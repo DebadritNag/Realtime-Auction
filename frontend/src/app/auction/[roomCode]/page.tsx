@@ -18,6 +18,7 @@ import { HostConnectionPanel } from "@/components/auction/HostConnectionPanel";
 import { AuctionHistoryModal } from "@/components/auction/AuctionHistoryModal";
 import { SoldOverlay } from "@/components/auction/SoldOverlay";
 import { UnsoldOverlay } from "@/components/auction/UnsoldOverlay";
+import { PoolUpdateNotice } from "@/components/auction/PoolUpdateNotice";
 import { AuctionHeader, type AuctionTabId } from "@/components/auction/AuctionHeader";
 import { TeamPurseStrip } from "@/components/auction/TeamPurseStrip";
 import { PlayerStage, type StageStatus } from "@/components/auction/PlayerStage";
@@ -249,6 +250,9 @@ export default function LiveAuctionPage({
             canRecall={snapshot?.status === "RUNNING" || snapshot?.status === "PAUSED"}
             unsoldPlayers={snapshot?.unsoldPlayers ?? []}
             roomCode={roomCode}
+            canAddPlayers={snapshot?.status === "RUNNING" || snapshot?.status === "PAUSED"}
+            poolSource={snapshot?.settings.playerPoolSource === "FC26" ? "FC26" : "DEFAULT"}
+            heldAdditions={snapshot?.poolAdditions?.heldCount ?? 0}
             onViewHistory={() => setHistoryOpen(true)}
             onReturnToDashboard={handleExitAuction}
           />
@@ -410,6 +414,7 @@ export default function LiveAuctionPage({
       {/* 4. OVERLAYS */}
       <SoldOverlay soldData={soldOverlay} onDismiss={dismissSoldOverlay} />
       <UnsoldOverlay unsoldData={unsoldOverlay} onDismiss={dismissUnsoldOverlay} />
+      <PoolUpdateNotice />
 
       {/* 5. TEAM VIEW DRAWER */}
       <TeamViewDrawer

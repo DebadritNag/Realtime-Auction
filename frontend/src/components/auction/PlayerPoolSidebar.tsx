@@ -21,10 +21,15 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
 }) => {
   const [selectedPot, setSelectedPot] = useState<PotCategory | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [onlyNew, setOnlyNew] = useState(false);
 
   const potCategories = [{ id: "all", label: "All Pots" }, ...Array.from(new Set(players.map(p => p.pot))).map(id => ({id, label: potLabel(id)}))];
 
+  const newCount = players.filter((p) => p.isNew).length;
+  const showNewOnly = onlyNew && newCount > 0;
+
   const filteredPlayers = players.filter((p) => {
+    if (showNewOnly && !p.isNew) return false;
     const matchesPot = selectedPot === "all" || p.pot === selectedPot;
     const matchesSearch =
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -70,6 +75,19 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
             {cat.label}
           </button>
         ))}
+        {newCount > 0 && (
+          <button
+            type="button"
+            data-testid="new-filter"
+            aria-pressed={showNewOnly}
+            onClick={() => setOnlyNew(!showNewOnly)}
+            className={`px-2 py-1 text-[11px] font-semibold rounded-md shrink-0 transition-colors duration-200 select-none cursor-pointer focus-visible:outline-2 focus-visible:outline-[#00ff87] ${
+              showNewOnly ? "bg-[#00ff87] text-[#08090d] font-bold" : "bg-[#151a24] text-[#00ff87] hover:bg-[#1e2433]"
+            }`}
+          >
+            New ({newCount})
+          </button>
+        )}
       </div>
 
       {/* Search Input */}

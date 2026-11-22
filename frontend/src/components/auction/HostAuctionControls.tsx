@@ -4,6 +4,9 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { RecallPlayersModal } from "./RecallPlayersModal";
+import { AddPlayersModal } from "./AddPlayersModal";
+import { webSocketService } from "@/services/websocket.service";
+import { normalizeError } from "@/services/api";
 import type { PlayerDTO } from "@/types/backend";
 import { Play, Pause, SkipForward, Flag, RotateCcw, History, LayoutDashboard } from "lucide-react";
 
@@ -16,6 +19,11 @@ export interface HostAuctionControlsProps {
   onEnd: () => void;
   onViewHistory?: () => void;
   onReturnToDashboard?: () => void;
+  /** Live pool import (RUNNING or PAUSED). Hidden when omitted. */
+  canAddPlayers?: boolean;
+  poolSource?: "DEFAULT" | "FC26";
+  /** Imported players waiting for an explicit release because their category already finished. */
+  heldAdditions?: number;
 }
 
 export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
@@ -27,8 +35,19 @@ export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
   onEnd,
   onViewHistory,
   onReturnToDashboard,
+  canAddPlayers,
+  poolSource = "DEFAULT",
+  heldAdditions = 0,
 }) => {
   const [recallOpen, setRecallOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [confirmReleaseOpen, setConfirmReleaseOpen] = useState(false);
+  const [releaseError, setReleaseError] = useState<string | null>(null);
+  const release = async () => {
+    setConfirmReleaseOpen(false); setReleaseError(null);
+    try { await webSocketService.send({ type: "RELEASE_POOL_ADDITIONS", payload: { roomCode } }); }
+    catch (cause) { setReleaseError(normalizeError(cause).message); }
+  };
   const [confirmSkipOpen, setConfirmSkipOpen] = useState(false);
   const [confirmEndOpen, setConfirmEndOpen] = useState(false);
 
@@ -78,6 +97,18 @@ export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
           leftIcon={<RotateCcw className="w-3.5 h-3.5" />} onClick={() => setRecallOpen(true)}>
           Recall Player ({unsoldPlayers.length})
         </Button>
+        {canAddPlayers !== undefined ? (
+          <Button variant="secondary" size="sm" disabled={!synced || !canAddPlayers} onClick={() => setAddOpen(true)}
+            title={canAddPlayers ? "Add players to the pool without interrupting the auction" : "Available while the auction is running or paused"}>
+            + ADD PLAYERS TO AUCTION
+          </Button>
+        ) : null}
+        {heldAdditions > 0 ? (
+          <Button variant="secondary" size="sm" disabled={!synced || !canAddPlayers} onClick={() => setConfirmReleaseOpen(true)}
+            title="Introduce imported players whose category has already finished">
+            Release held players ({heldAdditions})
+          </Button>
+        ) : null}
         {onViewHistory ? (
           <Button variant="secondary" size="sm" onClick={onViewHistory} leftIcon={<History className="w-3.5 h-3.5" />}>
             View Auction History
@@ -99,6 +130,16 @@ export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
         </Button>
       </div>
 
+      {releaseError && <p role="alert" className="basis-full text-rose-300">{releaseError}</p>}
+      {addOpen && <AddPlayersModal roomCode={roomCode} enabled={synced && !!canAddPlayers} poolSource={poolSource} onClose={() => setAddOpen(false)} />}
+      <ConfirmDialog
+        isOpen={confirmReleaseOpen}
+        onClose={() => setConfirmReleaseOpen(false)}
+        onConfirm={() => void release()}
+        title="Release held players?"
+        message="These imported players belong to categories that already finished. They will join the end of the queue. The current player and timer are not affected."
+        confirmLabel="Release players"
+      />
       {recallOpen && <RecallPlayersModal players={unsoldPlayers} roomCode={roomCode}
         enabled={synced && canRecall} onClose={() => setRecallOpen(false)} />}
       {/* Confirmation Dialog for Skipping */}
