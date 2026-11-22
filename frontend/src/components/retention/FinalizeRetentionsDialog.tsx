@@ -48,14 +48,14 @@ export function FinalizeRetentionsDialog({ isOpen, onClose, onConfirm, isLoading
                 </ul>
               )}
               <p className="mt-1 font-mono text-[11px] text-[#94a3b8]">
-                Spent {formatCr(stats?.spentCr ?? 0)} · Purse left {formatCr(stats?.remainingPurseCr ?? team.remainingBudgetCr)}
+                Spent {formatCr(stats?.spentCr ?? 0)} Â· Purse left {formatCr(stats?.remainingPurseCr ?? team.remainingBudgetCr)}
               </p>
             </li>
           );
         })}
       </ul>
       <p className="mt-3 text-xs font-bold text-[#f8fafc]" data-testid="finalize-total">
-        Total retained: {retention.totals.retained} · Total spent: {formatCr(retention.totals.spentCr)}
+        Total retained: {retention.totals.retained} Â· Total spent: {formatCr(retention.totals.spentCr)}
       </p>
       <div className="mt-5 flex items-center justify-end gap-3 border-t border-[#242c3d] pt-3">
         <Button variant="ghost" size="sm" onClick={onClose} disabled={isLoading}>Cancel</Button>
