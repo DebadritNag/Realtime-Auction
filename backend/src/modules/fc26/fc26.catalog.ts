@@ -78,7 +78,11 @@ export class MemoryFc26Catalog extends IndexedFc26Catalog {
   private readonly store = new Map<string, Player>();
   protected async persist(records: Fc26Record[]): Promise<Set<string>> {
     const added = new Set<string>();
-    for (const { player } of records) if (!this.store.has(player.id)) { this.store.set(player.id, structuredClone(player)); added.add(player.id); }
+    for (const { player } of records) {
+      const existing = this.store.get(player.id);
+      if (existing) { existing.name = player.name; if (player.fullName) existing.fullName = player.fullName; else delete existing.fullName; continue; }
+      this.store.set(player.id, structuredClone(player)); added.add(player.id);
+    }
     return added;
   }
   protected async load(): Promise<Player[]> { return [...this.store.values()]; }
@@ -119,9 +123,13 @@ export class PostgresFc26Catalog extends IndexedFc26Catalog {
             draft_pool: p.draftPool ?? 'REGULAR', player_tag: p.playerTag ?? null, source_category: p.sourceCategory ?? null,
             source_categories: p.sourceCategories ?? [], auction_pot: p.potId, active: true, metadata: tx.json(JSON.parse(JSON.stringify(metadata))),
           }));
-          const inserted = await tx<{ fc26_player_id: string }[]>`insert into public.football_players ${tx(rows)}
-            on conflict (fc26_player_id) where fc26_player_id is not null do nothing returning fc26_player_id`;
-          for (const row of inserted) added.add(row.fc26_player_id);
+          // Re-import refreshes the display name (CSV short_name) and the searchable long name of existing rows;
+          // everything else stays as stored. xmax = 0 marks rows that were newly inserted.
+          const upserted = await tx<{ fc26_player_id: string; inserted: boolean }[]>`insert into public.football_players ${tx(rows)}
+            on conflict (fc26_player_id) where fc26_player_id is not null
+            do update set name = excluded.name, full_name = excluded.full_name
+            returning fc26_player_id, (xmax = 0) as inserted`;
+          for (const row of upserted) if (row.inserted) added.add(row.fc26_player_id);
         }
       });
       return added;

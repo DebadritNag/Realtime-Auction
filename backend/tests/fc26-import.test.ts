@@ -21,7 +21,27 @@ describe('FC26 importer', () => {
     expect(await byId(c, '9002')).toMatchObject({ name: 'Only Long', fullName: 'Only Long' });
     expect((await c.search({ query: 'kylian long' })).players.map(p => p.id)).toEqual(['9001']);
     expect((await c.search({ query: 'k. short' })).players.map(p => p.id)).toEqual(['9001']);
-  });  it('imports all six files and reports counts', async () => {
+  });
+  it('re-import refreshes a stale long display name from the CSV short_name', async () => {
+    let csv = 'player_id,short_name,long_name,player_positions,overall\n9001,Kylian Long Name,Kylian Long Name,CM,80\n';
+    const c = catalog({}, async p => (p.endsWith('FC26_Mid.csv') ? csv : Promise.reject(Object.assign(new Error('x'), { code: 'ENOENT' }))));
+    await c.importAll();
+    csv = 'player_id,short_name,long_name,player_positions,overall\n9001,K. Short,Kylian Long Name,CM,80\n';
+    expect((await c.importAll()).imported).toBe(0);
+    expect(await byId(c, '9001')).toMatchObject({ name: 'K. Short', fullName: 'Kylian Long Name' });
+  });
+  it.runIf(existsSync(resolve(defaultFc26Dir(), 'FC26_Mid.csv')))('shows the real CSV short_name for known players through the public DTO', async () => {
+    const c = new MemoryFc26Catalog(resolveFc26Config({}));
+    await c.importAll();
+    const dto = (id: string) => byId(c, id).then(publicPlayer);
+    expect(await dto('277643')).toMatchObject({ name: 'Lamine Yamal', fullName: expect.stringContaining('Lamine Yamal Nasraoui Ebana') });
+    expect(await dto('231747')).toMatchObject({ name: 'K. Mbappé', fullName: 'Kylian Mbappé Lottin' });
+    expect(await dto('255253')).toMatchObject({ name: 'Vitinha', fullName: 'Vítor Machado Ferreira' });
+    expect(await dto('231866')).toMatchObject({ name: 'Rodri', fullName: 'Rodrigo Hernández Cascante' });
+    expect(await dto('232580')).toMatchObject({ name: 'Gabriel', fullName: 'Gabriel dos Santos Magalhães' });
+    expect((await c.search({ query: 'nasraoui' })).players.map(p => p.name)).toEqual(['Lamine Yamal']);
+  });
+  it('imports all six files and reports counts', async () => {
     const c = catalog();
     const report = await c.importAll();
     expect(report.filesRead).toBe(6);
