@@ -1,5 +1,5 @@
 import type { RoomSettings } from '@/types';
-import type { RoomStateDTO } from '@/types/backend';
+import type { RoomStateDTO,RoomSummaryDTO,RoomDetailsDTO } from '@/types/backend';
 import { api } from './api';
 import { settingsToDTO,mapRoom } from './contract';
 import { authService } from './auth.service';
@@ -26,5 +26,8 @@ export const roomService={
   return this.getState(code);
  },
  async updateSettings(code:string,settings:Partial<RoomSettings>){return api.patch<RoomStateDTO>('/rooms/'+validRoomCode(code)+'/settings',settingsToDTO(settings));},
+ myRooms:()=>api.get<{rooms:RoomSummaryDTO[];serverTime:number}>('/me/rooms'),
+ summary:(code:string)=>api.get<RoomDetailsDTO>('/rooms/'+validRoomCode(code)+'/summary'),
+ rejoin:(code:string)=>api.post<RoomSummaryDTO>('/rooms/'+validRoomCode(code)+'/rejoin'),
  leave:(code:string)=>api.post<void>('/rooms/'+validRoomCode(code)+'/leave'),
 };

@@ -48,7 +48,7 @@ try {
   await expect(page.getByTestId('auction-phase')).toContainText('LIVE AUCTION');
   await expect(page.getByTestId('auction-pot')).toContainText('Attackers');
   await expect(page.getByTestId('auction-host-badge')).toBeVisible();
-  await expect(page.getByText('LIVE SYNC')).toBeVisible();
+  await expect(page.getByText('CONNECTED',{exact:true})).toBeVisible();
   const tabs = page.getByRole('tab');
   await expect(tabs).toHaveText([/Live Auction/, /Retained Players\s*3/, /Teams & Squads/, /Overview/]);
   await expect(page.getByRole('tab', { name: /Live Auction/ })).toHaveAttribute('aria-selected', 'true');

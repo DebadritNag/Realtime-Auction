@@ -10,9 +10,9 @@ const signals=['CUP_SETTINGS_UPDATED','CUP_ENABLED','CUP_QUALIFIERS_CONFIRMED','
 for(const type of signals)assert.equal(parseServerEvent(frame(type)).type,type);
 assert.equal(parseServerEvent(frame('FUTURE_SIGNAL')),null);assert.throws(()=>parseServerEvent('{'));
 assert.throws(()=>parseServerEvent(frame('MANAGER_MODE_PATCH',{tournamentId:'t',baseSequence:1,changes:{sequence:1}})));
-const sockets=[];globalThis.WebSocket=class {static OPEN=1;readyState=1;sent=[];constructor(){sockets.push(this);}send(data){this.sent.push(data);}close(){this.onclose?.();}};
+const sockets=[];globalThis.WebSocket=class {static OPEN=1;readyState=1;sent=[];constructor(url,protocols){this.url=String(url);this.protocols=protocols;sockets.push(this);}send(data){this.sent.push(data);}close(){this.onclose?.();}};
 const service=new WebSocketService(),events=[];service.subscribe(e=>{if(e.type==='SQUAD_UPDATED')throw Error('test subscriber failure');});service.subscribe(e=>events.push(e));
-service.connectManager('t');service.connectManager('t');await new Promise(r=>setTimeout(r,0));assert.equal(sockets.length,1);sockets[0].onopen();assert.equal(sockets[0].sent.length,1);
+service.connectManager('t');service.connectManager('t');await new Promise(r=>setTimeout(r,0));assert.equal(sockets.length,1);assert.equal(sockets[0].url,'ws://test/ws');assert.deepEqual(sockets[0].protocols,['auction.v1','bearer.test-token']);sockets[0].onopen();assert.equal(sockets[0].sent.length,1);
 for(const type of signals)sockets[0].onmessage({data:frame(type)});
 assert.equal(events.filter(e=>e.type==='ERROR'&&e.payload.reason==='INVALID_RESPONSE').length,0);
 assert.equal(events.filter(e=>e.type==='SQUAD_UPDATED').length,1);

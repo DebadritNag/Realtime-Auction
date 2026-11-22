@@ -5,9 +5,9 @@ import { ArrowUpRight, Ban, BadgeCheck, ShieldCheck, UserPlus } from "lucide-rea
 import type { ActivityEntry } from "@/stores/auction.store";
 import { formatCr } from "@/lib/utils";
 
-const ICONS = { BID: ArrowUpRight, SOLD: BadgeCheck, UNSOLD: Ban, SQUAD: UserPlus, RETENTION: ShieldCheck } as const;
+const ICONS = { BID: ArrowUpRight, SOLD: BadgeCheck, UNSOLD: Ban, RECALLED: Ban, SQUAD: UserPlus, RETENTION: ShieldCheck } as const;
 const TONES: Record<ActivityEntry["kind"], string> = {
-  BID: "text-[#00ff87]", SOLD: "text-[#f5c542]", UNSOLD: "text-[#94a3b8]", SQUAD: "text-sky-300", RETENTION: "text-[#f5c542]",
+  BID: "text-[#00ff87]", SOLD: "text-[#f5c542]", UNSOLD: "text-[#94a3b8]", RECALLED: "text-[#94a3b8]", SQUAD: "text-sky-300", RETENTION: "text-[#f5c542]",
 };
 
 const timeOf = (at: number) => new Date(at).toLocaleTimeString([], { hour12: false });
@@ -19,6 +19,7 @@ function describe(e: ActivityEntry): React.ReactNode {
     case "BID": return <>{team} bid <strong>{formatCr(e.amountCr ?? 0)}</strong> for {player}</>;
     case "SOLD": return <>{player} sold to {team} for <strong>{formatCr(e.amountCr ?? 0)}</strong></>;
     case "UNSOLD": return <>{player} went unsold</>;
+    case "RECALLED": return <>{player} recalled to the pool</>;
     case "SQUAD": return <>{player} joins the {team} squad{e.detail ? " (" + e.detail.toLowerCase() + ")" : ""}</>;
     case "RETENTION": return <>{team} {e.detail}</>;
   }

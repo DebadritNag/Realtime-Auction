@@ -77,6 +77,23 @@ export interface RoomStateDTO {
  bidCount:number;nextPlayerAt:number|null;serverTime:number;sequence:number;teams:TeamDTO[];currentUserTeam:TeamDTO;
  connectedUsers:string[];players:PlayerDTO[];playerQueue:string[];playerQueueSummary:{remaining:number};
  soldPlayers:PurchaseDTO[];unsoldPlayers:PlayerDTO[];retention?:RetentionStateDTO;
+ activity?:ActivityDTO[];recentBids?:RecentBidDTO[];lastActivityAt?:number;ongoingStatus?:OngoingStatus;resumePath?:string;
+ /** Host viewers only. */teamPresence?:TeamPresenceDTO[];
+}
+export type OngoingStatus='NOT_STARTED'|'WAITING_FOR_TEAMS'|'RETENTION_IN_PROGRESS'|'READY_TO_START'|'LIVE_AUCTION'|'PAUSED'|'COMPLETED'|'CANCELLED';
+export interface ActivityDTO {id:string;kind:'BID'|'SOLD'|'UNSOLD'|'RECALLED'|'RETENTION';at:number;teamId?:string;teamName?:string;playerId?:string;playerName?:string;amountCr?:number;detail?:string}
+export interface RecentBidDTO {id:string;teamId:string;teamName:string;amountCr:number;at:number}
+export interface TeamPresenceDTO {teamId:string;userId?:string;managerUsername:string;connected:boolean;lastSeenAt:number|null}
+export interface RoomSummaryDTO {
+ roomId:string;roomCode:string;auctionName:string;ongoingStatus:OngoingStatus;rawStatus:RoomStatus;
+ retention:{phase:string;activeTeamName:string|null;completed:number;total:number}|null;
+ teamCount:number;capacity:number;role:{isHost:boolean;teamId:string|null;teamName:string|null};round:number|null;category:string|null;
+ currentPlayer:{id:string;name:string;position:string;potId:string;currentBidCr:number;highestBidderTeamName:string|null;endsAt:number|null;remainingTimeMs:number|null}|null;
+ playersSold:number;playersRetained:number;playersUnsold:number;playersRemaining:number|null;
+ lastActivityAt:number;createdAt:number;canContinue:boolean;resumePath:string;serverTime:number;
+}
+export interface RoomDetailsDTO extends RoomSummaryDTO {
+ teams:{id:string;name:string;managerUsername:string;isHost:boolean;remainingBudgetCr:number;playersOwned:number;retainedCount:number;connected:boolean;lastSeenAt?:number|null}[];
 }
 export interface RecommendationDTO {
  recommendedMinCr:number;recommendedMaxCr:number;suggestedCeilingCr:number;budgetRisk:'LOW'|'MEDIUM'|'HIGH';
@@ -137,7 +154,7 @@ TRANSFER_WINDOW_CLOSED:{tournamentId:string};
  CONNECTED:{connectionId:string;userId:string;heartbeatIntervalMs:number};
  ROOM_STATE:RoomStateDTO;
  ROOM_UPDATED:{reason?:string};MEMBER_JOINED:{teamId:string};MEMBER_LEFT:{teamId?:string;userId?:string};
- PRESENCE_UPDATED:{connectedUsers:string[]};
+ PRESENCE_UPDATED:{connectedUsers:string[];teamPresence?:TeamPresenceDTO[]};
  AUCTION_STARTED:Record<string,never>;
  PLAYER_STARTED:{player:PlayerDTO;basePriceCr:number;currentBidCr:number;minimumNextBidCr:number;highestBidderTeamId:null;startedAt:number;endsAt:number};
  BID_UPDATED:{playerId:string;amountCr:number;highestBidderTeamId:string;minimumNextBidCr:number;endsAt:number;bidCount:number};

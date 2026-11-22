@@ -10,7 +10,7 @@ import { normalizeError } from '@/services/api';
 import { croreToUnits } from '@/lib/money';
 import { FRESH_ANNOUNCEMENT_MS,fromCompletion,fromTurn,loadSeen,saveSeen,trimSeen,type RetentionAnnouncement } from '@/lib/retention-announcements';
 /** Live activity line. Filled only from backend-confirmed events. */
-export interface ActivityEntry {id:string;kind:'BID'|'SOLD'|'UNSOLD'|'SQUAD'|'RETENTION';at:number;teamName?:string;playerName?:string;amountCr?:number;detail?:string}
+export interface ActivityEntry {id:string;kind:'BID'|'SOLD'|'UNSOLD'|'RECALLED'|'SQUAD'|'RETENTION';at:number;teamName?:string;playerName?:string;amountCr?:number;detail?:string}
 export interface SoldOverlayState {active:boolean;player:Player|null;winningTeam:Team|null;price:number}
 export interface UnsoldOverlayState {active:boolean;player:Player|null;recallCount:number;reason?:'UNANIMOUS_SKIP'}
 export interface AntiSnipingNotice {active:boolean;secondsAdded:number;message:string}
@@ -23,19 +23,21 @@ interface Store{
  dismissRetentionAnnouncement:()=>void;
  initAuction:(code:string)=>void;leaveAuction:()=>void;handleServerEvent:(e:ServerEvent)=>void;
  placeBid:(amount:number)=>void;hostCommand:(type:HostCommand)=>Promise<void>;hostPause:()=>void;hostResume:()=>void;hostSkip:()=>void;hostEnd:()=>void;
- clearBidError:()=>void;clearAntiSnipingNotice:()=>void;dismissSoldOverlay:()=>void;dismissUnsoldOverlay:()=>void;
+ reconnect:()=>void;clearBidError:()=>void;clearAntiSnipingNotice:()=>void;dismissSoldOverlay:()=>void;dismissUnsoldOverlay:()=>void;
 }
 let unsubscribe:(()=>void)|undefined;let generation=0;
 let recommendationTimer:ReturnType<typeof setTimeout>|undefined;
 let noticeTimer:ReturnType<typeof setTimeout>|undefined;
 let seenLoadedKey:string|null=null;
 const FEED_LIMIT=60;
+const SEQUENCE_EXEMPT=new Set(['ROOM_STATE','PRESENCE_UPDATED','ERROR','BID_REJECTED','COMMAND_ACK','PONG','CONNECTED']);
 const initial={
  retentionAnnouncement:null,retentionQueue:[] as RetentionAnnouncement[],retentionSeen:[] as string[],activityFeed:[] as ActivityEntry[],
  skipVoteNotice:null,roomCode:null,snapshot:null,sequence:0,auctionStatus:'LOBBY',activePlayer:null,currentBid:0,highestBidder:null,endsAt:null,
  remainingTimeMs:null,serverTimeOffset:0,minimumNextBid:0,maximumPermittedBid:0,currentPot:'',teams:[],players:[],recentBids:[],aiSuggestion:null,
  soldOverlay:{active:false,player:null,winningTeam:null,price:0},unsoldOverlay:{active:false,player:null,recallCount:0},antiSnipingNotice:null,bidErrorNotice:null,
 };
+const retentionText=(d?:string)=>d==='SKIPPED'?'skipped retention':d?.startsWith('RETAINED:')?'retained '+d.slice(9)+' player(s)':d;
 const feedWith=(feed:ActivityEntry[],entry:ActivityEntry)=>feed.some(e=>e.id===entry.id)?feed:[entry,...feed].slice(0,FEED_LIMIT);
 /** Show an announcement once per backend event id; ids are remembered per room and user across refreshes. */
 function offerAnnouncement(a:RetentionAnnouncement){
@@ -83,7 +85,9 @@ export const useAuctionStore=create<Store>((set,get)=>({
  handleServerEvent:event=>{
   const state=get();
   if(event.roomId&&state.snapshot&&event.roomId!==state.snapshot.roomId)return;
-  if(event.roomId&&event.sequence<state.sequence)return;
+  // Replayed or stale events are dropped; snapshots, presence and socket-local events are always evaluated.
+  if(event.roomId&&event.sequence>0&&!SEQUENCE_EXEMPT.has(event.type)&&event.sequence<=state.sequence)return;
+  if(event.roomId&&event.sequence<state.sequence&&event.type!=='ERROR')return;
   if(event.type==='ROOM_STATE'){
    const s=event.payload;if(s.roomCode!==state.roomCode||s.sequence<state.sequence)return;
    const teams=mapTeams(s),players=s.players.map(p=>mapPlayer(p,s));
@@ -93,7 +97,10 @@ export const useAuctionStore=create<Store>((set,get)=>({
     highestBidder:teams.find(t=>t.id===s.highestBidderTeamId)??null,minimumNextBid:s.minimumNextBidCr??0,
     maximumPermittedBid:s.maximumPermittedBidCr,endsAt:s.endsAt,remainingTimeMs:s.remainingTimeMs,
     serverTimeOffset:event.serverTime-Date.now(),currentPot:s.activePotId??'',
-    ...(playerChanged?{aiSuggestion:null,recentBids:[],skipVoteNotice:null}:{})});
+    ...(playerChanged?{aiSuggestion:null,recentBids:[],skipVoteNotice:null}:{}),
+    // The persisted snapshot is the source of the feed and recent bids, so a refresh restores them without duplicates.
+    ...(s.activity?{activityFeed:s.activity.slice(0,FEED_LIMIT).map(a=>({id:a.id,kind:a.kind,at:a.at,teamName:a.teamName,playerName:a.playerName,amountCr:a.amountCr,detail:a.kind==='RETENTION'?retentionText(a.detail):a.detail}))}:{}),
+    ...(s.recentBids?{recentBids:s.recentBids.map(b=>{const team=teams.find(t=>t.id===b.teamId);return {id:b.id,amount:b.amountCr,teamId:b.teamId,teamName:team?.name??b.teamName,teamShortName:team?.shortName,teamLogo:team?.logo,bidderId:team?.managerId,bidderUsername:team?.managerUsername,timestamp:b.at} as Bid;})}:{})});
    useRoomStore.getState().applySnapshot(s);
    syncAnnouncements(s,event.serverTime);
    clearTimeout(recommendationTimer);
@@ -103,7 +110,7 @@ export const useAuctionStore=create<Store>((set,get)=>({
     }).catch(()=>{if(get().roomCode===s.roomCode)set({aiSuggestion:null});});},350);
    }
   }else if(event.type==='PRESENCE_UPDATED'&&state.snapshot){
-   const s={...state.snapshot,connectedUsers:event.payload.connectedUsers};
+   const s={...state.snapshot,connectedUsers:event.payload.connectedUsers,...(event.payload.teamPresence?{teamPresence:event.payload.teamPresence}:{})};
    set({snapshot:s,teams:mapTeams(s)});useRoomStore.getState().applySnapshot(s);
   }else if(event.type==='BID_UPDATED'){
    const team=state.teams.find(t=>t.id===event.payload.highestBidderTeamId);
@@ -150,6 +157,7 @@ export const useAuctionStore=create<Store>((set,get)=>({
  hostResume:()=>{void get().hostCommand('RESUME_AUCTION').catch(()=>{});},
  hostSkip:()=>{void get().hostCommand(get().activePlayer?'MARK_UNSOLD':'NEXT_PLAYER').catch(()=>{});},
  hostEnd:()=>{void get().hostCommand('END_AUCTION').catch(()=>{});},
+ reconnect:()=>{webSocketService.reconnect();},
  clearBidError:()=>set({bidErrorNotice:null}),clearAntiSnipingNotice:()=>set({antiSnipingNotice:null}),
  dismissSoldOverlay:()=>set({soldOverlay:initial.soldOverlay}),dismissUnsoldOverlay:()=>set({unsoldOverlay:initial.unsoldOverlay}),
 }));
