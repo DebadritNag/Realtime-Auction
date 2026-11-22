@@ -19,7 +19,7 @@ function PlayerCard({ player }: { player: RetentionAnnouncedPlayerDTO }) {
       <PlayerImage player={{ id: player.playerId, photoUrl: player.imageUrl ?? undefined, name: player.name }} alt="" className="ra-player-photo" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-black text-[#f8fafc]">
-          {player.fullName || player.name}
+          {player.name}
           <UnderdogTag player={{ playerTag: player.playerTag ?? undefined }} />
         </p>
         <p className="truncate text-[11px] text-[#94a3b8]">{player.position}{player.club ? " · " + player.club : ""}</p>

@@ -41,7 +41,7 @@ export function RetainedPlayersPanel({ picks, teams, heading = "Retained players
               <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                 {own.map((pick) => {
                   const p = pick.player;
-                  const name = p?.fullName || p?.name || "Player " + pick.playerId;
+                  const name = p?.name || "Player " + pick.playerId;
                   return (
                     <li key={pick.id} className="flex items-center gap-2.5 rounded-lg border border-[#f5c542]/20 bg-[#151a24] p-2 text-xs" data-testid="retained-player-card">
                       <PlayerImage player={{ id: pick.playerId, photoUrl: p?.photoUrl, name }} alt="" className="h-12 w-10 rounded-md" />

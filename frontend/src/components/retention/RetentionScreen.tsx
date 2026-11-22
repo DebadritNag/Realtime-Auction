@@ -211,14 +211,14 @@ function ActiveSelection({ roomCode, snapshot, retention }: { roomCode: string; 
                 <li key={p.id} className="flex items-center gap-2 rounded-lg bg-[#151a24] px-2 py-1.5 text-xs" data-testid="retention-selected-player">
                   <PlayerImage player={{ id: p.id, photoUrl: p.photoUrl, name: p.name }} alt="" className="h-10 w-8 rounded" />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-bold text-[#f8fafc]">{p.fullName || p.name}<UnderdogTag player={p} /></span>
+                    <span className="block truncate font-bold text-[#f8fafc]">{p.name}<UnderdogTag player={p} /></span>
                     <span className="flex items-center gap-1.5 text-[11px] text-[#94a3b8]">
                       <Badge variant="position" position={primaryPosition(p)} size="sm">{primaryPosition(p)}</Badge> {p.ovr} OVR · <span className="font-mono text-amber-400">{formatCr(p.retentionPriceCr)}</span>
                     </span>
                   </span>
                   <button
                     type="button"
-                    aria-label={"Remove " + (p.fullName || p.name)}
+                    aria-label={"Remove " + (p.name)}
                     disabled={pending}
                     onClick={() => void run(() => retentionService.remove(roomCode, p.id))}
                     className="inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border border-[#242c3d] text-[#cbd5e1] transition-colors duration-200 hover:border-red-500/50 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff87] disabled:cursor-not-allowed disabled:opacity-50"

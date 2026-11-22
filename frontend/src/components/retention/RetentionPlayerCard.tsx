@@ -23,7 +23,7 @@ export interface RetentionPlayerCardProps {
 }
 
 export function RetentionPlayerCard({ player, state, disabledReason, onRetain }: RetentionPlayerCardProps) {
-  const title = player.fullName || player.name;
+  const title = player.name;
   const position = primaryPosition(player);
   const reasonId = "retain-reason-" + player.id;
   const reason = state === "unavailable" ? "Unavailable" : state === "selected" ? null : disabledReason;

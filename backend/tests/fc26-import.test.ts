@@ -13,7 +13,15 @@ const catalog = (env: Parameters<typeof resolveFc26Config>[0] = {}, read?: (path
 const byId = async (c: MemoryFc26Catalog, id: string) => (await c.get(id))!;
 
 describe('FC26 importer', () => {
-  it('imports all six files and reports counts', async () => {
+  it('uses short_name as the display name and keeps long_name as fullName, falling back when short_name is empty', async () => {
+    const csv = 'player_id,short_name,long_name,player_positions,overall\n9001,K. Short,Kylian Long Name,CM,80\n9002,,Only Long,CM,81\n';
+    const c = catalog({}, async p => (p.endsWith('FC26_Mid.csv') ? csv : Promise.reject(Object.assign(new Error('x'), { code: 'ENOENT' }))));
+    await c.importAll();
+    expect(await byId(c, '9001')).toMatchObject({ name: 'K. Short', fullName: 'Kylian Long Name' });
+    expect(await byId(c, '9002')).toMatchObject({ name: 'Only Long', fullName: 'Only Long' });
+    expect((await c.search({ query: 'kylian long' })).players.map(p => p.id)).toEqual(['9001']);
+    expect((await c.search({ query: 'k. short' })).players.map(p => p.id)).toEqual(['9001']);
+  });  it('imports all six files and reports counts', async () => {
     const c = catalog();
     const report = await c.importAll();
     expect(report.filesRead).toBe(6);

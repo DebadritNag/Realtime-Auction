@@ -20,14 +20,15 @@ export interface Fc26ImportReport {
 interface ParsedEntry { source: Fc26SourceCategory; fileName: string; row: Record<string, string>; positions: string[]; overall: number; id: string }
 export interface Fc26ReadResult { entries: ParsedEntry[]; files: Fc26FileReport[]; missingFiles: string[]; invalidRows: Fc26InvalidRow[]; rowsRead: number }
 
-const REQUIRED_HEADERS = ['player_id', 'short_name', 'player_positions', 'overall'];
+const REQUIRED_HEADERS = ['player_id', 'player_positions', 'overall'];
 const MAX_FILE_BYTES = 25_000_000;
 const rowSchema = z.object({
   player_id: z.string().regex(/^\d{1,12}$/, 'player_id must be numeric'),
-  short_name: z.string().min(1, 'short_name is required').max(100),
+  short_name: z.string().max(100).optional(),
+  long_name: z.string().max(200).optional(),
   overall: z.coerce.number().int().min(1).max(99),
   player_positions: z.string().min(1, 'player_positions is required'),
-});
+}).refine(r => Boolean(r.short_name?.trim() || r.long_name?.trim()), { message: 'short_name is required' });
 const num = (value: string | undefined): number | undefined => {
   if (value === undefined || value.trim() === '') return undefined;
   const n = Number(value);
@@ -98,7 +99,7 @@ function toRecord(winner: ParsedEntry, sources: Fc26SourceCategory[], threshold:
   const image = row.player_face_url?.trim();
   const secondary = winner.positions.slice(1);
   const player: Player = {
-    id: winner.id, externalId: winner.id, name: row.short_name!, position: broadPosition(winner.positions[0]!), ovr: winner.overall,
+    id: winner.id, externalId: winner.id, name: row.short_name?.trim() || row.long_name!.trim(), position: broadPosition(winner.positions[0]!), ovr: winner.overall,
     stats, basePriceUnits: fc26BasePriceUnits({ overall: winner.overall, draftPool }, threshold), potId: pot,
     positions: winner.positions, subPosition: winner.positions[0], draftPool, sourceCategory, sourceCategories: sources,
     ...(row.long_name ? { fullName: row.long_name } : {}),
