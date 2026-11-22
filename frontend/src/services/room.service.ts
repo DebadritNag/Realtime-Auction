@@ -1,9 +1,13 @@
 import type { RoomSettings } from '@/types';
 import type { RoomStateDTO,RoomSummaryDTO,RoomDetailsDTO } from '@/types/backend';
-import { api } from './api';
+import { api,ApiError } from './api';
 import { settingsToDTO,mapRoom } from './contract';
 import { authService } from './auth.service';
-export interface JoinRoomPayload {roomCode:string;teamName:string;teamLogo?:string}
+export interface JoinRoomPayload {roomCode:string;teamName:string;teamLogo?:string;/** Restored rooms: the existing team to claim. Name and crest are ignored. */restoredTeamId?:string}
+const RESTORE_JOIN_ERRORS:Record<string,string>={
+ TEAM_ALREADY_CLAIMED:'That team has already been claimed by another manager. Pick a different team.',
+ ALREADY_CLAIMED_ANOTHER_TEAM:'You already manage another team in this auction. Leave it before claiming a different one.',
+};
 export function validRoomCode(value:string):string {
  const code=value.trim().toUpperCase();if(!/^[A-HJ-NP-Z2-9]{6}$/.test(code))throw new Error('Enter the six-character room code.');
  return code;
@@ -22,6 +26,14 @@ export const roomService={
   const code=validRoomCode(input.roomCode);
   // A refresh/rejoin never creates a second membership.
   try{return await this.getState(code);}catch(error){if(!(error instanceof Error)||!('status'in error)||error.status!==403)throw error;}
+  if(input.restoredTeamId){
+   try{await api.post('/rooms/'+code+'/join',{restoredTeamId:input.restoredTeamId});}
+   catch(error){
+    if(error instanceof ApiError&&RESTORE_JOIN_ERRORS[error.code])throw new ApiError(RESTORE_JOIN_ERRORS[error.code],error.code,error.status);
+    throw error;
+   }
+   return this.getState(code);
+  }
   await api.post('/rooms/'+code+'/join',{teamName:input.teamName,...(input.teamLogo?{teamLogoEmoji:input.teamLogo}:{})});
   return this.getState(code);
  },

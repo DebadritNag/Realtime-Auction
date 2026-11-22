@@ -1,4 +1,5 @@
 import type { TournamentState, TournamentSummary } from './manager-mode';
+import type { RestoreStateDTO } from './restore';
 /** Wire contract: backend/src/modules/rooms/room-state.ts and WEBSOCKET_PROTOCOL.md.
  * All public monetary amounts are Cr; integer half-Cr units stay inside Fastify. */
 export type RoomStatus = 'LOBBY'|'STARTING'|'RUNNING'|'PAUSED'|'COMPLETED'|'CLOSED';
@@ -40,8 +41,10 @@ export interface TeamDTO {
  remainingBudgetCr:number;playerIds:string[];playersOwned:number;maximumPermittedBidCr:number;minimumSquadMet:boolean;
  managerUsername?:string; // real username when available from hub connections
  retainedCount?:number;retentionSpentCr?:number;auctionPurseCr?:number;
+ /** Restore rooms: false while no manager has claimed the team. */claimed?:boolean;remainingSlots?:number;restoredRetainedCount?:number;restoredAuctionCount?:number;
 }
-export interface PurchaseDTO {id:string;playerId:string;teamId:string;priceCr:number;bidCount:number;at:number;durationMs:number;acquisitionType?:'AUCTION'|'RETENTION';isRetained?:boolean}
+/** priceCr is null for players restored from a snapshot: their historical price is not known to the auction. */
+export interface PurchaseDTO {id:string;playerId:string;teamId:string;priceCr:number|null;bidCount:number;at:number;durationMs:number;acquisitionType?:'AUCTION'|'RETENTION';isRetained?:boolean;restoredFromSnapshot?:boolean;recordedPriceCr?:number|null}
 export type RetentionPhase='OFF'|'NOT_STARTED'|'TEAM_SELECTING'|'ALL_TEAMS_COMPLETED'|'FINALIZED';
 export type RetentionTurnStatus='PENDING'|'ACTIVE'|'COMPLETED'|'SKIPPED';
 export interface RetentionPickDTO {
@@ -95,7 +98,7 @@ export interface RoomStateDTO {
  startedAt:number|null;endsAt:number|null;remainingTimeMs:number|null;biddingOpen:boolean;lastBidAt:number|null;
  bidCount:number;nextPlayerAt:number|null;serverTime:number;sequence:number;teams:TeamDTO[];currentUserTeam:TeamDTO;
  connectedUsers:string[];players:PlayerDTO[];playerQueue:string[];playerQueueSummary:{remaining:number;heldAdditions?:number};poolAdditions?:PoolAdditionsDTO;
- soldPlayers:PurchaseDTO[];unsoldPlayers:PlayerDTO[];retention?:RetentionStateDTO;
+ soldPlayers:PurchaseDTO[];unsoldPlayers:PlayerDTO[];retention?:RetentionStateDTO;restore?:RestoreStateDTO|null;
  activity?:ActivityDTO[];recentBids?:RecentBidDTO[];lastActivityAt?:number;ongoingStatus?:OngoingStatus;resumePath?:string;
  /** Host viewers only. */teamPresence?:TeamPresenceDTO[];
 }

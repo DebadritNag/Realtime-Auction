@@ -119,7 +119,7 @@ export const TeamQuickView: React.FC<TeamQuickViewProps> = ({
                     </div>
                   </div>
                   <span className="font-mono font-bold text-amber-400">
-                    {formatCr(player.soldPrice || player.basePrice)}
+                    {player.restoredFromSnapshot ? "Restored" : formatCr(player.soldPrice || player.basePrice)}
                   </span>
                 </div>
               ))}

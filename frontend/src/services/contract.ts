@@ -15,7 +15,7 @@ export function mapPlayer(p:PlayerDTO,s:RoomStateDTO):Player{
  isRetained:purchase?.isRetained===true||purchase?.acquisitionType==='RETENTION',
  ...(p.poolMeta?{isNew:p.status==='WAITING',poolBatchId:p.poolMeta.importBatchId,releaseState:p.poolMeta.release}:{}),
  status:({WAITING:'waiting',ACTIVE:'live',SOLD:'sold',UNSOLD:'unsold',SKIPPED:'skipped'} as const)[p.status],
- soldPrice:purchase?.priceCr,soldToTeamId:purchase?.teamId,soldToTeamName:s.teams.find(t=>t.id===purchase?.teamId)?.name};
+ soldPrice:purchase?.priceCr??undefined,...(purchase?.restoredFromSnapshot?{restoredFromSnapshot:true}:{}),soldToTeamId:purchase?.teamId,soldToTeamName:s.teams.find(t=>t.id===purchase?.teamId)?.name};
 }
 // Resolve manager username: prefer backend-supplied username, fall back to neutral label
 function resolveUsername(t:TeamDTO & {managerUsername?:string},isCurrentUser:boolean,index:number):string {
@@ -28,14 +28,16 @@ export function mapTeams(s:RoomStateDTO):Team[]{
  return s.teams.map((t,i)=>{
   const squad=players.filter(p=>t.playerIds.includes(p.id));
   const isCurrentUser=t.id===s.currentUserTeam.id;
-  const username=resolveUsername(t as TeamDTO & {managerUsername?:string},isCurrentUser,i);
+  const unclaimed=t.claimed===false;
+  const username=unclaimed?'unclaimed':resolveUsername(t as TeamDTO & {managerUsername?:string},isCurrentUser,i);
   return {id:t.id,name:t.name,shortName:t.name.split(/\s+/).map(x=>x[0]).join('').slice(0,4).toUpperCase(),
    logo:t.logoEmoji??'⚽',accentColor:['#00ff87','#38bdf8','#f59e0b','#a78bfa'][i%4],managerId:t.userId,
    managerUsername:username,isCurrentUser,
    budgetTotal:t.startingBudgetCr,budgetSpent:t.spentCr,budgetRemaining:t.remainingBudgetCr,squadCount:t.playersOwned,squad,
    positions:{gk:squad.filter(p=>p.position==='GK').length,def:squad.filter(p=>p.position==='DEF').length,mid:squad.filter(p=>p.position==='MID').length,att:squad.filter(p=>p.position==='ATT').length,total:squad.length},
-   ready:false,connected:s.connectedUsers.includes(t.userId),
-   retainedCount:t.retainedCount??0,retentionSpent:t.retentionSpentCr??0,auctionPurse:t.auctionPurseCr??t.startingBudgetCr};
+   ready:false,connected:!unclaimed&&s.connectedUsers.includes(t.userId),
+   retainedCount:t.retainedCount??0,retentionSpent:t.retentionSpentCr??0,auctionPurse:t.auctionPurseCr??t.startingBudgetCr,
+   ...(t.claimed===undefined?{}:{claimed:t.claimed,remainingSlots:t.remainingSlots,restoredRetainedCount:t.restoredRetainedCount,restoredAuctionCount:t.restoredAuctionCount})};
  });
 }
 export function mapSettings(s:SettingsDTO,name:string):RoomSettings{
@@ -53,6 +55,7 @@ export function settingsToDTO(s:Partial<RoomSettings>):Partial<SettingsDTO>{
 export function mapRoom(s:RoomStateDTO):AuctionRoom{
  return {roomCode:s.roomCode,name:s.room.auctionName,hostId:s.host.userId,hostUsername:s.teams.find(t=>t.userId===s.host.userId)?.name??'Host',
  status:s.status==='RUNNING'?'LIVE':s.status,settings:mapSettings(s.settings,s.room.auctionName),teams:mapTeams(s),createdAt:new Date(s.room.createdAt).toISOString(),
+ ...(s.restore?{restore:s.restore}:{}),
  participants:s.teams.map(t=>({userId:t.userId,username:t.name,teamId:t.id,teamName:t.name,isHost:t.userId===s.host.userId,connected:s.connectedUsers.includes(t.userId),ready:false}))};
 }
 export const mapRecommendation=(r:RecommendationDTO):AISuggestion=>({recommendedRange:[r.recommendedMinCr,r.recommendedMaxCr],suggestedCeiling:r.suggestedCeilingCr,

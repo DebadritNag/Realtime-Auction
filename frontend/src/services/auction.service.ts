@@ -23,7 +23,7 @@ export const auctionService={
    longestBiddingWar:war&&player(war.playerId)?{player:mapPlayer(player(war.playerId)!,s),totalBids:war.bidCount,finalPrice:s.soldPlayers.find(p=>p.playerId===war.playerId)?.priceCr??0}:null,
    mostPlayersPurchased:r.mostPlayersPurchased?{teamName:r.mostPlayersPurchased.name,count:r.mostPlayersPurchased.playersOwned}:null,
    highestRemainingBudget:r.highestRemainingBudget?{teamName:r.highestRemainingBudget.name,budget:r.highestRemainingBudget.remainingBudgetCr}:null,
-   transfers:s.soldPlayers.flatMap(p=>player(p.playerId)?[{player:mapPlayer(player(p.playerId)!,s),teamName:s.teams.find(t=>t.id===p.teamId)?.name??'',price:p.priceCr,timestamp:p.at}]:[]),
+   transfers:s.soldPlayers.filter(p=>!p.restoredFromSnapshot).flatMap(p=>player(p.playerId)?[{player:mapPlayer(player(p.playerId)!,s),teamName:s.teams.find(t=>t.id===p.teamId)?.name??'',price:p.priceCr??0,timestamp:p.at}]:[]),
    unsoldList:s.unsoldPlayers.map(p=>mapPlayer(p,s))};
  },
 };

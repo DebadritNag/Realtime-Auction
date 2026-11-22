@@ -6,9 +6,12 @@ import { formatCr } from "@/lib/utils";
 
 /** Overview section: progress and totals taken from the authoritative ROOM_STATE. */
 export function AuctionOverview({ snapshot }: { snapshot: RoomStateDTO }) {
-  const auctionSales = snapshot.soldPlayers.filter((p) => !p.isRetained && p.acquisitionType !== "RETENTION");
-  const retainedSales = snapshot.soldPlayers.length - auctionSales.length;
-  const pool = snapshot.players.length - retainedSales;
+  // Players restored from a snapshot were not sold in this auction: no price, not part of spend or top sales.
+  const auctionSales = snapshot.soldPlayers.filter((p): p is typeof p & { priceCr: number } => !p.isRetained && p.acquisitionType !== "RETENTION" && !p.restoredFromSnapshot && p.priceCr != null);
+  const restoredAuction = snapshot.soldPlayers.filter((p) => p.restoredFromSnapshot && !p.isRetained && p.acquisitionType !== "RETENTION").length;
+  const retainedSales = snapshot.soldPlayers.length - auctionSales.length - restoredAuction;
+  // Restored squad players were owned before this auction, so they are not part of its pool.
+  const pool = snapshot.players.length - retainedSales - restoredAuction;
   const remaining = snapshot.players.filter((p) => p.status === "WAITING" || p.status === "ACTIVE").length;
   const unsold = snapshot.players.filter((p) => p.status === "UNSOLD").length;
   const spend = auctionSales.reduce((sum, p) => sum + p.priceCr, 0);

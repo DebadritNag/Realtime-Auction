@@ -100,7 +100,7 @@ export const SquadFormationView: React.FC<SquadFormationViewProps> = ({
               <div className="text-right">
                 <span className="text-[10px] text-[#64748b] block">Signed Fee</span>
                 <span className="text-xs font-mono font-bold text-amber-400">
-                  {formatCr(p.soldPrice || p.basePrice)}
+                  {p.restoredFromSnapshot ? "Restored" : formatCr(p.soldPrice || p.basePrice)}
                 </span>
               </div>
             </div>

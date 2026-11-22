@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Frontend: Restore Previous Auction State toggle and restore workflow on /create, join-time team claim picker, lobby restore panel (claim state, release, remaining pool), dashboard distinction RETAINED vs AUCTION ACQUIRED with exact purses/slots, headless tests. Depends on FEAT-001 API (read its findings first).",
+  "status": "pending",
+  "steps": [
+    "Read frontend/AGENTS.md and the relevant guides under frontend/node_modules/next/dist/docs before writing Next.js code. git status; re-read each file right before editing (Part 9 edits auction components/store; fix-429 edits api error handling/reconnect).",
+    "Types + service: frontend/src/types/restore.ts and frontend/src/services/restore.service.ts (templates(), preview(snapshot), create({auctionName, hostTeamName, snapshot, settings}), pool(code, query), release(code, teamId)) using the existing api client in services/api.ts; extend roomService.joinRoom (services/room.service.ts) to send restoredTeamId; extend backend DTO mapping (services/contract.ts, types/backend.ts) for team.claimed, remainingSlots, restoredRetainedCount, restoredAuctionCount, roomState.restore, soldPlayers priceCr: number|null, restoredFromSnapshot. Keep priceCr null-safe everywhere it is formatted.",
+    "frontend/src/app/create/page.tsx: add a toggle 'Restore Previous Auction State' with the exact description 'Restore existing teams, players, squad progress and remaining purses from a previous auction so you can auction the remaining players.' next to the existing options (retention toggle ~line 856 is the pattern). OFF: the existing form and submit path stay byte-for-byte unchanged in behavior (guard new code behind the toggle). ON: render a new component frontend/src/components/restore/RestoreWorkflow.tsx in place of the normal submit: step 1 load template (one click, GET templates) or paste/edit JSON in a textarea; step 2 preview (POST preview): team overview table (name, squad n/20, remaining slots, purse, retained count, auction count), expandable full squad per team with RETAINED / AUCTION ACQUIRED badges and UNDERDOG tag, issue list (CRITICAL blocks, WARNING shown) with per-player resolution controls (search FC26 via existing player search endpoint -> set playerId, or 'create manual player'); editing the JSON and re-running preview is the edit path; host team selector (default from snapshot hostTeam); step 3 remaining pool summary (total + per-pot counts); Confirm button disabled while canConfirm is false; on success router.push to the lobby of the new room code. Accessible (labels, aria-expanded, focus), responsive at 375/768/1024/1440, no emoji icons (lucide), cursor-pointer, 150-300ms transitions.",
+    "Join: frontend/src/app/join/page.tsx and the join path in room.store/room.service: after the code is entered, GET /api/rooms/:code; if it has restore.teams show a picker of unclaimed teams (claimed ones disabled), send restoredTeamId, hide the team-name input for restored rooms; show clear errors for TEAM_ALREADY_CLAIMED and ALREADY_CLAIMED_ANOTHER_TEAM.",
+    "Lobby/dashboard (frontend/src/app/room/[roomCode]/page.tsx and the existing lobby/team/squad components; locate them with grep): for restored rooms show all teams with claimed/unclaimed state, host 'Release' action, 'Start' disabled with an explanation while teams are unclaimed, a 'Remaining pool' panel (paginated search via restore.service.pool), and in team/squad views show squad n/20, remaining slots, exact purse, RETAINED vs AUCTION ACQUIRED badge per player (restored players have no price: show 'Restored' instead of a price). Do not change behavior for non-restored rooms.",
+    "Tests frontend/tests/restore-ui.mjs following tests/ongoing-auctions-ui.mjs (bundleEntry + stubbed services): toggle ON opens the workflow, OFF leaves the normal create form unchanged; template load renders 8 teams with exact purses/slots; expandable squads; CRITICAL issue disables Confirm and resolution enables it; join picker disables claimed teams; no horizontal scroll at 375/768/1280. Register nothing global; run the file with node.",
+    "Scan every changed/created file for invalid UTF-8 (e.g. a node script using new TextDecoder('utf-8',{fatal:true})).",
+    "Commit locally: git add only your files; never push."
+  ],
+  "acceptance_criteria": [
+    "Toggle ON on /create opens the restore workflow; toggle OFF shows the unchanged normal creation flow",
+    "Loading the template shows 8 teams with purses 59, 50.5, 0, 29, 13.5, 48, 38, 20 and slots 10, 11, 3, 10, 6, 9, 8, 4 and expandable squads with RETAINED/AUCTION ACQUIRED badges",
+    "Confirm is disabled while CRITICAL issues exist and enabled after they are resolved",
+    "Joining a restored room requires picking an unclaimed restored team; claimed teams cannot be picked",
+    "Lobby and dashboard show exact purses, squad n/20, remaining slots and the remaining pool; restored players show no invented price",
+    "npm run typecheck and npx next build pass; node tests/restore-ui.mjs passes; edited files are valid UTF-8"
+  ],
+  "verification": [
+    "cd frontend; npm run typecheck",
+    "cd frontend; npx next build",
+    "cd frontend; node tests/restore-ui.mjs",
+    "cd frontend; node tests/ongoing-auctions-ui.mjs (and any existing tests/*.mjs that cover files you edited)"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}

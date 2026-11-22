@@ -1,4 +1,5 @@
 // Core domain types for Real-Time Football Auction platform
+import type { RestoreStateDTO } from "./restore";
 
 export type PlayerPosition = "GK" | "DEF" | "MID" | "ATT";
 
@@ -42,6 +43,8 @@ export interface Player {
   poolBatchId?: string;
   releaseState?: "FOLLOW" | "HELD";
   soldPrice?: number;
+  /** Restored from a snapshot: no price is known, so views show "Restored" instead of a price. */
+  restoredFromSnapshot?: boolean;
   soldToTeamId?: string;
   soldToTeamName?: string;
 }
@@ -75,6 +78,11 @@ export interface Team {
   retainedCount?: number;
   retentionSpent?: number;
   auctionPurse?: number;
+  /** Restore rooms only. claimed is false while no manager owns the team. */
+  claimed?: boolean;
+  remainingSlots?: number;
+  restoredRetainedCount?: number;
+  restoredAuctionCount?: number;
 }
 
 export interface User {
@@ -165,6 +173,8 @@ export interface AuctionRoom {
   teams: Team[];
   participants: RoomParticipant[];
   createdAt: string;
+  /** Present for rooms created from a snapshot. */
+  restore?: RestoreStateDTO | null;
 }
 
 export interface Bid {

@@ -1,0 +1,7 @@
+{
+  "task_id": "task-restore-auction-from-snapshot",
+  "task_description": "Restore a lost auction from a manually entered snapshot (8 teams, 99 owned players, exact purses) into a NEW room and auction the remaining FC26 players. Brief: c:\\Users\\ASUS\\projects\\Realtime -Auction\\.agents\\tasks\\restore-auction\\brief.md. Plan: c:\\Users\\ASUS\\projects\\Realtime -Auction\\.agents\\tasks\\restore-auction\\plan.md",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002"],
+  "blocked_reason": null
+}

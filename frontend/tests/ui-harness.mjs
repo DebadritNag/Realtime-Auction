@@ -15,7 +15,7 @@ const shims = {
       b.onLoad({ filter: /.*/, namespace: ns }, () => ({ contents, resolveDir: root, loader: 'js' }));
     };
     shim(/^next\/link$/, 'import React from "react";export default ({href,children,prefetch,...props})=>React.createElement("a",{href,...props},children);');
-    shim(/^next\/navigation$/, 'export const useRouter=()=>({push(){},replace(){},back(){}});export const usePathname=()=>"/";');
+    shim(/^next\/navigation$/, 'export const useRouter=()=>({push(){},replace(){},back(){}});export const usePathname=()=>"/";export const useSearchParams=()=>new URLSearchParams(globalThis.location?globalThis.location.search:"");');
   },
 };
 

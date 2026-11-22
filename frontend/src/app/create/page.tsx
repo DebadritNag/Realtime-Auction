@@ -7,7 +7,8 @@ import { useAuthStore } from "@/stores/auth.store";
 import { RoomSettings } from "@/types";
 import { PlayerCatalogPreview } from "@/components/room/PlayerCatalogPreview";
 import { Fc26ImportPanel } from "@/components/fc26/Fc26ImportPanel";
-import { Database, Lock } from "lucide-react";
+import { RestoreWorkflow } from "@/components/restore/RestoreWorkflow";
+import { Database, Lock, RotateCcw } from "lucide-react";
 
 // Retention rules are fixed by the server; shown here read-only.
 const RETENTION_PRICE_CR = 15;
@@ -46,6 +47,8 @@ export default function CreateRoomPage() {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [sourceNotice, setSourceNotice] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Restore flow: teams, purses and squads come from a snapshot, so the normal setup fields stay out of the way.
+  const [restoreMode, setRestoreMode] = useState(false);
 
   // null = unknown (not loaded or unavailable); 0 = catalog is empty.
   const [fc26Total, setFc26Total] = useState<number | null>(null);
@@ -81,6 +84,7 @@ export default function CreateRoomPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (restoreMode) return; // restored auctions are created by the restore workflow
     setValidationError(null);
 
     if (!formData.auctionName.trim()) {
@@ -366,6 +370,7 @@ export default function CreateRoomPage() {
               </div>
 
               {/* Teams & Budget Grid */}
+              {!restoreMode && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Number of Teams */}
                 <div>
@@ -441,9 +446,50 @@ export default function CreateRoomPage() {
                   </div>
                 </div>
               </div>
+              )}
             </div>
           </div>
           {/* END: FormCard1 */}
+
+          {/* BEGIN: RestoreToggleCard - Restore Previous Auction State */}
+          <div className="rounded-xl bg-[#081725] subtle-card-border p-4 sm:p-5 shadow-xl transition-all hover:border-[#7495B2]/40">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center space-x-3">
+                <span className="w-6 h-6 rounded-md bg-[#F3B928]/20 text-[#F3B928] border border-[#F3B928]/40 flex items-center justify-center shrink-0">
+                  <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
+                </span>
+                <div>
+                  <h2 id="restore-toggle-label" className="text-xs sm:text-[13px] font-extrabold uppercase tracking-wide text-white">
+                    Restore Previous Auction State
+                  </h2>
+                  <p id="restore-toggle-description" className="text-[11px] text-[#7E92A5]">
+                    Restore existing teams, players, squad progress and remaining purses from a previous auction so you can auction the remaining players.
+                  </p>
+                </div>
+              </div>
+
+              <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                <input
+                  type="checkbox"
+                  role="switch"
+                  aria-labelledby="restore-toggle-label"
+                  aria-describedby="restore-toggle-description"
+                  checked={restoreMode}
+                  onChange={(e) => { setRestoreMode(e.target.checked); setSourceNotice(null); }}
+                  className="sr-only peer"
+                  data-testid="restore-toggle"
+                />
+                <div className="w-10 h-5 bg-[#0B1E2E] peer-focus-visible:ring-2 peer-focus-visible:ring-[#F3B928] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#F3B928] motion-reduce:after:transition-none"></div>
+                <span className="ml-2 w-7 text-[11px] font-bold text-[#cbd5e1]">{restoreMode ? "ON" : "OFF"}</span>
+              </label>
+            </div>
+            {restoreMode && (
+              <p className="mt-3 text-[11px] text-[#8CA0B3]" data-testid="restore-mode-note">
+                Team names, squads, purses and the 20-player squad limit come from the snapshot. The bid timer settings below still apply.
+              </p>
+            )}
+          </div>
+          {/* END: RestoreToggleCard */}
 
           {/* BEGIN: FormCard2 - Squad Quotas & Bid Timer */}
           <div className="rounded-xl bg-[#081725] subtle-card-border p-4 sm:p-5 shadow-xl transition-all hover:border-[#7495B2]/40">
@@ -473,6 +519,7 @@ export default function CreateRoomPage() {
                     MIN SQUAD SIZE
                   </label>
                   <input
+                    disabled={restoreMode}
                     id="min-squad-size"
                     className="w-full h-10 px-3 rounded-lg bg-[#0A1724] border border-[#7495B2]/25 text-sm text-white focus:ring-1 focus:ring-[#22BDF6] focus:border-[#22BDF6] outline-none"
                     type="number"
@@ -497,6 +544,7 @@ export default function CreateRoomPage() {
                     MAX SQUAD SIZE
                   </label>
                   <input
+                    disabled={restoreMode}
                     id="max-squad-size"
                     className="w-full h-10 px-3 rounded-lg bg-[#0A1724] border border-[#7495B2]/25 text-sm text-white focus:ring-1 focus:ring-[#22BDF6] focus:border-[#22BDF6] outline-none"
                     type="number"
@@ -651,7 +699,7 @@ export default function CreateRoomPage() {
                     type="number"
                     step="0.5"
                     min="0.5"
-                    disabled={formData.playerPoolSource === "fc26"}
+                    disabled={formData.playerPoolSource === "fc26" || restoreMode}
                     value={formData.minPlayerBasePrice}
                     onChange={(e) =>
                       setFormData({
@@ -671,6 +719,7 @@ export default function CreateRoomPage() {
           </div>
           {/* END: FormCard2 */}
 
+          {!restoreMode && (<>
           {/* BEGIN: FormCard3 - Player Database Source */}
           <div className="rounded-xl bg-[#081725] subtle-card-border p-4 sm:p-5 shadow-xl transition-all hover:border-[#7495B2]/40">
             {/* Header with step counter */}
@@ -891,8 +940,23 @@ export default function CreateRoomPage() {
             )}
           </div>
           {/* END: FormCard4 */}
+          </>)}
+
+          {restoreMode && (
+            <RestoreWorkflow
+              auctionName={formData.auctionName}
+              settings={{
+                playerTimerSeconds: formData.playerTimerSeconds,
+                antiSnipingEnabled: formData.antiSnipingEnabled,
+                antiSnipingThresholdSeconds: formData.antiSnipingThresholdSeconds,
+                antiSnipingResetSeconds: formData.timerResetDurationSeconds,
+              }}
+              onCreated={(code) => router.push(`/room/${code}`)}
+            />
+          )}
 
           {/* BEGIN: ActionButton */}
+          {!restoreMode && (
           <div className="pt-1">
             <button
               className="w-full h-12 rounded-lg bg-gradient-to-r from-[#00F59B] via-[#00DDA8] to-[#11C89F] hover:brightness-110 active:scale-[0.99] text-[#00150F] font-extrabold text-sm uppercase tracking-wider flex items-center justify-center space-x-2 transition-all glow-neon disabled:opacity-75 disabled:cursor-not-allowed"
@@ -932,6 +996,7 @@ export default function CreateRoomPage() {
               )}
             </button>
           </div>
+          )}
           {/* END: ActionButton */}
         </form>
       </section>

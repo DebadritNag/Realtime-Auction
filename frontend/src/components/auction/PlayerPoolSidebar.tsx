@@ -181,7 +181,7 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
 
                   {isSold && (
                     <span className="text-[10px] font-mono font-semibold text-amber-400">
-                      {formatCr(player.soldPrice || 0)}
+                      {player.restoredFromSnapshot ? "Restored" : formatCr(player.soldPrice || 0)}
                     </span>
                   )}
 

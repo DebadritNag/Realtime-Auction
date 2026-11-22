@@ -7,6 +7,9 @@ import { useAuctionStore } from "@/stores/auction.store";
 import { useConnectionStore } from "@/stores/connection.store";
 import { webSocketService } from "@/services/websocket.service";
 import { roomService } from "@/services/room.service";
+import { restoreService } from "@/services/restore.service";
+import { RestoreLobbyPanel } from "@/components/restore/RestoreLobbyPanel";
+import { RestorePoolPanel } from "@/components/restore/RestorePoolPanel";
 
 import { RoomHeader } from "@/components/room/RoomHeader";
 import { TeamLobbyCard } from "@/components/room/TeamLobbyCard";
@@ -115,6 +118,12 @@ export default function RoomLobbyPage({
   const displayTeams = liveTeams.length > 0 ? liveTeams : room.teams;
   const retentionEnabled = (snapshot?.settings.retention?.enabled ?? room.settings.retentionEnabled) === true;
   const retentionPhase = snapshot?.retention?.phase;
+  // Restored rooms (created from a snapshot) show claim state and purses, and cannot start with unclaimed teams.
+  const restore = snapshot?.restore ?? room.restore ?? null;
+  const handleRelease = async (teamId: string) => {
+    await restoreService.release(roomCode, teamId);
+    void webSocketService.send({ type: "REQUEST_STATE", payload: { roomCode } }).catch(() => {});
+  };
 
   return (
     <>
@@ -133,8 +142,8 @@ export default function RoomLobbyPage({
 
         <HostControls
           isHost={isHost}
-          totalTeams={displayTeams.length}
-          expectedTeams={room.settings.numberOfTeams}
+          totalTeams={restore ? restore.teams.length - restore.unclaimedCount : displayTeams.length}
+          expectedTeams={restore ? restore.teams.length : room.settings.numberOfTeams}
           onStartAuction={handleStartAuction}
           disabled={
             connectionStatus !== "SYNCED" ||
@@ -143,7 +152,9 @@ export default function RoomLobbyPage({
           startBlockedReason={
             retentionEnabled && retentionPhase !== "FINALIZED"
               ? "Player retention must be finalized before the auction can start."
-              : null
+              : restore && restore.unclaimedCount > 0
+                ? `${restore.unclaimedCount} restored ${restore.unclaimedCount === 1 ? "team still needs" : "teams still need"} a manager. Every team must be claimed before the auction can start.`
+                : null
           }
         />
 
@@ -161,6 +172,15 @@ export default function RoomLobbyPage({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Team cards */}
           <div className="lg:col-span-7 space-y-4">
+            {restore ? (
+              <RestoreLobbyPanel
+                restore={restore}
+                isHost={isHost}
+                currentTeamId={room.teams.find((t) => t.isCurrentUser)?.id}
+                maxSquadSize={room.settings.maxSquadSize}
+                onRelease={handleRelease}
+              />
+            ) : (<>
             <div className="flex items-center gap-2 pb-2 border-b border-[#242c3d]">
               <Users className="w-4 h-4 text-[#00ff87]" />
               <h2 className="text-xs font-bold uppercase tracking-wider text-[#94a3b8]">
@@ -184,11 +204,13 @@ export default function RoomLobbyPage({
                 />
               ))}
             </div>
+            </>)}
           </div>
 
           {/* Settings */}
           <div className="lg:col-span-5 space-y-6">
             <HostConnectionPanel isHost={isHost} />
+            {restore ? <RestorePoolPanel roomCode={roomCode} /> : null}
             <AuctionSettingsSummary settings={room.settings} retentionPhase={retentionPhase} />
           </div>
         </div>
