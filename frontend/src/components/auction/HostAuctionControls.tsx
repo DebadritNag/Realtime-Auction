@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { RecallPlayersModal } from "./RecallPlayersModal";
 import type { PlayerDTO } from "@/types/backend";
-import { Play, Pause, SkipForward, Flag, RotateCcw } from "lucide-react";
+import { Play, Pause, SkipForward, Flag, RotateCcw, History, LayoutDashboard } from "lucide-react";
 
 export interface HostAuctionControlsProps {
   hasActivePlayer: boolean; hasBid: boolean; synced: boolean; canRecall: boolean; unsoldPlayers: PlayerDTO[]; roomCode: string;
@@ -14,6 +14,8 @@ export interface HostAuctionControlsProps {
   onResume: () => void;
   onSkip: () => void;
   onEnd: () => void;
+  onViewHistory?: () => void;
+  onReturnToDashboard?: () => void;
 }
 
 export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
@@ -23,6 +25,8 @@ export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
   onResume,
   onSkip,
   onEnd,
+  onViewHistory,
+  onReturnToDashboard,
 }) => {
   const [recallOpen, setRecallOpen] = useState(false);
   const [confirmSkipOpen, setConfirmSkipOpen] = useState(false);
@@ -74,6 +78,16 @@ export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
           leftIcon={<RotateCcw className="w-3.5 h-3.5" />} onClick={() => setRecallOpen(true)}>
           Recall Player ({unsoldPlayers.length})
         </Button>
+        {onViewHistory ? (
+          <Button variant="secondary" size="sm" onClick={onViewHistory} leftIcon={<History className="w-3.5 h-3.5" />}>
+            View Auction History
+          </Button>
+        ) : null}
+        {onReturnToDashboard ? (
+          <Button variant="secondary" size="sm" onClick={onReturnToDashboard} leftIcon={<LayoutDashboard className="w-3.5 h-3.5" />}>
+            Return to Dashboard
+          </Button>
+        ) : null}
         <Button
           variant="danger"
           size="sm"

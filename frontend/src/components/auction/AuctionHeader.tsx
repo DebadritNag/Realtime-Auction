@@ -48,9 +48,9 @@ export function AuctionHeader({ auctionName, roomCode, phase, phaseTone, potName
         </div>
         <div className="auction-header-actions">
           <ConnectionStatus status={connectionStatus} latencyMs={latencyMs} />
-          <button type="button" onClick={onExit} title="Exit to lobby (your membership is preserved)" className="auction-exit">
+          <button type="button" onClick={onExit} title="Return to dashboard (your membership is preserved)" className="auction-exit">
             <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Exit</span>
+            <span>Dashboard</span>
           </button>
         </div>
       </div>

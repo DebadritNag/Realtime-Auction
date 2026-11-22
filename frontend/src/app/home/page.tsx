@@ -11,6 +11,8 @@ import { JoinRoomCard } from "@/components/home/JoinRoomCard";
 import { ProfilePreview } from "@/components/home/ProfilePreview";
 import { AchievementPreview } from "@/components/home/AchievementPreview";
 import { RecentActivityCard } from "@/components/home/RecentActivityCard";
+import { OngoingAuctionsSection } from "@/components/home/OngoingAuctionsSection";
+import { RejoinAuctionCard } from "@/components/home/RejoinAuctionCard";
 
 export default function HomePage() {
   const router = useRouter();
@@ -73,6 +75,8 @@ export default function HomePage() {
           </div>
         </section>
         {/* END: PrimaryActionsGrid */}
+        <OngoingAuctionsSection />
+        <RejoinAuctionCard />
 
         {/* BEGIN: LowerDashboardGrid */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 sm:gap-6">

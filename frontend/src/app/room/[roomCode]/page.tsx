@@ -12,6 +12,7 @@ import { RoomHeader } from "@/components/room/RoomHeader";
 import { TeamLobbyCard } from "@/components/room/TeamLobbyCard";
 import { AuctionSettingsSummary } from "@/components/room/AuctionSettingsSummary";
 import { HostControls } from "@/components/room/HostControls";
+import { HostConnectionPanel } from "@/components/auction/HostConnectionPanel";
 import { RetentionStatusCard } from "@/components/retention/RetentionStatusCard";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -180,6 +181,7 @@ export default function RoomLobbyPage({
 
           {/* Settings */}
           <div className="lg:col-span-5 space-y-6">
+            <HostConnectionPanel isHost={isHost} />
             <AuctionSettingsSummary settings={room.settings} retentionPhase={retentionPhase} />
           </div>
         </div>

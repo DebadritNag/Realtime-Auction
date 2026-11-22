@@ -52,7 +52,7 @@ try {
   const tabs = page.getByRole('tab');
   await expect(tabs).toHaveText([/Live Auction/, /Retained Players\s*3/, /Teams & Squads/, /Overview/]);
   await expect(page.getByRole('tab', { name: /Live Auction/ })).toHaveAttribute('aria-selected', 'true');
-  await expect(page.getByRole('button', { name: 'Exit', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Dashboard', exact: true })).toBeVisible();
 
   // B. Purse strip.
   const cards = page.getByTestId('purse-card');

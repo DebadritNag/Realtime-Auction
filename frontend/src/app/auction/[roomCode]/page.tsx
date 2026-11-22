@@ -14,6 +14,8 @@ import { TeamQuickView } from "@/components/auction/TeamQuickView";
 import { TeamViewDrawer } from "@/components/auction/TeamViewDrawer";
 import { AISuggestionPanel } from "@/components/auction/AISuggestionPanel";
 import { HostAuctionControls } from "@/components/auction/HostAuctionControls";
+import { HostConnectionPanel } from "@/components/auction/HostConnectionPanel";
+import { AuctionHistoryModal } from "@/components/auction/AuctionHistoryModal";
 import { SoldOverlay } from "@/components/auction/SoldOverlay";
 import { UnsoldOverlay } from "@/components/auction/UnsoldOverlay";
 import { AuctionHeader, type AuctionTabId } from "@/components/auction/AuctionHeader";
@@ -71,8 +73,12 @@ export default function LiveAuctionPage({
 
   // Exit auction — navigates to the lobby without disconnecting membership.
   // The WebSocket stays open; the lobby page calls initAuction() anyway.
+  const leaveAuction = useAuctionStore((state) => state.leaveAuction);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  // Return to the dashboard. Membership is untouched; the auction stays recoverable from the server.
   const handleExitAuction = () => {
-    router.push(`/room/${roomCode}`);
+    leaveAuction();
+    router.push("/home");
   };
 
   // UI Store
@@ -181,6 +187,13 @@ export default function LiveAuctionPage({
               <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
               <span className="text-rose-400">Disconnected — retrying…</span>
             </>
+          ) : connectionStatus === "LOST" || connectionStatus === "AUTH_EXPIRED" ? (
+            <>
+              <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
+              <span className="text-rose-400">
+                {connectionStatus === "AUTH_EXPIRED" ? "Your session expired. Sign in again to rejoin your auction." : "Connection lost. Use Reconnect to Auction below."}
+              </span>
+            </>
           ) : (
             <>
               <span className="w-2 h-2 rounded-full bg-[#00ff87] animate-pulse shrink-0" />
@@ -231,9 +244,18 @@ export default function LiveAuctionPage({
             canRecall={snapshot?.status === "RUNNING" || snapshot?.status === "PAUSED"}
             unsoldPlayers={snapshot?.unsoldPlayers ?? []}
             roomCode={roomCode}
+            onViewHistory={() => setHistoryOpen(true)}
+            onReturnToDashboard={handleExitAuction}
           />
+          <HostConnectionPanel isHost={isHost} />
         </div>
       )}
+      {auctionStatus === "PAUSED" && (
+        <div role="status" data-testid="paused-notice" className="px-4 py-2 text-sm font-semibold text-amber-200 bg-amber-400/10 border-b border-amber-400/30 text-center">
+          PAUSED - waiting for the host to resume
+        </div>
+      )}
+      {isHost && <AuctionHistoryModal isOpen={historyOpen} onClose={() => setHistoryOpen(false)} roomCode={roomCode} />}
 
       {activeTab !== "live" ? <CompactBidBar connectionStatus={connectionStatus} onBack={() => setActiveTab("live")} /> : null}
 
