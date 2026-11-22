@@ -35,7 +35,9 @@ export function assertRoom(room: Room): void {
   invariant(new Set(room.purchases.map(p => p.playerId)).size === room.purchases.length, 'Player sold more than once.');
   for (const team of room.teams) {
     invariant(Number.isSafeInteger(team.spentUnits) && team.spentUnits >= 0 && team.spentUnits <= team.startingBudgetUnits, 'Invalid budget.');
-    invariant(team.startingBudgetUnits === toUnits(room.settings.startingBudgetCr), 'Starting budget mismatch.');
+    // A restored room opens with the restored purses; they are authoritative and not derived from the settings value.
+    const restoredPurse = room.restore?.teams.find(r => r.teamId === team.id)?.purseUnits;
+    invariant(team.startingBudgetUnits === (room.restore ? restoredPurse : toUnits(room.settings.startingBudgetCr)), 'Starting budget mismatch.');
     invariant(team.playerIds.length <= room.settings.maxSquadSize, 'Squad exceeds maximum.');
     const purchases = room.purchases.filter(p => p.teamId === team.id);
     invariant(purchases.reduce((sum, p) => sum + p.priceUnits, 0) === team.spentUnits, 'Budget ledger mismatch.');
@@ -81,7 +83,11 @@ export function assertRoom(room: Room): void {
       }
     } else invariant(retentionPurchases.length === 0, 'Retention purchases before finalization.');
   }
-  const retentionPurchases = room.purchases.filter(p => p.acquisitionType === 'RETENTION');
+  if (room.restore) {
+    invariant(room.restore.teams.every(r => room.teams.some(t => t.id === r.teamId)) && room.restore.teams.length === room.teams.length, 'Restore record mismatch.');
+    invariant(room.purchases.filter(p => p.restoredFromSnapshot).every(p => p.priceUnits === 0), 'Restored purchase has a price.');
+  }
+  const retentionPurchases = room.purchases.filter(p => p.acquisitionType === 'RETENTION' && !p.restoredFromSnapshot);
   invariant(retentionPurchases.every(p => room.retention?.picks.some(k => k.playerId === p.playerId && k.teamId === p.teamId)), 'Retention purchase without pick.');
   for (const player of room.players) {
     invariant(Number.isSafeInteger(player.basePriceUnits) && player.basePriceUnits >= toUnits(room.settings.minimumBasePriceCr), 'Invalid player base price.');

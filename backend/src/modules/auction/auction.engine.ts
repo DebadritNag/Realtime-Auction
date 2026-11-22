@@ -12,6 +12,7 @@ import { remainingBudget } from './budget.service.js';
 import { skipVoteState, updateSkipVote } from './skip-vote.service.js';
 import { commandSchema, type AuctionCommand } from './auction.schemas.js';
 import { followIds, hasSelectable, heldIds, regularWaiting } from './pool-import/pool-additions.js';
+import { assertRestoreSettingsUnlocked, isUnclaimed, releaseTeamClaim } from '../restore/restore.claims.js';
 import { assertRetentionSettingsUnlocked, completionAnnouncement, confirmTurn, draftPlayer, finalizeRetentions, pendingSpendUnits, purseAfterConfirmedUnits,
   removeDraft, requireRetentionOpenForMembership, resetRetentions, retentionPhase, skipTurn, startRetention, syncRetentionWithSettings,
   turnAnnouncement } from '../retention/retention.service.js';
@@ -93,6 +94,7 @@ export class AuctionEngine {
             settingsSchema.parse(room.settings);
             requireThat(['OFF', 'FINALIZED'].includes(retentionPhase(room)), 'RETENTION_NOT_FINALIZED', 'Finalize player retentions before starting the auction.', 409);
             requireThat(room.teams.length >= room.settings.minimumParticipants, 'NOT_ENOUGH_PARTICIPANTS', 'Not enough participants.');
+            requireThat(!room.teams.some(isUnclaimed), 'RESTORE_TEAMS_UNCLAIMED', 'Every restored team needs a manager before the auction can start.', 409);
             if (room.settings.playerPoolSource === 'FC26') {
               const fc26 = this.manager.fc26;
               requireThat(fc26, 'FC26_UNAVAILABLE', 'FC26 database is not configured on this server.', 503);
@@ -241,7 +243,9 @@ export class AuctionEngine {
             requireThat(command.payload.targetTeamId !== team.id, 'HOST_CANNOT_LEAVE', 'Host cannot kick themselves.');
             requireThat(room.teams.some(t => t.id === command.payload.targetTeamId), 'TEAM_NOT_FOUND', 'Team not found.', 404);
             requireRetentionOpenForMembership(room);
-            room.teams = room.teams.filter(t => t.id !== command.payload.targetTeamId);
+            // A restored team keeps its squad and purse; kicking its manager only frees the claim.
+            if (room.restore) releaseTeamClaim(room.teams.find(t => t.id === command.payload.targetTeamId)!);
+            else room.teams = room.teams.filter(t => t.id !== command.payload.targetTeamId);
             events.push({ type: 'MEMBER_LEFT', payload: { teamId: command.payload.targetTeamId } });
             break;
           case 'UPDATE_SETTINGS': {
@@ -250,9 +254,11 @@ export class AuctionEngine {
             await this.manager.assertPoolSource(settings);
             requireThat(settings.numberOfTeams >= room.teams.length, 'ROOM_FULL', 'Capacity below membership.');
             assertRetentionSettingsUnlocked(room, settings);
+            assertRestoreSettingsUnlocked(room, settings);
             room.settings = settings;
             syncRetentionWithSettings(room);
-            for (const item of room.teams) item.startingBudgetUnits = toUnits(settings.startingBudgetCr);
+            // Restored purses are authoritative; a settings update must never overwrite them.
+            if (!room.restore) for (const item of room.teams) item.startingBudgetUnits = toUnits(settings.startingBudgetCr);
             events.push({ type: 'ROOM_UPDATED' });
             break;
           }

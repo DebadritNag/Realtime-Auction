@@ -80,6 +80,23 @@ export class RoomManager {
       throw new DomainError('ROOM_CODE_EXHAUSTED', 'Unable to allocate room code.', 503);
     });
   }
+  /** Creates a room from a prebuilt document (restore from snapshot). Same code allocation as create(); the room is persisted before it is returned. */
+  async createFromBuilder(build: (ctx: { id: string; code: string; now: number }) => Room): Promise<Room> {
+    return this.lock.runExclusive('__create__', async () => {
+      const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      for (let attempt = 0; attempt < 20; attempt++) {
+        const code = Array.from({ length: 6 }, () => alphabet[randomInt(alphabet.length)]).join('');
+        if (await this.repository.findByCode(code)) continue;
+        const room = build({ id: randomUUID(), code, now: this.clock.now() });
+        assertRoom(room);
+        try { await this.repository.create(room); }
+        catch (error) { if (error instanceof DomainError && error.code === 'ROOM_CODE_CONFLICT') continue; throw error; }
+        this.rooms.set(code, room);
+        return structuredClone(room);
+      }
+      throw new DomainError('ROOM_CODE_EXHAUSTED', 'Unable to allocate room code.', 503);
+    });
+  }
   async mutate<T>(code: string, action: (draft: Room, events: PendingEvent[]) => Promise<T> | T): Promise<T> {
     return this.lock.runExclusive(code, async () => {
       const current = await this.loadUnlocked(code);

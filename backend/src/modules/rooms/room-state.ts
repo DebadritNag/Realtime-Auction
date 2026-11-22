@@ -1,6 +1,8 @@
 import type { Player, Room, Team } from '../../domain/types.js';
 import { toCr } from '../../domain/money.js';
 import { minimumNextBid } from '../auction/bid.service.js';
+import { remainingBudget } from '../auction/budget.service.js';
+import { isUnclaimed } from '../restore/restore.claims.js';
 import { publicPlayer, publicTeam } from '../teams/team.service.js';
 import { skipVoteState } from '../auction/skip-vote.service.js';
 import { requireMember } from './room.service.js';
@@ -75,7 +77,7 @@ export function roomActivity(room: Room): ActivityEntry[] {
   const entries: ActivityEntry[] = [];
   for (const bid of tail(room.bids)) entries.push({ id: bid.id, kind: 'BID', at: bid.at, teamId: bid.teamId, teamName: teamName(bid.teamId),
     playerId: bid.playerId, playerName: playerName(bid.playerId), amountCr: toCr(bid.amountUnits) });
-  for (const purchase of tail(room.purchases.filter(p => p.acquisitionType !== 'RETENTION')))
+  for (const purchase of tail(room.purchases.filter(p => p.acquisitionType !== 'RETENTION' && !p.restoredFromSnapshot)))
     entries.push({ id: purchase.id, kind: 'SOLD', at: purchase.at, teamId: purchase.teamId, teamName: teamName(purchase.teamId),
       playerId: purchase.playerId, playerName: playerName(purchase.playerId), amountCr: toCr(purchase.priceUnits) });
   for (const h of tail(room.playerHistory)) {
@@ -106,6 +108,21 @@ function poolAdditions(room: Room, isHost: boolean) {
       skippedCount: b.skipped.length, rejectedCount: b.rejected.length, ...(isHost ? { skipped: b.skipped, rejected: b.rejected } : {}) })),
   };
 }
+/** Restore summary for restored rooms (null otherwise). Counts are the restored ones; purse and squad are live values. */
+function restoreState(room: Room) {
+  const restore = room.restore;
+  if (!restore) return null;
+  return {
+    enabled: true, source: restore.source, snapshotName: restore.snapshotName, restoredAt: restore.restoredAt, warnings: restore.warnings,
+    unclaimedCount: room.teams.filter(isUnclaimed).length,
+    teams: room.teams.map(t => {
+      const r = restore.teams.find(x => x.teamId === t.id);
+      return { teamId: t.id, name: t.name, claimed: !isUnclaimed(t), purseCr: toCr(remainingBudget(t)), openingPurseCr: toCr(r?.purseUnits ?? t.startingBudgetUnits),
+        squadSize: t.playerIds.length, remainingSlots: Math.max(0, room.settings.maxSquadSize - t.playerIds.length),
+        retainedCount: r?.retainedCount ?? 0, auctionCount: r?.auctionCount ?? 0 };
+    }),
+  };
+}
 export interface TeamPresenceEntry { teamId: string; userId?: string; connected: boolean; lastSeenAt: number | null; managerUsername: string }
 
 export function roomState(room: Room, userId: string, serverTime: number, connectedUsers: string[] = [], usernames: Record<string, string> = {},
@@ -130,12 +147,16 @@ export function roomState(room: Room, userId: string, serverTime: number, connec
     nextPlayerAt: room.nextPlayerAt, serverTime, sequence: room.sequence,
     // Each team entry includes the manager's username when known from active WebSocket connections.
     // Falls back to an empty string; the frontend uses a neutral "Manager" label in that case.
-    teams: room.teams.map(t => ({ ...publicTeam(t, room.settings, room.retention), managerUsername: usernames[t.userId] || t.managerUsername || '' })),
-    currentUserTeam: { ...publicTeam(team, room.settings, room.retention), managerUsername: usernames[team.userId] || team.managerUsername || '' }, connectedUsers,
+    teams: room.teams.map(t => ({ ...publicTeam(t, room.settings, room.retention, room.restore), managerUsername: usernames[t.userId] || t.managerUsername || '' })),
+    currentUserTeam: { ...publicTeam(team, room.settings, room.retention, room.restore), managerUsername: usernames[team.userId] || team.managerUsername || '' }, connectedUsers,
     playerQueue: room.playerQueue, playerQueueSummary: { remaining: room.playerQueue.length + room.players.filter(p => p.status === 'WAITING').length, heldAdditions: heldIds(room).length },
     poolAdditions: poolAdditions(room, room.hostUserId === userId),
     players: room.players.map(publicPlayer),
-    soldPlayers: room.purchases.map(({ priceUnits, ...p }) => ({ ...p, acquisitionType: p.acquisitionType ?? 'AUCTION', isRetained: p.isRetained ?? false, priceCr: toCr(priceUnits) })),
+    // Restored purchases have no auction price: priceCr is null and the historical price (retention only) is informational.
+    soldPlayers: room.purchases.map(({ priceUnits, recordedPriceUnits, ...p }) => ({ ...p, acquisitionType: p.acquisitionType ?? 'AUCTION', isRetained: p.isRetained ?? false,
+      priceCr: p.restoredFromSnapshot ? null : toCr(priceUnits),
+      ...(p.restoredFromSnapshot ? { recordedPriceCr: recordedPriceUnits == null ? null : toCr(recordedPriceUnits) } : {}) })),
+    restore: restoreState(room),
     retention: retentionState(room, team),
     unsoldPlayers: room.players.filter(p => p.status === 'UNSOLD').map(publicPlayer),
     activity: roomActivity(room), recentBids: recentBids(room), lastActivityAt: lastActivityOf(room),

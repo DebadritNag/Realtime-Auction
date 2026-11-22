@@ -17,7 +17,9 @@ export interface PoolMeta {
   poolStatus: 'PENDING'; importBatchId: string; importedAt: number; importedBy: string;
   sourceFile: string; sourceCategory: string; release: 'FOLLOW' | 'HELD';
 }
-export interface AuctionPlayer extends Player { status: PlayerStatus; round: number; unsoldReason?: 'UNANIMOUS_SKIP'; poolMeta?: PoolMeta }
+export interface AuctionPlayer extends Player { status: PlayerStatus; round: number; unsoldReason?: 'UNANIMOUS_SKIP'; poolMeta?: PoolMeta;
+  /** Set on players restored from a snapshot; they start as SOLD and are never auctioned. */
+  restoredFromSnapshot?: true; restoreSource?: 'FC26' | 'DEFAULT_POOL' | 'MANUAL' }
 export interface PoolImportRowResult { row: number; playerId: string; name: string; code: string; reason: string }
 export interface PoolImportBatch {
   batchId: string; contentHash: string; at: number; by: string; sourceKind: 'CSV' | 'FC26_DATABASE' | 'DEFAULT_POOL';
@@ -33,6 +35,8 @@ export interface Purchase {
   id: string; playerId: string; teamId: string; priceUnits: number; bidCount: number; at: number; durationMs: number;
   // Absent on ordinary auction purchases and old snapshots.
   acquisitionType?: 'AUCTION' | 'RETENTION'; isRetained?: boolean;
+  // Restored purchases carry priceUnits 0 (the restored purse is authoritative); the historical price, when known, is informational only.
+  restoredFromSnapshot?: true; recordedPriceUnits?: number | null;
 }
 export type RetentionPhase = 'NOT_STARTED' | 'TEAM_SELECTING' | 'ALL_TEAMS_COMPLETED' | 'FINALIZED';
 /** Player data frozen at selection time so announcements and lists do not depend on the catalog. */
@@ -62,6 +66,10 @@ export interface ActiveAuction {
   lastBidAt: number | null; bidCount: number; activationId: string;
 }
 export interface CommandReceipt { fingerprint: string; sequence: number; expiresAt: number }
+export interface RoomRestore {
+  version: 1; source: 'TEMPLATE' | 'CUSTOM'; snapshotName: string; snapshotHash: string; restoredAt: number; warnings: string[];
+  teams: { teamId: string; name: string; purseUnits: number; squadSize: number; retainedCount: number; auctionCount: number }[];
+}
 export interface Room {
   id: string; code: string; hostUserId: string; auctionName: string; status: RoomStatus;
   createdAt: number; settings: RoomSettings; teams: Team[]; players: AuctionPlayer[];
@@ -76,6 +84,8 @@ export interface Room {
   sequence: number; nextPlayerAt: number | null; receipts: Record<string, CommandReceipt>;
   /** Epoch ms of the last committed change; falls back to createdAt on old snapshots. */
   lastActivityAt?: number;
+  /** Audit record of a room created from a restore snapshot; its purses are the authoritative opening balances. */
+  restore?: RoomRestore;
 }
 export interface ServerEvent {
   type: string; roomId?: string; sequence: number; serverTime: number;

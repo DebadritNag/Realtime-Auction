@@ -22,6 +22,7 @@ import { DeterministicRecommendationService, type AuctionRecommendationService }
 import { RealtimeHub } from './realtime/hub.js';
 import type { PresenceStore } from './realtime/presence.js';
 import { registerRoomRoutes } from './modules/rooms/room.routes.js';
+import { registerRestoreRoutes } from './modules/restore/restore.routes.js';
 import type { Fc26Catalog } from './modules/fc26/fc26.catalog.js';
 import { registerFc26Routes } from './modules/fc26/fc26.routes.js';
 import { registerPoolImportRoutes } from './modules/auction/pool-import/pool-import.routes.js';
@@ -114,6 +115,7 @@ export async function buildApp(options: AppOptions) {
   registerPlayerRoutes(app, manager.players, manager.fc26);
   registerFc26Routes(app, manager.fc26, manager);
   registerPoolImportRoutes(app, manager);
+  registerRestoreRoutes(app, manager);
   registerRoomRoutes(app, manager, options.recommendationService ?? new DeterministicRecommendationService(), hub);
   app.get('/ws', { websocket: true }, (socket, request) => hub.attach(socket, request.auth));
   app.addHook('onClose', async () => { hub.close(); timers.close(); unsubscribe(); });

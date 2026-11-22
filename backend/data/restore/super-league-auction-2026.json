@@ -1,0 +1,667 @@
+{
+  "version": 1,
+  "name": "Super League Football Auction 2026",
+  "hostTeam": "Ritzz FC",
+  "teams": [
+    {
+      "name": "Ritzz FC",
+      "squadSize": 10,
+      "remainingPurseCr": 59,
+      "retainedCount": 0,
+      "players": [
+        {
+          "name": "T. Courtois",
+          "position": "GK",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "J. Koundé",
+          "position": "RB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "H. Çalhanoğlu",
+          "position": "CDM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "B. Mbeumo",
+          "position": "RW",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "F. Dimarco",
+          "position": "LB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "R. Gravenberch",
+          "position": "CDM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "Marcos Llorente",
+          "position": "RB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "J. Bowen",
+          "position": "RM",
+          "acquisition": "AUCTION",
+          "underdog": true
+        },
+        {
+          "name": "K. Mitoma",
+          "position": "LM",
+          "acquisition": "AUCTION",
+          "underdog": true
+        },
+        {
+          "name": "M. Rogers",
+          "position": "CAM",
+          "acquisition": "AUCTION",
+          "underdog": true
+        }
+      ]
+    },
+    {
+      "name": "FidoDido FC",
+      "squadSize": 9,
+      "remainingPurseCr": 50.5,
+      "retainedCount": 1,
+      "players": [
+        {
+          "name": "Bremer",
+          "position": "CB",
+          "acquisition": "RETENTION",
+          "underdog": false
+        },
+        {
+          "name": "O. Dembélé",
+          "position": "ST",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "J. Oblak",
+          "position": "GK",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "N. Barella",
+          "position": "CM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "T. Alexander-Arnold",
+          "position": "RB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "T. Reijnders",
+          "position": "CM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "D. Upamecano",
+          "position": "CB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "Ibañez",
+          "position": "CB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "M. Kudus",
+          "position": "RW",
+          "acquisition": "AUCTION",
+          "underdog": true
+        }
+      ]
+    },
+    {
+      "name": "DDD",
+      "squadSize": 17,
+      "remainingPurseCr": 0,
+      "retainedCount": 0,
+      "players": [
+        {
+          "name": "F. Wirtz",
+          "position": "CAM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "A. Isak",
+          "position": "ST",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "David Raya",
+          "position": "GK",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "J. Tah",
+          "position": "CB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "M. Ødegaard",
+          "position": "CM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "V. Gyökeres",
+          "position": "ST",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "Bruno Guimarães",
+          "position": "CM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "I. Konaté",
+          "position": "CB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "Nico Williams",
+          "position": "LM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "D. Doué",
+          "position": "RW",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "Iñigo Martínez",
+          "position": "CB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "O. Marmoush",
+          "position": "ST",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "T. Hernández",
+          "position": "LB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "A. Dovbyk",
+          "position": "ST",
+          "acquisition": "AUCTION",
+          "underdog": true
+        },
+        {
+          "name": "B. Kamara",
+          "position": "CDM",
+          "acquisition": "AUCTION",
+          "underdog": true
+        },
+        {
+          "name": "E. Camavinga",
+          "position": "CM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "J. Frimpong",
+          "position": "RB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        }
+      ]
+    },
+    {
+      "name": "SIDERALE",
+      "squadSize": 10,
+      "remainingPurseCr": 29,
+      "retainedCount": 3,
+      "players": [
+        {
+          "name": "V. van Dijk",
+          "position": "CB",
+          "acquisition": "RETENTION",
+          "underdog": false
+        },
+        {
+          "name": "H. Kane",
+          "position": "ST",
+          "acquisition": "RETENTION",
+          "underdog": false
+        },
+        {
+          "name": "M. Neuer",
+          "position": "GK",
+          "acquisition": "RETENTION",
+          "underdog": false
+        },
+        {
+          "name": "Dani Olmo",
+          "position": "CAM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "João Neves",
+          "position": "CM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "N. Schlotterbeck",
+          "position": "CB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "Rodrygo",
+          "position": "RW",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "A. Davies",
+          "position": "LB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "Iñaki Williams",
+          "position": "RM",
+          "acquisition": "AUCTION",
+          "underdog": true
+        },
+        {
+          "name": "R. Araújo",
+          "position": "CB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        }
+      ]
+    },
+    {
+      "name": "APOLLO FC",
+      "squadSize": 14,
+      "remainingPurseCr": 13.5,
+      "retainedCount": 2,
+      "players": [
+        {
+          "name": "E. Haaland",
+          "position": "ST",
+          "acquisition": "RETENTION",
+          "underdog": false
+        },
+        {
+          "name": "Gabriel",
+          "position": "CB",
+          "acquisition": "RETENTION",
+          "underdog": false
+        },
+        {
+          "name": "A. Hakimi",
+          "position": "RB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "Vitinha",
+          "position": "CM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "R. Lewandowski",
+          "position": "ST",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "C. Palmer",
+          "position": "CAM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "Y. Sommer",
+          "position": "GK",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "M. Olise",
+          "position": "RM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "M. ter Stegen",
+          "position": "GK",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "S. Tonali",
+          "position": "CDM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "C. Gakpo",
+          "position": "LM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "A. Robinson",
+          "position": "LB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "A. Elanga",
+          "position": "RW",
+          "acquisition": "AUCTION",
+          "underdog": true
+        },
+        {
+          "name": "D. Solanke",
+          "position": "ST",
+          "acquisition": "AUCTION",
+          "underdog": true
+        }
+      ]
+    },
+    {
+      "name": "RedBull FC",
+      "squadSize": 11,
+      "remainingPurseCr": 48,
+      "retainedCount": 1,
+      "players": [
+        {
+          "name": "J. Bellingham",
+          "position": "CAM",
+          "acquisition": "RETENTION",
+          "underdog": false
+        },
+        {
+          "name": "Alisson",
+          "position": "GK",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "B. Saka",
+          "position": "RW",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "F. de Jong",
+          "position": "CM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "Marquinhos",
+          "position": "CB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "V. Osimhen",
+          "position": "ST",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "K. Benzema",
+          "position": "ST",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "T. Partey",
+          "position": "CDM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "A. Robertson",
+          "position": "LB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "A. Romagnoli",
+          "position": "CB",
+          "acquisition": "AUCTION",
+          "underdog": true
+        },
+        {
+          "name": "N. Otamendi",
+          "position": "CB",
+          "acquisition": "AUCTION",
+          "underdog": true
+        }
+      ]
+    },
+    {
+      "name": "Dakshineswar FC",
+      "squadSize": 12,
+      "remainingPurseCr": 38,
+      "retainedCount": 3,
+      "verify": "The screenshot shows this team name as \"Dakshineswar fc\"; confirm the capitalization.",
+      "players": [
+        {
+          "name": "Rodri",
+          "position": "CDM",
+          "acquisition": "RETENTION",
+          "underdog": false
+        },
+        {
+          "name": "W. Saliba",
+          "position": "CB",
+          "acquisition": "RETENTION",
+          "underdog": false
+        },
+        {
+          "name": "L. Messi",
+          "position": "RW",
+          "acquisition": "RETENTION",
+          "underdog": false
+        },
+        {
+          "name": "Nuno Mendes",
+          "position": "LB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "P. Foden",
+          "position": "RW",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "A. Sørloth",
+          "position": "ST",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "Álex Baena",
+          "position": "LM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "B. Barcola",
+          "position": "LW",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "M. Carnesecchi",
+          "position": "GK",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "X. Simons",
+          "position": "CAM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "C. De Ketelaere",
+          "position": "CAM",
+          "acquisition": "AUCTION",
+          "underdog": true
+        },
+        {
+          "name": "W. Anton",
+          "position": "CB",
+          "acquisition": "AUCTION",
+          "underdog": true
+        }
+      ]
+    },
+    {
+      "name": "BGT",
+      "squadSize": 16,
+      "remainingPurseCr": 20,
+      "retainedCount": 1,
+      "players": [
+        {
+          "name": "Lamine Yamal",
+          "position": "RM",
+          "acquisition": "RETENTION",
+          "underdog": false
+        },
+        {
+          "name": "G. Donnarumma",
+          "position": "GK",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "J. Kimmich",
+          "position": "CDM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "J. Musiala",
+          "position": "CAM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "L. Martínez",
+          "position": "ST",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "K. De Bruyne",
+          "position": "CM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "A. Rüdiger",
+          "position": "CB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "G. Kobel",
+          "position": "GK",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "Éder Militão",
+          "position": "CB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "João Cancelo",
+          "position": "RB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "M. Diaby",
+          "position": "RM",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "Rafael Leão",
+          "position": "LW",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "D. Szoboszlai",
+          "position": "CAM",
+          "acquisition": "AUCTION",
+          "underdog": true
+        },
+        {
+          "name": "G. Di Lorenzo",
+          "position": "RB",
+          "acquisition": "AUCTION",
+          "underdog": false
+        },
+        {
+          "name": "M. Kean",
+          "position": "ST",
+          "acquisition": "AUCTION",
+          "underdog": true
+        },
+        {
+          "name": "V. Boniface",
+          "position": "ST",
+          "acquisition": "AUCTION",
+          "underdog": true,
+          "verify": true
+        }
+      ]
+    }
+  ]
+}
