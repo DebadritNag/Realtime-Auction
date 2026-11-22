@@ -145,7 +145,7 @@ for (const width of [375, 768, 1280]) {
     await expanders.nth(0).click();
     await expect(page.getByTestId('resolver')).toHaveCount(1);
     await page.getByRole('button', { name: 'Search', exact: true }).click();
-    await page.getByRole('button', { name: /Mystery Striker/ }).click();
+    await page.getByRole('button', { name: /M\. Striker/ }).click();
     await expect(page.getByTestId('restore-valid')).toBeVisible();
     await expect(confirm).toBeEnabled();
     await expect(page.getByTestId('restore-host-team')).toHaveValue('Ritzz FC');

@@ -49,11 +49,7 @@ function Resolver({ player, onPick, onManual }: { player: RestorePreviewPlayer; 
     setBusy(true);
     setError(null);
     try {
-      const res = await restoreService.searchPlayers({ search: query, limit: 8 });
-      setResults(res.players.map((p) => ({
-        playerId: p.id, name: p.name, fullName: p.fullName, position: p.subPosition || p.position, positions: p.positions ?? [],
-        club: p.club, ovr: p.ovr, underdog: p.playerTag === "UNDERDOG", photoUrl: p.photoUrl, source: "FC26" as const,
-      })));
+      setResults(await restoreService.searchCandidates({ search: query, limit: 8 }));
     } catch (e) {
       setError(normalizeError(e).message);
     } finally {
@@ -83,7 +79,7 @@ function Resolver({ player, onPick, onManual }: { player: RestorePreviewPlayer; 
             <li key={c.playerId}>
               <button type="button" onClick={() => onPick({ playerId: c.playerId })}
                 className="w-full text-left flex items-center justify-between gap-2 rounded-md border border-[#7495B2]/25 bg-[#0A1724] px-2.5 py-1.5 text-xs text-white cursor-pointer transition-colors duration-200 hover:border-[#00F5A0]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F5A0]">
-                <span className="truncate font-bold">{c.fullName || c.name}<span className="ml-1.5 font-normal text-[#8FA5B8]">{c.club ?? ""}</span></span>
+                <span className="truncate font-bold">{c.name}<span className="ml-1.5 font-normal text-[#8FA5B8]">{c.club ?? ""}</span></span>
                 <span className="shrink-0 font-mono text-[#8FA5B8]">{c.position} · {c.ovr}</span>
               </button>
             </li>

@@ -1,7 +1,7 @@
 import { api } from './api';
 import { validRoomCode } from './room.service';
 import type {
-  RestoreCreateResponse, RestorePlayerSearchResponse, RestorePoolQuery, RestorePoolResponse, RestorePreview,
+  RestoreCandidate, RestoreCreateResponse, RestorePlayerSearchResponse, RestorePoolQuery, RestorePoolResponse, RestorePreview,
   RestoreRoomSettingsInput, RestoreRoomTeamPublic, RestoreSnapshot, RestoreTemplate, RoomLookupDTO,
 } from '@/types/restore';
 
@@ -33,6 +33,14 @@ export const restoreService = {
   },
   pool(roomCode: string, query: RestorePoolQuery = {}, signal?: AbortSignal) {
     return api.get<RestorePoolResponse>('/rooms/' + validRoomCode(roomCode) + '/restore/pool?' + listParams(query, 50), { signal });
+  },
+  /** Catalog search for the host's resolution step, shaped like the matcher's candidates. */
+  async searchCandidates(query: RestorePoolQuery, signal?: AbortSignal): Promise<RestoreCandidate[]> {
+    const res = await restoreService.searchPlayers(query, signal);
+    return res.players.map((p) => ({
+      playerId: p.id, name: p.name, position: p.subPosition || p.position, positions: p.positions ?? [],
+      club: p.club, ovr: p.ovr, underdog: p.playerTag === 'UNDERDOG', photoUrl: p.photoUrl, source: 'FC26' as const,
+    }));
   },
   release(roomCode: string, teamId: string) {
     return api.post<{ teams: RestoreRoomTeamPublic[]; sequence: number }>('/rooms/' + validRoomCode(roomCode) + '/restore/release', { teamId });
