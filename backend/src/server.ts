@@ -109,7 +109,6 @@ const { app } = await buildApp({
 
 retentionLedger?.setLogger(app.log);
 presenceStore?.setWarn(message => app.log.warn(message));
-presenceStore?.setWarn(message => app.log.warn(message));
 if(managerRepository instanceof PostgresManagerRepository)managerRepository.setLogger(app.log);
 if(liveRepository&&env.LIVE_ROOM_LOBBY_TTL_DAYS>0){
   // Only LOBBY rooms untouched for the TTL are deleted. The first run is delayed, never at startup.
