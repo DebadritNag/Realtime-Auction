@@ -87,6 +87,7 @@ if(liveRepository){
   }
 }
 const auctionRepository:RoomRepository=liveRepository??(env.STORAGE==='file'?new FileRoomRepository(env.DATA_DIR):new MemoryRoomRepository());
+if(!liveRepository){console.log('[auction] storage='+env.STORAGE+' nodeEnv='+env.NODE_ENV);if(env.NODE_ENV==='production')console.error('[auction] WARNING: live rooms are ephemeral (ALLOW_EPHEMERAL_STORAGE=true); a restart loses active auctions.');}
 const auctionSource=(id:string)=>loadManagerAuction(managerDb,auctionRepository,id,app.log);
 const retentionLedger = managerDb ? new PostgresRetentionLedger(managerDb) : undefined;
 const presenceStore = managerDb ? new PostgresPresenceStore(managerDb) : undefined;

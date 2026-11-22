@@ -99,9 +99,24 @@ export function registerRoomRoutes(app: FastifyInstance, manager: RoomManager, r
     return { sequence: room.sequence, total: room.bids.length, offset, limit,
       bids: room.bids.slice(offset, offset + limit).map(({ amountUnits, ...bid }) => ({ ...bid, amountCr: toCr(amountUnits) })) };
   });
-  app.get('/api/rooms/:code/recommendation', async request => {
+  // One computation per room+team+sequence+active player; concurrent callers share the in-flight promise.
+  const recommendationCache = new Map<string, { sequence: number; playerId: string | undefined; value: ReturnType<AuctionRecommendationService['recommend']> }>();
+  app.get('/api/rooms/:code/recommendation', { config: { rateLimit: { max: 60, timeWindow: '1 minute' } } }, async request => {
     const room = await manager.loadRoom(params.parse(request.params).code);
-    const recommendation = await recommendations.recommend(room, requireMember(room, request.auth.userId));
-    return { ...recommendation, sequence: room.sequence, serverTime: manager.clock.now(), playerId: room.active?.playerId };
+    const team = requireMember(room, request.auth.userId);
+    const key = room.code + ':' + team.id;
+    const playerId = room.active?.playerId;
+    let entry = recommendationCache.get(key);
+    if (!entry || entry.sequence !== room.sequence || entry.playerId !== playerId) {
+      const value = recommendations.recommend(room, team);
+      entry = { sequence: room.sequence, playerId, value };
+      recommendationCache.delete(key);
+      recommendationCache.set(key, entry);
+      if (recommendationCache.size > 500) recommendationCache.delete(recommendationCache.keys().next().value!);
+      const created = entry;
+      value.catch(() => { if (recommendationCache.get(key) === created) recommendationCache.delete(key); });
+    }
+    const recommendation = await entry.value;
+    return { ...recommendation, sequence: room.sequence, serverTime: manager.clock.now(), playerId };
   });
 }

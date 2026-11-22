@@ -24,6 +24,7 @@ import type { PresenceStore } from './realtime/presence.js';
 import { registerRoomRoutes } from './modules/rooms/room.routes.js';
 import type { Fc26Catalog } from './modules/fc26/fc26.catalog.js';
 import { registerFc26Routes } from './modules/fc26/fc26.routes.js';
+import { registerPoolImportRoutes } from './modules/auction/pool-import/pool-import.routes.js';
 import { hasRetentionEvents, type RetentionLedger } from './modules/retention/retention.ledger.js';
 
 export interface AppOptions {
@@ -32,7 +33,7 @@ export interface AppOptions {
   managerRepository?: ManagerTournamentRepository; managerIdentities?: ManagerIdentityRepository;
   database?: Sql; authService: AuthService; repository?: RoomRepository; playerRepository?: PlayerRepository;
   recommendationService?: AuctionRecommendationService; origins?: string[]; fc26?: Fc26Catalog; retentionLedger?: RetentionLedger;
-  clock?: Clock; timersEnabled?: boolean; logger?: boolean; logLevel?: string; logStream?: { write(message: string): void }; presenceStore?: PresenceStore;
+  clock?: Clock; timersEnabled?: boolean; logger?: boolean; logLevel?: string; logStream?: { write(message: string): void }; trustProxyHops?: number; presenceStore?: PresenceStore;
 }
 export async function buildApp(options: AppOptions) {
   const app = Fastify({
@@ -41,11 +42,12 @@ export async function buildApp(options: AppOptions) {
       serializers: { req: request => ({ method: request.method, url: request.url?.split('?')[0], id: request.id }),
         err: error => ({ type: error.name, code: error.code, message: 'Request error', stack: '' }) },
       redact: ['req.headers.authorization', 'token', 'password'] },
-    bodyLimit: 16 * 1024, requestTimeout: 15_000, trustProxy: false,
+    bodyLimit: 16 * 1024, requestTimeout: 15_000, trustProxy: (options.trustProxyHops ?? 0) > 0 ? (_address: string, hop: number) => hop < (options.trustProxyHops ?? 0) : false,
   });
   const origins = options.origins ?? ['http://localhost:3000', 'http://localhost:5173'];
   await app.register(cors, { origin: origins, methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'] });
-  await app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
+  await app.register(rateLimit, { max: 120, timeWindow: '1 minute',
+    errorResponseBuilder: (_request, context) => Object.assign(new Error('Rate limit exceeded.'), { statusCode: 429, retryAfterSeconds: Math.max(1, Math.ceil(context.ttl / 1000)) }) });
   await app.register(websocket, { options: { maxPayload: 16 * 1024, perMessageDeflate: false,
     // Only the fixed marker protocol is ever selected; the bearer entry is never echoed back.
     handleProtocols: (protocols: Set<string>) => protocols.has('auction.v1') ? 'auction.v1' : false } });
@@ -58,7 +60,8 @@ export async function buildApp(options: AppOptions) {
   const timers = new TimerService(clock, (code, id) => engine.onTimer(code, id),
     (_error, roomCode) => app.log.error({ roomCode, eventType: 'TIMER_RETRY' }, 'Timer transition failed; retrying'));
   const unsubscribe = manager.subscribe((room, events) => {
-    if (options.timersEnabled !== false) timers.schedule(room);
+    // A pool-only commit leaves endsAt and nextPlayerAt untouched, so the armed timer stays as it is.
+    if (options.timersEnabled !== false && !events.every(e => e.type === 'PLAYER_POOL_UPDATED')) timers.schedule(room);
     app.log.info({ roomId: room.id, sequence: room.sequence, status: room.status, eventTypes: events.map(e => e.type) }, 'Room committed');
     // Write-behind: the room snapshot is authoritative; ledger failures never reach the commit.
     if (options.retentionLedger && hasRetentionEvents(events)) void options.retentionLedger.sync(room).catch(() => undefined);
@@ -97,7 +100,12 @@ export async function buildApp(options: AppOptions) {
     const errorStatus = (error as { statusCode?: number }).statusCode;
     const status = errorStatus && errorStatus >= 400 && errorStatus < 500 ? errorStatus : 500;
     if (status === 500) app.log.error({ requestId: request.id, eventType: 'REQUEST_FAILED' }, 'Request failed');
-    return reply.code(status).send({ error: { code: status === 429 ? 'RATE_LIMITED' : status < 500 ? 'INVALID_REQUEST' : 'INTERNAL_ERROR',
+    if (status === 429) {
+      const retryAfterSeconds = Math.max(1, Number((error as { retryAfterSeconds?: number }).retryAfterSeconds) || Number(reply.getHeader('retry-after')) || 1);
+      app.log.warn({ eventType: 'RATE_LIMITED', route: request.routeOptions.url, method: request.method, retryAfterSeconds }, 'Rate limit exceeded');
+      return reply.code(429).header('retry-after', String(retryAfterSeconds)).send({ error: { code: 'RATE_LIMITED', message: 'Request rejected.', retryAfterSeconds }, requestId: request.id });
+    }
+    return reply.code(status).send({ error: { code: status < 500 ? 'INVALID_REQUEST' : 'INTERNAL_ERROR',
       message: status < 500 ? 'Request rejected.' : 'Unable to process request.' }, requestId: request.id });
   });
   app.get('/api/health', async () => ({ status: 'ok', serverTime: clock.now() }));
@@ -105,6 +113,7 @@ export async function buildApp(options: AppOptions) {
   registerProfileRoutes(app, manager, options.database);
   registerPlayerRoutes(app, manager.players, manager.fc26);
   registerFc26Routes(app, manager.fc26, manager);
+  registerPoolImportRoutes(app, manager);
   registerRoomRoutes(app, manager, options.recommendationService ?? new DeterministicRecommendationService(), hub);
   app.get('/ws', { websocket: true }, (socket, request) => hub.attach(socket, request.auth));
   app.addHook('onClose', async () => { hub.close(); timers.close(); unsubscribe(); });

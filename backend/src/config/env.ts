@@ -19,6 +19,10 @@ const envSchema = z.object({
   // Days after which an untouched LOBBY room is deleted; 0 disables cleanup.
   LIVE_ROOM_LOBBY_TTL_DAYS: z.coerce.number().int().min(0).default(14),
   DATA_DIR: z.string().default('./data'),
+  // Number of reverse-proxy hops to trust for request.ip (Render = 1). Defaults to 1 in production, else 0.
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).optional(),
+  // Explicit opt-in to non-durable live-room storage in production.
+  ALLOW_EPHEMERAL_STORAGE: z.enum(['true','false']).default('false'),
 
   // ---- Authentication (jwt or development only)
   AUTH_MODE:       z.enum(['jwt', 'development']).default('jwt'),
@@ -72,5 +76,8 @@ export function readEnvironment(input: NodeJS.ProcessEnv = process.env) {
   const STORAGE = env.STORAGE ?? (env.NODE_ENV === 'production' ? 'postgres' : 'file');
   if (STORAGE === 'postgres' && !env.DATABASE_URL)
     throw new Error('DATABASE_URL is required when STORAGE=postgres.');
-  return { ...env, STORAGE, origins };
+  if (env.NODE_ENV === 'production' && STORAGE !== 'postgres' && env.ALLOW_EPHEMERAL_STORAGE !== 'true')
+    throw new Error('STORAGE=' + STORAGE + ' loses live rooms on restart; use STORAGE=postgres or set ALLOW_EPHEMERAL_STORAGE=true.');
+  const TRUST_PROXY_HOPS = env.TRUST_PROXY_HOPS ?? (env.NODE_ENV === 'production' ? 1 : 0);
+  return { ...env, STORAGE, TRUST_PROXY_HOPS, origins };
 }
