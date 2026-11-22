@@ -1,4 +1,4 @@
-# Environment
+﻿# Environment
 
 Copy .env.example to .env for a local demo. Never commit secrets. Node's built-in environment-file support is used by dev/start scripts.
 
@@ -9,8 +9,9 @@ Copy .env.example to .env for a local demo. Never commit secrets. Node's built-i
 | NODE_ENV | development; production prohibits development auth and requires a catalog |
 | FRONTEND_ORIGIN | http://localhost:3000; comma-separated exact origins, no trailing slash |
 | LOG_LEVEL | info |
-| STORAGE | file; memory is ephemeral |
-| DATA_DIR | ./data, resolved from the server working directory |
+| STORAGE | postgres in production, file otherwise; memory is ephemeral. postgres stores live rooms in public.live_room_snapshots (requires DATABASE_URL and migration 20261003090000) |
+| LIVE_ROOM_LOBBY_TTL_DAYS | 14; LOBBY rooms untouched this long are deleted (first run 60 s after boot, then every 6 h); 0 disables. Only LOBBY rows are ever deleted |
+| DATA_DIR | ./data, resolved from the server working directory; used only when STORAGE=file |
 | FC26_DATA_DIR | Directory holding the FC26 CSV files; default is the repository root |
 | FC26_CSV_GK, FC26_CSV_CB, FC26_CSV_FULLBACKS, FC26_CSV_MID, FC26_CSV_ATT, FC26_CSV_UNDERDOG | Optional per-file overrides (absolute, or relative to FC26_DATA_DIR). Defaults: FC26_GK.csv, FC26_CB.csv, FC26_Fullbacks.csv, FC26_Mid.csv, FC26_ATT.csv, FC26_Underdog.csv then FC26_Underdogs.csv |
 | FC26_TOP_RATING_THRESHOLD | Overall rating from which a regular FC26 player is Top (5 Cr); default 90, below that is Medium (3 Cr). Underdogs are always 1 Cr |
@@ -44,4 +45,4 @@ Catalog example:
 
 basePriceUnits=4 means 2 Cr. Positions: GK, DEF, MID, FWD. OVR 1–99, stats 0–100, unique IDs, maximum 2000 players. Players are queued in catalog order; playerIds/potIds filter that order. An empty/missing selected pool prevents start. The server loads the bundled catalog when no path is configured and fails startup if the catalog is missing or invalid; it does not silently substitute fictional players.
 
-In production use a single writer for file storage, persistent volume and HTTPS/WSS termination. Configure proxy logs to exclude access tokens in /ws query strings. The application already excludes request queries, headers and bodies from logs.
+In production use STORAGE=postgres (no persistent disk needed) with a single backend instance (timers are not coordinated across instances), and HTTPS/WSS termination. File storage needs a single writer and a persistent volume. Configure proxy logs to exclude access tokens in /ws query strings. The application already excludes request queries, headers and bodies from logs.

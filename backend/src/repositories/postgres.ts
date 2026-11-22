@@ -25,6 +25,9 @@ export class PostgresRoomRepository implements RoomRepository{
   const rows=await this.sql<{state:Room}[]>`select state from public.auction_runtime_snapshots where state is not null and state ? 'receipts' and state ? 'players'`;
   return rows.map(r=>r.state);
  }
+ async listActive():Promise<Room[]>{return (await this.listRecoverable()).filter(r=>r.status!=='COMPLETED');}
+ async findById(id:string):Promise<Room|null>{return (await this.listRecoverable()).find(r=>r.id===id)??null;}
+ async listForUser(userId:string):Promise<Room[]>{return (await this.listRecoverable()).filter(r=>r.teams.some(t=>t.userId===userId));}
  async commit(room:Room,expectedSequence:number):Promise<void>{
   await this.sql.begin(async tx=>{
    const rows=await tx<{state:Room;sequence:string}[]>`select state,sequence from public.auction_runtime_snapshots where room_id=${room.id} for update`;

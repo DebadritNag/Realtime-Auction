@@ -22,6 +22,9 @@ export class FileRoomRepository implements RoomRepository {
     const names = (await readdir(this.directory)).filter(name => /^[A-HJ-NP-Z2-9]{6}\.json$/.test(name));
     return (await Promise.all(names.map(name => this.findByCode(name.slice(0, -5))))).filter((r): r is Room => r !== null);
   }
+  async listActive(): Promise<Room[]> { return (await this.listRecoverable()).filter(r => r.status !== 'COMPLETED'); }
+  async findById(id: string): Promise<Room | null> { return (await this.listRecoverable()).find(r => r.id === id) ?? null; }
+  async listForUser(userId: string): Promise<Room[]> { return (await this.listRecoverable()).filter(r => r.teams.some(t => t.userId === userId)); }
   private async write(room: Room): Promise<void> {
     await mkdir(this.directory, { recursive: true });
     const temporary = `${this.path(room.code)}.${randomUUID()}.tmp`;

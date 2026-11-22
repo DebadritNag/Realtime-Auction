@@ -54,7 +54,7 @@ export class RoomManager {
     return room;
   }
   async recover(): Promise<Room[]> {
-    const rooms = await this.repository.listRecoverable();
+    const rooms = await this.repository.listActive();
     for (const room of rooms) this.rooms.set(room.code, this.hydrator.hydrate(room));
     return rooms;
   }

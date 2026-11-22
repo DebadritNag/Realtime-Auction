@@ -1,4 +1,4 @@
-# ⚽ Realtime Football Auction & Manager Mode
+﻿# ⚽ Realtime Football Auction & Manager Mode
 
 <div align="center">
 
@@ -298,7 +298,8 @@ cd Realtime-Auction
 | `PORT` | No | `4000` | Port for the Fastify HTTP & WebSocket server |
 | `HOST` | No | `127.0.0.1` | Host address (`0.0.0.0` for production container) |
 | `FRONTEND_ORIGIN` | Yes | `http://localhost:3000` | Comma-separated list of allowed CORS origins |
-| `STORAGE` | No | `file` | Auction persistence adapter (`file` or `memory`) |
+| `STORAGE` | No | `postgres` in production, else `file` | Live auction storage (`postgres`, `file` or `memory`); `postgres` needs `DATABASE_URL` and migration `20261003090000` |
+| `LIVE_ROOM_LOBBY_TTL_DAYS` | No | `14` | Delete LOBBY rooms untouched for this many days; `0` disables cleanup |
 | `AUTH_MODE` | Yes | `jwt` | Auth validator (`jwt` for Supabase or `development`) |
 | `SUPABASE_URL` | Yes | - | Base URL of your Supabase project |
 | `SUPABASE_ANON_KEY` | Yes | - | Public anon key for Supabase client calls |

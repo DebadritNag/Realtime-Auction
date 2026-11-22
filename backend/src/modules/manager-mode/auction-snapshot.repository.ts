@@ -27,7 +27,7 @@ export async function readCompletedAuction(db:Db,id:string,logger?:SetupLogger):
 }
 
 /** A persisted auction mirror may lag the authoritative Fastify room until creation archives it. */
-export async function loadManagerAuction(db:Db|null,local:{listRecoverable:()=>Promise<Room[]>},id:string,logger?:SetupLogger){
- const runtime=(await local.listRecoverable()).find(room=>room.id===id);
+export async function loadManagerAuction(db:Db|null,local:{findById?:(id:string)=>Promise<Room|null>;listRecoverable?:()=>Promise<Room[]>},id:string,logger?:SetupLogger){
+ const runtime=local.findById?await local.findById(id):((await local.listRecoverable?.())??[]).find(room=>room.id===id)??null;
  return runtime??(db?await readCompletedAuction(db,id,logger):null);
 }

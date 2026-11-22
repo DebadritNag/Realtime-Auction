@@ -1,4 +1,4 @@
-# Architecture
+﻿# Architecture
 
 ## Boundaries
 
@@ -27,6 +27,8 @@ Modules separate room membership, state transitions, bidding, budgets, squad inv
 Every mutation obtains the room lock, reads the latest runtime, clones it, validates the command and changes the draft. A successful mutation increments sequence exactly once, regardless of the number of events emitted. Invariants check active-player uniqueness, ownership, budget ledgers and squad limits.
 
 `RoomRepository.commit(draft, expectedSequence)` must atomically store all critical fields: room, player statuses, accepted bids, team budget/squad, purchases, timer deadlines, pending advance and command receipts. Only after success is runtime replaced and the mutation broadcast.
+
+`PostgresLiveRoomRepository` (default in production) keeps one upserted row per room in `public.live_room_snapshots`; commit is a single `UPDATE ... WHERE code=$1 AND sequence=$2`, so a stale writer gets `VERSION_CONFLICT`. Restart recovery reads non-completed rooms through `listActive()` and re-arms timers from the stored deadlines. Completion still archives to `auction_rooms` and related tables for Manager Mode. Abandoned LOBBY rows are purged after `LIVE_ROOM_LOBBY_TTL_DAYS`. Rooms that existed only on the old ephemeral disk or memory are not migrated.
 
 The memory adapter clones on reads/writes. The file adapter uses a flushed temporary file and atomic rename; the application and adapter each serialize their appropriate operations. It is single-process storage, not a distributed lock or a power-loss guarantee. Orphan temporary files are ignored on recovery.
 

@@ -9,6 +9,8 @@ import { readEnvironment } from './config/env.js';
 import { JwtAuthService, StaticTokenAuthService } from './modules/auth-context/auth.service.js';
 import { FileRoomRepository } from './repositories/file.js';
 import { MemoryRoomRepository } from './repositories/memory.js';
+import { PostgresLiveRoomRepository } from './repositories/postgres-live.js';
+import type { RoomRepository } from './repositories/interfaces.js';
 import { CatalogPlayerRepository } from './modules/players/player.service.js';
 import { connectDatabase } from './repositories/postgres.js';
 import { resolveFc26Config } from './modules/fc26/fc26.config.js';
@@ -74,13 +76,22 @@ catch (error) {
   fc26 = new MemoryFc26Catalog(fc26Config);
   try { await importFc26(fc26); } catch { console.warn('[fc26] in-memory import failed; FC26 source unavailable'); }
 }
-const auctionRepository=env.STORAGE==='file'?new FileRoomRepository(env.DATA_DIR):new MemoryRoomRepository();
+const liveRepository=env.STORAGE==='postgres'&&managerDb?new PostgresLiveRoomRepository(managerDb):null;
+if(liveRepository){
+  try{await liveRepository.assertReady();console.log('[auction] storage=postgres');}
+  catch(error){
+    const missing=(error as {code?:string}).code==='42P01';
+    console.error(missing?'[auction] FATAL: table public.live_room_snapshots is missing; apply migration 20261003090000_live_room_snapshots.sql before starting.':'[auction] FATAL: live room storage is unreachable.');
+    process.exit(1);
+  }
+}
+const auctionRepository:RoomRepository=liveRepository??(env.STORAGE==='file'?new FileRoomRepository(env.DATA_DIR):new MemoryRoomRepository());
 const auctionSource=(id:string)=>loadManagerAuction(managerDb,auctionRepository,id,app.log);
 const retentionLedger = managerDb ? new PostgresRetentionLedger(managerDb) : undefined;
 const { app } = await buildApp({
   retentionLedger,
   managerAuctionSource: auctionSource,
-  managerPrepareAuction: managerDb ? async(id,user)=>{const room=(await auctionRepository.listRecoverable()).find(r=>r.id===id);if(room)await archiveCompletedAuction(managerDb,room,user);} : undefined,
+  managerPrepareAuction: managerDb ? async(id,user)=>{const room=await auctionRepository.findById(id);if(room)await archiveCompletedAuction(managerDb,room,user);} : undefined,
   database: managerDb??undefined,
   authService,
   negotiationDialogue:new SafeDialogueProvider(env.NEGOTIATION_DIALOGUE_PROVIDER==='groq'&&env.GROQ_API_KEY?new GroqNegotiationDialogueProvider(env.GROQ_API_KEY,env.GROQ_MODEL):env.NEGOTIATION_DIALOGUE_PROVIDER==='custom'&&env.NEGOTIATION_DIALOGUE_URL&&env.NEGOTIATION_DIALOGUE_API_KEY?new LLMNegotiationDialogueProvider(env.NEGOTIATION_DIALOGUE_URL,env.NEGOTIATION_DIALOGUE_API_KEY):undefined,{provider:env.NEGOTIATION_DIALOGUE_PROVIDER,model:env.NEGOTIATION_DIALOGUE_PROVIDER==='groq'?env.GROQ_MODEL:'none',log:entry=>app.log.info(entry,'Negotiation dialogue')}),
@@ -95,6 +106,13 @@ const { app } = await buildApp({
 
 retentionLedger?.setLogger(app.log);
 if(managerRepository instanceof PostgresManagerRepository)managerRepository.setLogger(app.log);
+if(liveRepository&&env.LIVE_ROOM_LOBBY_TTL_DAYS>0){
+  // Only LOBBY rooms untouched for the TTL are deleted. The first run is delayed, never at startup.
+  const purge=()=>{liveRepository.purgeStale(env.LIVE_ROOM_LOBBY_TTL_DAYS).then(n=>{if(n>0)app.log.info({purged:n},'Purged abandoned lobby rooms');}).catch(()=>app.log.warn('Lobby cleanup failed'));};
+  const first=setTimeout(purge,60_000);first.unref();
+  const every=setInterval(purge,6*60*60_000);every.unref();
+  app.addHook('onClose',async()=>{clearTimeout(first);clearInterval(every);});
+}
 if(managerDb)app.addHook('onClose',async()=>{await managerDb.end();});
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const)

@@ -6,7 +6,12 @@ import type { RoomSettings } from '../schemas/settings.js';
 export interface RoomRepository {
   create(room: Room): Promise<void>;
   findByCode(code: string): Promise<Room | null>;
+  /** Every stored room, including COMPLETED ones. */
   listRecoverable(): Promise<Room[]>;
+  /** Rooms that are not COMPLETED; the set that needs timers after a restart. */
+  listActive(): Promise<Room[]>;
+  findById(id: string): Promise<Room | null>;
+  listForUser(userId: string): Promise<Room[]>;
   commit(room: Room, expectedSequence: number): Promise<void>;
 }
 export interface UserRepository { findById(id: string): Promise<AuthContext | null> }

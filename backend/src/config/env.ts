@@ -14,7 +14,10 @@ const envSchema = z.object({
   LOG_LEVEL:        z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal', 'silent']).default('info'),
 
   // ---- Live auction storage; Manager Mode uses DATABASE_URL.
-  STORAGE:  z.enum(['memory', 'file']).default('file'),
+  // Defaults to postgres in production and file elsewhere (resolved in readEnvironment).
+  STORAGE:  z.enum(['memory', 'file', 'postgres']).optional(),
+  // Days after which an untouched LOBBY room is deleted; 0 disables cleanup.
+  LIVE_ROOM_LOBBY_TTL_DAYS: z.coerce.number().int().min(0).default(14),
   DATA_DIR: z.string().default('./data'),
 
   // ---- Authentication (jwt or development only)
@@ -66,5 +69,8 @@ export function readEnvironment(input: NodeJS.ProcessEnv = process.env) {
   if (env.NODE_ENV === 'production' && env.JWT_JWKS_URL && !env.JWT_JWKS_URL.startsWith('https://'))
     throw new Error('Production JWKS requires HTTPS.');
 
-  return { ...env, origins };
+  const STORAGE = env.STORAGE ?? (env.NODE_ENV === 'production' ? 'postgres' : 'file');
+  if (STORAGE === 'postgres' && !env.DATABASE_URL)
+    throw new Error('DATABASE_URL is required when STORAGE=postgres.');
+  return { ...env, STORAGE, origins };
 }

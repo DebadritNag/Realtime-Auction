@@ -14,7 +14,7 @@ export function registerProfileRoutes(app:FastifyInstance,manager:RoomManager,sq
   if(sql)await sql`update public.profiles set display_name=${input.displayName},default_team_name=${input.defaultTeamName},default_team_logo_url=${input.defaultTeamLogo} where id=${req.auth.userId}`;
   return input;
  });
- const roomsFor=async(id:string)=>(await manager.repository.listRecoverable()).filter(r=>r.teams.some(t=>t.userId===id));
+ const roomsFor=async(id:string)=>manager.repository.listForUser(id);
  app.get('/api/profile/stats',async req=>{
   const rooms=await roomsFor(req.auth.userId);
   const purchases=rooms.flatMap(room=>room.purchases.filter(p=>room.teams.find(t=>t.id===p.teamId)?.userId===req.auth.userId).map(p=>({...p,room})));
