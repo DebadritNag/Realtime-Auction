@@ -1,0 +1,28 @@
+{
+    "id":  "FEAT-002",
+    "type":  "feat",
+    "description":  "Frontend: host \"+ ADD PLAYERS TO AUCTION\" modal (CSV upload / FC26 database / default pool, preview, validation errors, confirm, IMPORT COMPLETED summary), NEW badge beside UNDERDOG badge in upcoming/pool/recall lists, non-blocking \"N new players have been added to the auction pool.\" notice with View action driven only by the server PLAYER_POOL_UPDATED event, host Release held players action, types/service/store wiring, headless tests. Implements plan.md items 6-8. Depends on FEAT-001 contract (plan.md section 2).",
+    "status":  "pending",
+    "steps":  [
+                  "Item 6: types/backend.ts (PlayerDTO.poolMeta, RoomStateDTO.poolAdditions, PLAYER_POOL_UPDATED and POOL_ADDITIONS_RELEASED payloads and names list, RELEASE_POOL_ADDITIONS command), types/index.ts Player fields, contract.ts mapPlayer, new services/pool-import.service.ts, auction.store.ts poolNotice handling deduped by batchId.",
+                  "Item 7: NewTag in components/shared/UnderdogTag.tsx; render in PlayerPoolSidebar, RecallPlayersModal, PlayerAuctionCard; new AddPlayersModal.tsx and PoolUpdateNotice.tsx; HostAuctionControls optional props canAddPlayers/heldAdditions and buttons; wire in app/auction/[roomCode]/page.tsx (read frontend/AGENTS.md and the relevant next docs first).",
+                  "Item 8: write frontend/tests/pool-import-ui.mjs and frontend/tests/pool-import-store.mjs (patterns recall-ui.mjs, websocket-protocol.mjs).",
+                  "Commit locally; do not push."
+              ],
+    "acceptance_criteria":  [
+                                "Host sees + ADD PLAYERS TO AUCTION only when RUNNING/PAUSED and synced; non-host never sees it",
+                                "Modal shows preview rows with eligible/skipped/rejected reasons, confirm sends one commit, summary shows IMPORT COMPLETED with total/added/skipped/rejected and reason lists and a way to view new players",
+                                "NEW badge renders beside new waiting players and UNDERDOG badge still renders",
+                                "Notice appears only after the server PLAYER_POOL_UPDATED event, once per batchId, never on reconnect ROOM_STATE, and does not change activePlayer/currentBid/endsAt/highestBidder",
+                                "Existing recall-ui, auction-redesign-ui, websocket-protocol, reconnect-protocol tests still pass; next build succeeds"
+                            ],
+    "verification":  [
+                         "cd frontend; node tests/pool-import-ui.mjs",
+                         "cd frontend; node tests/pool-import-store.mjs",
+                         "cd frontend; node tests/type-boundary.mjs",
+                         "cd frontend; node tests/recall-ui.mjs; node tests/auction-redesign-ui.mjs; node tests/websocket-protocol.mjs; node tests/reconnect-protocol.mjs",
+                         "cd frontend; npm run build"
+                     ],
+    "blocked_reason":  null,
+    "findings":  ""
+}

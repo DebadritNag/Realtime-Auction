@@ -1,0 +1,1 @@
+﻿{"task_id":"task-fix-429-recommendation","task_description":"Fix 429 storm on GET /api/rooms/:code/recommendation and false 'Room does not exist'; make live-room storage misconfiguration loud.","status":"pending","feature_order":["FEAT-001","FEAT-002"],"blocked_reason":null}

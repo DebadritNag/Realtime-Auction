@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { formatCr } from "@/lib/utils";
 import { Shield, Sparkles, UserRound } from "lucide-react";
 import { getPlayerImageCandidates, DEFAULT_PLAYER_IMAGE } from "@/lib/player-image";
-import { UnderdogTag, RetainedTag } from "@/components/shared/UnderdogTag";
+import { UnderdogTag, RetainedTag, NewTag } from "@/components/shared/UnderdogTag";
 import { potLabel } from "@/lib/pots";
 
 export interface PlayerAuctionCardProps {
@@ -112,6 +112,7 @@ export const PlayerAuctionCard: React.FC<PlayerAuctionCardProps> = ({ player, va
           <h2 className="text-2xl font-black uppercase tracking-wide text-[#f8fafc] truncate">
             {player.name}
             <UnderdogTag player={player} />
+            <NewTag player={player} />
           </h2>
           <div className="flex items-center justify-center gap-3 text-[11px] text-[#94a3b8] mt-0.5">
             <span>Age: <strong className="text-[#f8fafc]">{player.age ?? "—"}</strong></span>
@@ -164,7 +165,7 @@ function LivePlayerCard({player}: {player: Player | null}) {
       <span className="live-player-nationality">{player.flagEmoji} {player.nationality || 'Nation unavailable'}</span></div>
     <div className="live-player-identity">
       <div className="live-player-rating"><strong>{player.ovr}</strong><span>OVR</span></div>
-      <div className="live-player-bio"><h2>{player.name}<UnderdogTag player={player} /></h2><p>{player.club || 'Club unavailable'}</p>
+      <div className="live-player-bio"><h2>{player.name}<UnderdogTag player={player} /><NewTag player={player} /></h2><p>{player.club || 'Club unavailable'}</p>
         <div className="live-player-facts"><span>Age <b>{player.age ?? '—'}</b></span><span>Foot <b>{player.preferredFoot ?? '—'}</b></span></div>
       </div>
       <div className="live-player-portrait">{photo ?

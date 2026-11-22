@@ -15,7 +15,26 @@ export interface PlayerDTO {
  club?:string;nationality?:string;age?:number;preferredFoot?:string;photoUrl?:string;
  subPosition?:string; // specific football position, e.g. CB, LB, ST, CM
  fullName?:string;potential?:number;positions?:string[];draftPool?:'REGULAR'|'UNDERDOG';playerTag?:'UNDERDOG';sourceCategory?:string;
+ poolMeta?:PoolMetaDTO;
 }
+/** Set by the backend on players added to a live auction. `release` HELD = waits for the host to release it. */
+export interface PoolMetaDTO {poolStatus:'PENDING';importBatchId:string;importedAt:number;importedBy:string;sourceFile:string;sourceCategory:string;release:'FOLLOW'|'HELD'}
+export interface PoolImportRowDTO {
+ row:number;playerId:string;name:string;positions?:string[];ovr?:number;potId?:string;categoryState?:'ACTIVE'|'COMPLETED'|'NOT_IN_AUCTION';
+ basePriceCr?:number;underdog?:boolean;status:'ELIGIBLE'|'SKIPPED'|'REJECTED';code:string;reason:string;
+}
+export interface PoolImportReportDTO {
+ mode:'PREVIEW'|'COMMIT';batchId?:string;duplicate?:boolean;sequence:number;
+ totals:{totalRecords:number;eligible:number;added:number;skipped:number;rejected:number;byReason:Record<string,number>};rows:PoolImportRowDTO[];
+}
+export type PoolImportSource='CSV'|'FC26_DATABASE'|'DEFAULT_POOL';
+export interface PoolImportRequestDTO {source:PoolImportSource;fileName?:string;csv?:string;playerIds?:string[];potIds?:string[];search?:string;batchId?:string}
+export interface PoolBatchDTO {
+ batchId:string;at:number;addedCount:number;addedPlayerIds:string[];categoryCounts:Record<string,number>;heldCount:number;sourceFile:string;importedBy:string;
+ totalRecords:number;skippedCount:number;rejectedCount:number;skipped?:PoolBatchRowDTO[];rejected?:PoolBatchRowDTO[];
+}
+export interface PoolBatchRowDTO {row:number;playerId:string;name:string;code:string;reason:string}
+export interface PoolAdditionsDTO {pendingCount:number;followCount:number;heldCount:number;held:{playerId:string;potId:string}[];batches:PoolBatchDTO[]}
 export interface TeamDTO {
  id:string;userId:string;name:string;logoUrl?:string;logoEmoji?:string;startingBudgetCr:number;spentCr:number;
  remainingBudgetCr:number;playerIds:string[];playersOwned:number;maximumPermittedBidCr:number;minimumSquadMet:boolean;
@@ -75,7 +94,7 @@ export interface RoomStateDTO {
  currentBidCr:number|null;highestBidderTeamId:string|null;minimumNextBidCr:number|null;maximumPermittedBidCr:number;
  startedAt:number|null;endsAt:number|null;remainingTimeMs:number|null;biddingOpen:boolean;lastBidAt:number|null;
  bidCount:number;nextPlayerAt:number|null;serverTime:number;sequence:number;teams:TeamDTO[];currentUserTeam:TeamDTO;
- connectedUsers:string[];players:PlayerDTO[];playerQueue:string[];playerQueueSummary:{remaining:number};
+ connectedUsers:string[];players:PlayerDTO[];playerQueue:string[];playerQueueSummary:{remaining:number;heldAdditions?:number};poolAdditions?:PoolAdditionsDTO;
  soldPlayers:PurchaseDTO[];unsoldPlayers:PlayerDTO[];retention?:RetentionStateDTO;
  activity?:ActivityDTO[];recentBids?:RecentBidDTO[];lastActivityAt?:number;ongoingStatus?:OngoingStatus;resumePath?:string;
  /** Host viewers only. */teamPresence?:TeamPresenceDTO[];
@@ -115,6 +134,7 @@ export type ClientCommand =
  | {type:'VOTE_SKIP_PLAYER'|'REMOVE_SKIP_VOTE';payload:RoomPayload & {playerId:string;activationId:string};requestId?:string}
  | {type:'RETAIN_PLAYER'|'REMOVE_RETENTION_PLAYER';payload:RoomPayload & {playerId:string};requestId?:string}
  | {type:'START_RETENTION'|'CONFIRM_RETENTION'|'SKIP_RETENTION'|'FINALIZE_RETENTIONS'|'RESET_RETENTIONS';payload:RoomPayload;requestId?:string}
+ | {type:'RELEASE_POOL_ADDITIONS';payload:RoomPayload & {playerIds?:string[]};requestId?:string}
  | {type:'RECALL_PLAYERS';payload:RoomPayload & {playerIds:string[]};requestId?:string}
  | {type:'KICK_MEMBER';payload:RoomPayload & {targetTeamId:string};requestId?:string}
  | {type:'UPDATE_SETTINGS';payload:RoomPayload & {settings:Partial<SettingsDTO>};requestId?:string}
@@ -163,6 +183,8 @@ TRANSFER_WINDOW_CLOSED:{tournamentId:string};
  SKIP_VOTE_UPDATED:{playerId:string;activationId:string;votes:number;required:number;reason:'BID_ACCEPTED'|'VOTE_CAST'|'VOTE_REMOVED'};
  PLAYER_UNSOLD:{playerId:string;reason?:'UNANIMOUS_SKIP'};
  PLAYER_RECALLED:{playerId:string;status:'WAITING';round:number};
+ PLAYER_POOL_UPDATED:{auctionId:string;roomCode:string;batchId:string;addedCount:number;addedPlayerIds:string[];addedPlayers:{playerId:string;category:string;releaseState:'FOLLOW'|'HELD'}[];categoryCounts:Record<string,number>;heldCount:number;importedAt:number};
+ POOL_ADDITIONS_RELEASED:{playerIds:string[];count:number};
  TEAM_UPDATED:{teamId:string};
  RETENTION_STARTED:{order:{teamId:string;name:string;order:number}[];activeTeamId:string|null};
  RETENTION_TURN_STARTED:{teamId:string;teamName:string;order:number};
@@ -183,7 +205,7 @@ export function parseServerEvent(raw:string):ServerEvent | null {
  const value:unknown=JSON.parse(raw);
  if(!value || typeof value!=='object') throw new Error('Invalid server event');
  const e=value as Record<string,unknown>;
- const names=['NOTIFICATION_CREATED','MANAGER_MODE_PATCH','MANAGER_MODE_SUMMARY','PLAYER_RELEASED','FREE_AGENT_POOL_UPDATED','MANAGER_PLAYER_SOLD','SEASON_COMPLETED','LEAGUE_SHIELD_AWARDED','SEASON_BONUSES_AWARDED','NEXT_SEASON_STARTED','MANAGER_MODE_ENDED','BUYOUT_CREATED','BUYOUT_UPDATED','BUYOUT_ACCEPTED','BUYOUT_REJECTED','BUYOUT_COUNTERED','TEAM_BUDGET_UPDATED','NEGOTIATION_STARTED','NEGOTIATION_UPDATED','FREE_AGENT_OFFER_UPDATED','FREE_AGENT_ACCEPTED','FREE_AGENT_SIGNED','FREE_AGENT_SIGNED_ELSEWHERE','TRADE_CREATED','TRADE_UPDATED','PLAYER_TRANSFERRED','TRANSFER_WINDOW_OPENED','TRANSFER_WINDOW_CLOSED','MANAGER_MODE_STATE','MANAGER_MODE_INBOX','MANAGER_MODE_CREATED','MANAGER_MODE_UPDATED','MANAGER_MODE_DELETED','CONNECTED','ROOM_STATE','ROOM_UPDATED','MEMBER_JOINED','MEMBER_LEFT','PRESENCE_UPDATED','AUCTION_STARTED','PLAYER_STARTED','BID_UPDATED','TIMER_EXTENDED','PLAYER_SOLD','PLAYER_UNSOLD','SKIP_VOTE_UPDATED','PLAYER_RECALLED','TEAM_UPDATED','RETENTION_STARTED','RETENTION_TURN_STARTED','RETENTION_PLAYER_RESERVED','RETENTION_PLAYER_RELEASED','RETENTION_TEAM_CONFIRMED','RETENTION_ALL_COMPLETED','RETENTION_FINALIZED','RETENTION_RESET','BUDGET_UPDATED','AUCTION_PAUSED','AUCTION_RESUMED','AUCTION_COMPLETED','COMMAND_ACK','BID_REJECTED','ERROR','PONG'];
+ const names=['NOTIFICATION_CREATED','MANAGER_MODE_PATCH','MANAGER_MODE_SUMMARY','PLAYER_RELEASED','FREE_AGENT_POOL_UPDATED','MANAGER_PLAYER_SOLD','SEASON_COMPLETED','LEAGUE_SHIELD_AWARDED','SEASON_BONUSES_AWARDED','NEXT_SEASON_STARTED','MANAGER_MODE_ENDED','BUYOUT_CREATED','BUYOUT_UPDATED','BUYOUT_ACCEPTED','BUYOUT_REJECTED','BUYOUT_COUNTERED','TEAM_BUDGET_UPDATED','NEGOTIATION_STARTED','NEGOTIATION_UPDATED','FREE_AGENT_OFFER_UPDATED','FREE_AGENT_ACCEPTED','FREE_AGENT_SIGNED','FREE_AGENT_SIGNED_ELSEWHERE','TRADE_CREATED','TRADE_UPDATED','PLAYER_TRANSFERRED','TRANSFER_WINDOW_OPENED','TRANSFER_WINDOW_CLOSED','MANAGER_MODE_STATE','MANAGER_MODE_INBOX','MANAGER_MODE_CREATED','MANAGER_MODE_UPDATED','MANAGER_MODE_DELETED','CONNECTED','ROOM_STATE','ROOM_UPDATED','MEMBER_JOINED','MEMBER_LEFT','PRESENCE_UPDATED','AUCTION_STARTED','PLAYER_STARTED','BID_UPDATED','TIMER_EXTENDED','PLAYER_SOLD','PLAYER_UNSOLD','SKIP_VOTE_UPDATED','PLAYER_RECALLED','PLAYER_POOL_UPDATED','POOL_ADDITIONS_RELEASED','TEAM_UPDATED','RETENTION_STARTED','RETENTION_TURN_STARTED','RETENTION_PLAYER_RESERVED','RETENTION_PLAYER_RELEASED','RETENTION_TEAM_CONFIRMED','RETENTION_ALL_COMPLETED','RETENTION_FINALIZED','RETENTION_RESET','BUDGET_UPDATED','AUCTION_PAUSED','AUCTION_RESUMED','AUCTION_COMPLETED','COMMAND_ACK','BID_REJECTED','ERROR','PONG'];
  names.push('CUP_SETTINGS_UPDATED', 'CUP_ENABLED','CUP_QUALIFIERS_CONFIRMED','CUP_DRAW_COMPLETED','CUP_FIXTURE_UPDATED','CUP_GROUP_STANDINGS_UPDATED','CUP_SEMI_FINAL_READY','CUP_FINAL_READY','CUP_COMPLETED','TROPHY_AWARDED','FIXTURE_RESULT_UPDATED','FIXTURE_SCORERS_UPDATED','PLAYER_STATS_UPDATED','STANDINGS_UPDATED','SECRET_PLAYER_CLAIMED','SECRET_PLAYER_POOL_UPDATED','SECRET_PLAYER_REVEALED','SQUAD_UPDATED','FIXTURE_FORMAT_UPDATED','FIXTURES_GENERATED');
  if(typeof e.type!=='string'||!Number.isSafeInteger(e.sequence)||typeof e.serverTime!=='number'||!Number.isFinite(e.serverTime)||!e.payload||typeof e.payload!=='object') throw new Error('Invalid server envelope');
  // New informational signals during a rolling deployment are not corrupt state.

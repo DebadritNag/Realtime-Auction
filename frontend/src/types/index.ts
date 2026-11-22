@@ -37,6 +37,10 @@ export interface Player {
   potential?: number;
   fullName?: string;
   isRetained?: boolean;
+  /** Added to a live auction and still waiting; poolBatchId is the import batch. releaseState HELD waits for the host. */
+  isNew?: boolean;
+  poolBatchId?: string;
+  releaseState?: "FOLLOW" | "HELD";
   soldPrice?: number;
   soldToTeamId?: string;
   soldToTeamName?: string;

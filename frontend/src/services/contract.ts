@@ -13,6 +13,7 @@ export function mapPlayer(p:PlayerDTO,s:RoomStateDTO):Player{
  pot:p.potId,photoUrl:p.photoUrl,
  ...(p.playerTag==='UNDERDOG'?{playerTag:'UNDERDOG' as const}:{}),draftPool:p.draftPool,sourceCategory:p.sourceCategory,positions:p.positions,potential:p.potential,fullName:p.fullName,
  isRetained:purchase?.isRetained===true||purchase?.acquisitionType==='RETENTION',
+ ...(p.poolMeta?{isNew:p.status==='WAITING',poolBatchId:p.poolMeta.importBatchId,releaseState:p.poolMeta.release}:{}),
  status:({WAITING:'waiting',ACTIVE:'live',SOLD:'sold',UNSOLD:'unsold',SKIPPED:'skipped'} as const)[p.status],
  soldPrice:purchase?.priceCr,soldToTeamId:purchase?.teamId,soldToTeamName:s.teams.find(t=>t.id===purchase?.teamId)?.name};
 }

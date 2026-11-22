@@ -1,0 +1,10 @@
+{
+    "task_description":  "PART 9: host adds new players to an ongoing LIVE auction via CSV/FC26 DB/default pool, strictly additive (tail queue, held additions for completed categories), atomic server-side in RoomManager.mutate, PLAYER_POOL_UPDATED event, host UI modal + NEW badge + notification, tests.",
+    "status":  "pending",
+    "task_id":  "part9-live-add-players",
+    "blocked_reason":  null,
+    "feature_order":  [
+                          "FEAT-001",
+                          "FEAT-002"
+                      ]
+}
