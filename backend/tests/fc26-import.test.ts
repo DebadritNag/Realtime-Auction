@@ -172,13 +172,15 @@ describe('FC26 importer', () => {
 
 describe('FC26 real CSV files', () => {
   const present = existsSync(resolve(defaultFc26Dir(), 'FC26_GK.csv')) && existsSync(resolve(defaultFc26Dir(), 'FC26_Underdogs.csv'));
-  it.skipIf(!present)('imports 206 unique players from 250 rows, then none on re-import', async () => {
+  it.skipIf(!present)('imports 207 unique players from 251 rows, then none on re-import', async () => {
     const c = new MemoryFc26Catalog(resolveFc26Config({}));
     const report = await c.importAll();
-    expect(report).toMatchObject({ filesRead: 6, rowsRead: 250, imported: 206, skippedDuplicates: 44, underdogImported: 30, missingFiles: [] });
+    expect(report).toMatchObject({ filesRead: 6, rowsRead: 251, imported: 207, skippedDuplicates: 44, underdogImported: 31, missingFiles: [] });
     expect(report.invalidRows).toEqual([]);
     const players = await c.list();
-    expect(players.filter(p => p.draftPool === 'UNDERDOG' && p.playerTag === 'UNDERDOG' && p.basePriceUnits === 2)).toHaveLength(30);
+    expect(players.filter(p => p.draftPool === 'UNDERDOG' && p.playerTag === 'UNDERDOG' && p.basePriceUnits === 2)).toHaveLength(31);
+    const openda = players.find(p => p.id === '243580');
+    expect(openda).toMatchObject({ name: 'L. Openda', draftPool: 'UNDERDOG', playerTag: 'UNDERDOG', basePriceUnits: 2, potId: 'ATT' });
     expect(players.filter(p => p.draftPool === 'REGULAR').every(p => p.basePriceUnits === (p.ovr >= 90 ? 10 : 6))).toBe(true);
     expect(players.every(p => ['GK', 'CB', 'FB', 'MID', 'ATT'].includes(p.potId))).toBe(true);
     expect((await c.importAll()).imported).toBe(0);
