@@ -12,6 +12,7 @@ export class MemoryRoomRepository implements RoomRepository {
   async listActive(): Promise<Room[]> { return (await this.listRecoverable()).filter(r => r.status !== 'COMPLETED'); }
   async findById(id: string): Promise<Room | null> { return (await this.listRecoverable()).find(r => r.id === id) ?? null; }
   async listForUser(userId: string): Promise<Room[]> { return (await this.listRecoverable()).filter(r => r.teams.some(t => t.userId === userId)); }
+  async listOngoingForUser(userId: string): Promise<Room[]> { return (await this.listForUser(userId)).filter(r => r.status !== 'COMPLETED' && r.status !== 'CLOSED').sort((a, b) => (b.lastActivityAt ?? b.createdAt) - (a.lastActivityAt ?? a.createdAt)); }
   async commit(room: Room, expectedSequence: number): Promise<void> {
     requireThat(this.rooms.get(room.code)?.sequence === expectedSequence, 'VERSION_CONFLICT', 'Room was modified concurrently.', 409);
     this.rooms.set(room.code, structuredClone(room));

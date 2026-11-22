@@ -1,12 +1,13 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import type { AuthContext } from '../../domain/types.js';
-import { requireThat } from '../../domain/errors.js';
+import { DomainError, requireThat } from '../../domain/errors.js';
 import { toCr } from '../../domain/money.js';
 import { createRoomSchema, joinSchema, roomCodeSchema, settingsShape } from '../../schemas/settings.js';
 import type { RoomManager } from './room.manager.js';
 import { RoomService, requireMember } from './room.service.js';
 import { roomState } from './room-state.js';
+import { roomDetails, roomSummary } from './room-summary.js';
 import { publicPlayer, publicTeam } from '../teams/team.service.js';
 import { calculateResults } from '../results/result.service.js';
 import type { AuctionRecommendationService } from '../recommendations/recommendation.service.js';
@@ -16,6 +17,35 @@ export function registerRoomRoutes(app: FastifyInstance, manager: RoomManager, r
   const service = new RoomService(manager);
   const params = z.object({ code: roomCodeSchema });
   const snapshot = async (code: string, userId: string) => roomState(await manager.loadRoom(code), userId, manager.clock.now(), hub.connectedUsers(code));
+  const memberOf = (room: Awaited<ReturnType<RoomManager['loadRoom']>>, userId: string) => {
+    requireThat(room.teams.some(t => t.userId === userId), 'NOT_ROOM_MEMBER',
+      'You are not a member of this auction. Use Join Auction Room to join a lobby.', 403);
+  };
+  const presenceOf = (room: Awaited<ReturnType<RoomManager['loadRoom']>>) => {
+    const online = new Set(hub.connectedUsers(room.code));
+    return Object.fromEntries(room.teams.map(t => [t.userId, { connected: online.has(t.userId), lastSeenAt: null as number | null }]));
+  };
+  // Ongoing auctions of the caller: summaries only, never snapshots. COMPLETED and CLOSED rooms are excluded by the repository.
+  app.get('/api/me/rooms', async request => {
+    const now = manager.clock.now();
+    const rooms = await manager.repository.listOngoingForUser(request.auth.userId);
+    const summaries = rooms.filter(r => r.status !== 'COMPLETED' && r.status !== 'CLOSED').map(r => roomSummary(r, request.auth.userId, now))
+      .sort((a, b) => b.lastActivityAt - a.lastActivityAt);
+    return { rooms: summaries, serverTime: now };
+  });
+  app.get('/api/rooms/:code/summary', async request => {
+    const room = await manager.loadRoom(params.parse(request.params).code);
+    memberOf(room, request.auth.userId);
+    return roomDetails(room, request.auth.userId, manager.clock.now(), presenceOf(room));
+  });
+  // Read-only and idempotent: reconnects an existing member to the room they already belong to. Never creates a team.
+  app.post('/api/rooms/:code/rejoin', { config: { rateLimit: { max: 30, timeWindow: '1 minute' } } }, async request => {
+    z.object({}).strict().parse(request.body ?? {});
+    const room = await manager.loadRoom(params.parse(request.params).code);
+    memberOf(room, request.auth.userId);
+    if (room.status === 'CLOSED') throw new DomainError('ROOM_CLOSED', 'This auction was cancelled.', 409);
+    return roomSummary(room, request.auth.userId, manager.clock.now());
+  });
   app.post('/api/rooms', { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } }, async (request, reply) => {
     const room = await manager.create(request.auth, createRoomSchema.parse(request.body));
     return reply.code(201).send({ roomId: room.id, roomCode: room.code, settings: room.settings,

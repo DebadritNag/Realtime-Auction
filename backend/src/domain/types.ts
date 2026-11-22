@@ -61,6 +61,8 @@ export interface Room {
   // Anti-streak tracking: track the last pot used and how many times in a row
   lastPot?: string; consecutivePotCount?: number;
   sequence: number; nextPlayerAt: number | null; receipts: Record<string, CommandReceipt>;
+  /** Epoch ms of the last committed change; falls back to createdAt on old snapshots. */
+  lastActivityAt?: number;
 }
 export interface ServerEvent {
   type: string; roomId?: string; sequence: number; serverTime: number;

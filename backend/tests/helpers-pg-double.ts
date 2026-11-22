@@ -35,6 +35,8 @@ export class FakeLiveSql {
     if (text === "select state from public.live_room_snapshots where status <> 'COMPLETED' order by created_at") return [...this.rows.values()].filter(r => r.status !== 'COMPLETED').map(r => ({ state: structuredClone(r.state) }));
     if (text.startsWith('select state from public.live_room_snapshots where exists (select 1 from jsonb_array_elements(state->\'teams\') t where t->>\'userId\'=?)'))
       return [...this.rows.values()].filter(r => r.state.teams.some(t => t.userId === v[0])).map(r => ({ state: structuredClone(r.state) }));
+    if (text.startsWith("select state from public.live_room_snapshots where status not in ('COMPLETED','CLOSED') and exists (select 1 from jsonb_array_elements(state->'teams') t where t->>'userId'=?) order by updated_at desc"))
+      return [...this.rows.values()].filter(r => r.status !== 'COMPLETED' && r.status !== 'CLOSED' && r.state.teams.some(t => t.userId === v[0])).sort((a, b) => b.updated_at - a.updated_at).map(r => ({ state: structuredClone(r.state) }));
     if (text === "delete from public.live_room_snapshots where status='LOBBY' and updated_at < now() - make_interval(days => ?) returning code") {
       const cutoff = this.now - Number(v[0]) * 86_400_000;
       const gone = [...this.rows.values()].filter(r => r.status === 'LOBBY' && r.updated_at < cutoff);

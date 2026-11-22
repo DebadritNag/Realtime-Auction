@@ -38,6 +38,7 @@ export class FileRoomRepository implements RoomRepository {
       await this.write(room);
     });
   }
+  async listOngoingForUser(userId: string): Promise<Room[]> { return (await this.listForUser(userId)).filter(r => r.status !== 'COMPLETED' && r.status !== 'CLOSED').sort((a, b) => (b.lastActivityAt ?? b.createdAt) - (a.lastActivityAt ?? a.createdAt)); }
   async commit(room: Room, expectedSequence: number): Promise<void> {
     await this.lock.runExclusive(room.code, async () => {
       requireThat((await this.findByCode(room.code))?.sequence === expectedSequence, 'VERSION_CONFLICT', 'Room version changed.', 409);

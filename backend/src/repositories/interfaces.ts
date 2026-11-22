@@ -12,6 +12,8 @@ export interface RoomRepository {
   listActive(): Promise<Room[]>;
   findById(id: string): Promise<Room | null>;
   listForUser(userId: string): Promise<Room[]>;
+  /** Rooms the user belongs to that are neither COMPLETED nor CLOSED, most recently updated first. */
+  listOngoingForUser(userId: string): Promise<Room[]>;
   commit(room: Room, expectedSequence: number): Promise<void>;
 }
 export interface UserRepository { findById(id: string): Promise<AuthContext | null> }

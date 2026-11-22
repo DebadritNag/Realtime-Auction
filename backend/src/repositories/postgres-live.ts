@@ -40,6 +40,10 @@ export class PostgresLiveRoomRepository implements RoomRepository {
     const rows = await this.sql<{ state: Room }[]>`select state from public.live_room_snapshots where exists (select 1 from jsonb_array_elements(state->'teams') t where t->>'userId'=${userId}) order by created_at`;
     return rows.map(r => r.state);
   }
+  async listOngoingForUser(userId: string): Promise<Room[]> {
+    const rows = await this.sql<{ state: Room }[]>`select state from public.live_room_snapshots where status not in ('COMPLETED','CLOSED') and exists (select 1 from jsonb_array_elements(state->'teams') t where t->>'userId'=${userId}) order by updated_at desc`;
+    return rows.map(r => r.state);
+  }
   /** Deletes only LOBBY rooms untouched for ttlDays. ttlDays <= 0 disables cleanup. */
   async purgeStale(ttlDays: number): Promise<number> {
     if (!(ttlDays > 0)) return 0;

@@ -68,7 +68,7 @@ export class RoomManager {
         const code = Array.from({ length: 6 }, () => alphabet[randomInt(alphabet.length)]).join('');
         if (await this.repository.findByCode(code)) continue;
         const room: Room = { id: randomUUID(), code, hostUserId: auth.userId, auctionName: input.auctionName,
-          status: 'LOBBY', createdAt: this.clock.now(), settings,
+          status: 'LOBBY', createdAt: this.clock.now(), lastActivityAt: this.clock.now(), settings,
           teams: [{ id: randomUUID(), userId: auth.userId, managerUsername: auth.username, name: input.teamName, logoUrl: input.teamLogoUrl, logoEmoji: input.teamLogoEmoji,
             startingBudgetUnits: toUnits(settings.startingBudgetCr), spentUnits: 0, playerIds: [] }],
           players: [], playerQueue: [], purchases: [], bids: [], active: null, sequence: 1, nextPlayerAt: null, receipts: {} };
@@ -88,6 +88,7 @@ export class RoomManager {
       const result = await action(draft, events);
       if (events.length === 0) return result;
       draft.sequence = current.sequence + 1;
+      draft.lastActivityAt = this.clock.now();
       assertRoom(draft);
       try { await this.repository.commit(draft, current.sequence); }
       catch {
