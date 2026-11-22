@@ -16,15 +16,15 @@ declare module 'fastify' { interface FastifyRequest { auth: AuthContext } }
 export function registerRoomRoutes(app: FastifyInstance, manager: RoomManager, recommendations: AuctionRecommendationService, hub: RealtimeHub): void {
   const service = new RoomService(manager);
   const params = z.object({ code: roomCodeSchema });
-  const snapshot = async (code: string, userId: string) => roomState(await manager.loadRoom(code), userId, manager.clock.now(), hub.connectedUsers(code));
+  const snapshot = async (code: string, userId: string) => {
+    const room = await manager.loadRoom(code);
+    return roomState(room, userId, manager.clock.now(), hub.connectedUsers(code), {}, await hub.hostTeamPresence(room, userId));
+  };
   const memberOf = (room: Awaited<ReturnType<RoomManager['loadRoom']>>, userId: string) => {
     requireThat(room.teams.some(t => t.userId === userId), 'NOT_ROOM_MEMBER',
       'You are not a member of this auction. Use Join Auction Room to join a lobby.', 403);
   };
-  const presenceOf = (room: Awaited<ReturnType<RoomManager['loadRoom']>>) => {
-    const online = new Set(hub.connectedUsers(room.code));
-    return Object.fromEntries(room.teams.map(t => [t.userId, { connected: online.has(t.userId), lastSeenAt: null as number | null }]));
-  };
+  const presenceOf = (room: Awaited<ReturnType<RoomManager['loadRoom']>>) => hub.presenceFor(room.code);
   // Ongoing auctions of the caller: summaries only, never snapshots. COMPLETED and CLOSED rooms are excluded by the repository.
   app.get('/api/me/rooms', async request => {
     const now = manager.clock.now();
@@ -36,7 +36,7 @@ export function registerRoomRoutes(app: FastifyInstance, manager: RoomManager, r
   app.get('/api/rooms/:code/summary', async request => {
     const room = await manager.loadRoom(params.parse(request.params).code);
     memberOf(room, request.auth.userId);
-    return roomDetails(room, request.auth.userId, manager.clock.now(), presenceOf(room));
+    return roomDetails(room, request.auth.userId, manager.clock.now(), await presenceOf(room));
   });
   // Read-only and idempotent: reconnects an existing member to the room they already belong to. Never creates a team.
   app.post('/api/rooms/:code/rejoin', { config: { rateLimit: { max: 30, timeWindow: '1 minute' } } }, async request => {

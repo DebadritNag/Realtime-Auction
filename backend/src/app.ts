@@ -20,6 +20,7 @@ import { AuctionEngine } from './modules/auction/auction.engine.js';
 import { TimerService, systemClock, type Clock } from './modules/auction/timer.service.js';
 import { DeterministicRecommendationService, type AuctionRecommendationService } from './modules/recommendations/recommendation.service.js';
 import { RealtimeHub } from './realtime/hub.js';
+import type { PresenceStore } from './realtime/presence.js';
 import { registerRoomRoutes } from './modules/rooms/room.routes.js';
 import type { Fc26Catalog } from './modules/fc26/fc26.catalog.js';
 import { registerFc26Routes } from './modules/fc26/fc26.routes.js';
@@ -31,11 +32,11 @@ export interface AppOptions {
   managerRepository?: ManagerTournamentRepository; managerIdentities?: ManagerIdentityRepository;
   database?: Sql; authService: AuthService; repository?: RoomRepository; playerRepository?: PlayerRepository;
   recommendationService?: AuctionRecommendationService; origins?: string[]; fc26?: Fc26Catalog; retentionLedger?: RetentionLedger;
-  clock?: Clock; timersEnabled?: boolean; logger?: boolean; logLevel?: string;
+  clock?: Clock; timersEnabled?: boolean; logger?: boolean; logLevel?: string; logStream?: { write(message: string): void }; presenceStore?: PresenceStore;
 }
 export async function buildApp(options: AppOptions) {
   const app = Fastify({
-    logger: options.logger === false ? false : { level: options.logLevel ?? 'info',
+    logger: options.logger === false ? false : { level: options.logLevel ?? 'info', ...(options.logStream ? { stream: options.logStream } : {}),
       // Never serialize the URL query, headers, request body or raw token-bearing errors.
       serializers: { req: request => ({ method: request.method, url: request.url?.split('?')[0], id: request.id }),
         err: error => ({ type: error.name, code: error.code, message: 'Request error', stack: '' }) },
@@ -45,7 +46,9 @@ export async function buildApp(options: AppOptions) {
   const origins = options.origins ?? ['http://localhost:3000', 'http://localhost:5173'];
   await app.register(cors, { origin: origins, methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'] });
   await app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
-  await app.register(websocket, { options: { maxPayload: 16 * 1024, perMessageDeflate: false } });
+  await app.register(websocket, { options: { maxPayload: 16 * 1024, perMessageDeflate: false,
+    // Only the fixed marker protocol is ever selected; the bearer entry is never echoed back.
+    handleProtocols: (protocols: Set<string>) => protocols.has('auction.v1') ? 'auction.v1' : false } });
   const clock = options.clock ?? systemClock;
   const auctionRepository = options.repository ?? new MemoryRoomRepository();
   const managerMode = new ManagerModeService(options.managerRepository ?? new UnavailableManagerRepository(), options.managerAuctionSource ?? (async id => (await auctionRepository.listRecoverable()).find(r => r.id === id) ?? null), options.managerIdentities, options.managerPrepareAuction, options.negotiationDialogue,app.log);
@@ -60,7 +63,7 @@ export async function buildApp(options: AppOptions) {
     // Write-behind: the room snapshot is authoritative; ledger failures never reach the commit.
     if (options.retentionLedger && hasRetentionEvents(events)) void options.retentionLedger.sync(room).catch(() => undefined);
   });
-  const hub = new RealtimeHub(manager, engine, app.log, managerMode);
+  const hub = new RealtimeHub(manager, engine, app.log, managerMode, options.presenceStore);
   const recovered = await manager.recover();
   if (options.retentionLedger) for (const room of recovered) if (room.retention) void options.retentionLedger.sync(room).catch(() => undefined);
   if (options.timersEnabled !== false) for (const room of recovered) timers.schedule(room);
@@ -75,6 +78,12 @@ export async function buildApp(options: AppOptions) {
     const authorization = request.headers.authorization;
     if (authorization?.startsWith('Bearer ')) token = authorization.slice(7);
     if (isSocket) {
+      // Browser clients send Sec-WebSocket-Protocol: auction.v1, bearer.<jwt>; the ?token= query is deprecated.
+      const offered = String(request.headers['sec-websocket-protocol'] ?? '').split(',').map(s => s.trim()).find(s => s.startsWith('bearer.'));
+      if (!token && offered) {
+        requireThat(String(request.headers['sec-websocket-protocol']).split(',').some(s => s.trim() === 'auction.v1'), 'UNAUTHENTICATED', 'Unsupported websocket protocol.', 400);
+        token = offered.slice(7);
+      }
       const query = z.object({ token: z.string().min(1).max(8192).optional() }).strict().parse(request.query);
       token ??= query.token;
     }

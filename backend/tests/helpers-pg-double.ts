@@ -6,6 +6,8 @@ interface Row { code: string; room_id: string; host_user_id: string; status: str
 export class FakeLiveSql {
   rows = new Map<string, Row>();
   tables = new Set<string>();
+  /** live_room_presence rows keyed by code|userId, value = last_seen_at in ms. */
+  presence = new Map<string, number>();
   now = Date.now();
   readonly fn: Sql;
   constructor() {
@@ -42,6 +44,11 @@ export class FakeLiveSql {
       const gone = [...this.rows.values()].filter(r => r.status === 'LOBBY' && r.updated_at < cutoff);
       for (const r of gone) this.rows.delete(r.code);
       return gone.map(r => ({ code: r.code }));
+    }
+    if (text === 'select user_id, (extract(epoch from last_seen_at) * 1000)::bigint as at from public.live_room_presence where room_code=?')
+      return [...this.presence].filter(([k]) => k.startsWith(v[0] + '|')).map(([k, at]) => ({ user_id: k.slice(String(v[0]).length + 1), at: String(at) }));
+    if (text === 'insert into public.live_room_presence (room_code, user_id, last_seen_at) values (?, ?, to_timestamp(?::double precision / 1000)) on conflict (room_code, user_id) do update set last_seen_at = excluded.last_seen_at') {
+      this.presence.set(v[0] + '|' + v[1], Number(v[2])); return [];
     }
     if (text === 'select 1 from public.live_room_snapshots limit 1') return [];
     throw new Error(`FakeLiveSql: unsupported statement: ${text}`);

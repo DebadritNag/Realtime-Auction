@@ -10,7 +10,8 @@ import type { AuthContext, Room, ServerEvent } from '../domain/types.js';
 import { DomainError, requireThat } from '../domain/errors.js';
 import type { RoomManager } from '../modules/rooms/room.manager.js';
 import type { AuctionEngine } from '../modules/auction/auction.engine.js';
-import { roomState } from '../modules/rooms/room-state.js';
+import { roomState, type TeamPresenceEntry } from '../modules/rooms/room-state.js';
+import { MemoryPresenceStore, PresenceTracker, type PresenceStore, type PresenceView } from './presence.js';
 import { requireMember } from '../modules/rooms/room.service.js';
 import { clientMessageSchema, type ClientMessage } from './protocol.js';
 import { commandSchema } from '../modules/auction/auction.schemas.js';
@@ -19,8 +20,9 @@ import { UserThrottle } from '../utils/throttle.js';
 interface Connection {
   managerSignatures?:Record<string,string>;
   managerState?:TournamentState; managerTournament?: string; managerInbox?: boolean; id: string; socket: WebSocket; auth: AuthContext; rooms: Set<string>; lastSeen: number;
-  deltaUpdates?:boolean; connectedAt:number;notified:Set<string>; alive: boolean; pending: number; chain: Promise<void>;
+  deltaUpdates?:boolean; connectedAt:number;notified:Set<string>; alive: boolean; pending: number; chain: Promise<void>; closed?: boolean;
 }
+export const MAX_CONNECTIONS_PER_USER = 8;
 export class RealtimeHub {
   private readonly connections = new Map<string, Connection>();
   private readonly throttle = new UserThrottle();
@@ -30,7 +32,9 @@ export class RealtimeHub {
   private pendingManager=new Map<string,{t:Tournament;event:string}>();
   private managerFlush:ReturnType<typeof setTimeout>|undefined;
   private readonly lag=monitorEventLoopDelay({resolution:20});
-  constructor(private manager: RoomManager, private engine: AuctionEngine, private logger: FastifyBaseLogger, private managerMode: ManagerModeService) {
+  private readonly tracker: PresenceTracker;
+  constructor(private manager: RoomManager, private engine: AuctionEngine, private logger: FastifyBaseLogger, private managerMode: ManagerModeService, presenceStore: PresenceStore = new MemoryPresenceStore()) {
+    this.tracker = new PresenceTracker(presenceStore, () => manager.clock.now());
     this.unsubscribeManager = managerMode.subscribe((t,event,audience) => {
       if(event==='MANAGER_MODE_DELETED')this.pendingManager.delete(t.id);
       if(['MANAGER_MODE_CREATED','MANAGER_MODE_UPDATED'].includes(event)){
@@ -50,7 +54,8 @@ export class RealtimeHub {
     this.heartbeat = setInterval(() => {
       this.logger.info({event:'realtime_health',activeWsConnections:this.connections.size,eventLoopLagMs:Number((this.lag.mean/1e6).toFixed(2)),eventLoopLagP99Ms:Number((this.lag.percentile(99)/1e6).toFixed(2)),rssBytes:process.memoryUsage().rss},'Realtime health');this.lag.reset();
       for (const connection of this.connections.values()) {
-        if (!connection.alive || (connection.auth.expiresAt !== undefined && connection.auth.expiresAt <= Date.now())) {
+        if (connection.auth.expiresAt !== undefined && connection.auth.expiresAt <= Date.now()) { this.expire(connection); continue; }
+        if (!connection.alive) {
           connection.socket.close(4001, 'Heartbeat or authentication expired');
           connection.socket.terminate();
           continue;
@@ -88,6 +93,31 @@ export class RealtimeHub {
   connectedUsers(code: string): string[] {
     return [...new Set([...this.connections.values()].filter(c => c.rooms.has(code)).map(c => c.auth.userId))];
   }
+  /** Per-user connected flag and last-seen time for a room, loading persisted last-seen first. */
+  async presenceFor(code: string): Promise<Record<string, PresenceView>> { await this.tracker.ensureLoaded(code); return this.tracker.snapshot(code); }
+  /** Per-team presence for the host viewer only; undefined for everyone else. */
+  async hostTeamPresence(room: Room, viewerUserId: string): Promise<TeamPresenceEntry[] | undefined> {
+    if (room.hostUserId !== viewerUserId) return undefined;
+    await this.tracker.ensureLoaded(room.code);
+    return this.teamPresence(room);
+  }
+  private teamPresence(room: Room): TeamPresenceEntry[] {
+    const view = this.tracker.snapshot(room.code), names = this.usernames(room.code);
+    return room.teams.map(t => ({ teamId: t.id, userId: t.userId, managerUsername: names[t.userId] || t.managerUsername || '',
+      connected: view[t.userId]?.connected ?? false, lastSeenAt: view[t.userId]?.lastSeenAt ?? null }));
+  }
+  private expire(connection: Connection): void {
+    this.send(connection, this.envelope('ERROR', { reason: 'UNAUTHENTICATED', message: 'Your session expired. Sign in again.' }));
+    connection.socket.close(4001, 'Authentication expired');
+    setTimeout(() => connection.socket.terminate(), 1000).unref();
+  }
+  private drop(connection: Connection): void {
+    if (connection.closed) return;
+    connection.closed = true;
+    this.connections.delete(connection.id);
+    for (const code of connection.rooms) this.tracker.disconnect(code, connection.auth.userId);
+    for (const code of connection.rooms) void this.presence(code);
+  }
   /** Map of userId → username for all connections subscribed to a room code. */
   private usernames(code: string): Record<string, string> {
     const map: Record<string, string> = {};
@@ -109,13 +139,15 @@ export class RealtimeHub {
   private sendState(connection: Connection, room: Room, requestId?: string): void {
     this.send(connection, { type: 'ROOM_STATE', roomId: room.id, sequence: room.sequence,
       serverTime: this.manager.clock.now(), requestId,
-      payload: roomState(room, connection.auth.userId, this.manager.clock.now(), this.connectedUsers(room.code), this.usernames(room.code)) });
+      payload: roomState(room, connection.auth.userId, this.manager.clock.now(), this.connectedUsers(room.code), this.usernames(room.code),
+        room.hostUserId === connection.auth.userId ? this.teamPresence(room) : undefined) });
   }
   private broadcast(room: Room, events: ServerEvent[]): void {
     for (const connection of this.connections.values()) {
       if (!connection.rooms.has(room.code)) continue;
       if (!room.teams.some(t => t.userId === connection.auth.userId)) {
         connection.rooms.delete(room.code);
+        this.tracker.disconnect(room.code, connection.auth.userId);
         this.send(connection, this.envelope('ERROR', { reason: 'NOT_ROOM_MEMBER', message: 'Room membership ended.' }));
         continue;
       }
@@ -126,24 +158,31 @@ export class RealtimeHub {
   private async presence(code: string): Promise<void> {
     try {
       const room = await this.manager.loadRoom(code);
-      const event: ServerEvent = { type: 'PRESENCE_UPDATED', roomId: room.id, sequence: room.sequence,
-        serverTime: this.manager.clock.now(), payload: { connectedUsers: this.connectedUsers(code) } };
-      for (const connection of this.connections.values()) if (connection.rooms.has(code)) this.send(connection, event);
+      const connectedUsers = this.connectedUsers(code), teamPresence = this.teamPresence(room);
+      for (const connection of this.connections.values()) {
+        if (!connection.rooms.has(code)) continue;
+        this.send(connection, { type: 'PRESENCE_UPDATED', roomId: room.id, sequence: room.sequence, serverTime: this.manager.clock.now(),
+          payload: room.hostUserId === connection.auth.userId ? { connectedUsers, teamPresence } : { connectedUsers } });
+      }
     } catch { /* room may have been removed during shutdown */ }
   }
   attach(socket: WebSocket, auth: AuthContext): void {
     const connection: Connection = { id: randomUUID(), socket, auth, rooms: new Set(), lastSeen: Date.now(),
       connectedAt:Date.now(),notified:new Set(),alive: true, pending: 0, chain: Promise.resolve() };
+    const own = [...this.connections.values()].filter(c => c.auth.userId === auth.userId);
+    for (const old of own.slice(0, Math.max(0, own.length - (MAX_CONNECTIONS_PER_USER - 1)))) {
+      this.send(old, this.envelope('ERROR', { reason: 'CONNECTION_SUPERSEDED', message: 'Too many open connections; this one was closed.' }));
+      old.socket.close(4003, 'Superseded');
+      this.drop(old);
+    }
     this.connections.set(connection.id, connection);
     socket.on('pong', () => { connection.alive = true; connection.lastSeen = Date.now(); });
     socket.on('error', () => socket.terminate());
-    socket.on('close', () => {
-      this.connections.delete(connection.id);
-      for (const code of connection.rooms) void this.presence(code);
-    });
+    socket.on('close', () => this.drop(connection));
     // Handlers are attached synchronously; auth already ran in Fastify preValidation.
     socket.on('message', (raw, binary) => {
       if (connection.pending >= 32) { socket.close(1013, 'Too many pending commands'); return; }
+      if (auth.expiresAt !== undefined && auth.expiresAt <= Date.now()) { this.expire(connection); return; }
       connection.pending++;
       connection.chain = connection.chain.then(async () => {
         let command: ClientMessage | undefined;
@@ -181,7 +220,8 @@ export class RealtimeHub {
     if (command.type === 'JOIN_ROOM' || command.type === 'REJOIN_ROOM' || command.type === 'REQUEST_STATE') {
       const room = await this.manager.loadRoom(code);
       requireMember(room, connection.auth.userId);
-      connection.rooms.add(code);
+      await this.tracker.ensureLoaded(code);
+      if (!connection.rooms.has(code)) { connection.rooms.add(code); this.tracker.connect(code, connection.auth.userId); }
       this.sendState(connection, room, command.requestId);
       await this.presence(code);
       return;

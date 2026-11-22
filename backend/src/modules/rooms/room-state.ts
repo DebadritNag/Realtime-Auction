@@ -94,7 +94,7 @@ export function recentBids(room: Room) {
   return room.bids.filter(b => b.playerId === playerId).slice(-RECENT_BID_LIMIT).reverse().map(b => ({
     id: b.id, teamId: b.teamId, teamName: room.teams.find(t => t.id === b.teamId)?.name ?? '', amountCr: toCr(b.amountUnits), at: b.at }));
 }
-export interface TeamPresenceEntry { teamId: string; connected: boolean; lastSeenAt: number | null; managerUsername: string }
+export interface TeamPresenceEntry { teamId: string; userId?: string; connected: boolean; lastSeenAt: number | null; managerUsername: string }
 
 export function roomState(room: Room, userId: string, serverTime: number, connectedUsers: string[] = [], usernames: Record<string, string> = {},
   teamPresence?: TeamPresenceEntry[]) {

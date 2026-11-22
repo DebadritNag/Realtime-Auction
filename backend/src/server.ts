@@ -14,6 +14,7 @@ import type { RoomRepository } from './repositories/interfaces.js';
 import { CatalogPlayerRepository } from './modules/players/player.service.js';
 import { connectDatabase } from './repositories/postgres.js';
 import { resolveFc26Config } from './modules/fc26/fc26.config.js';
+import { PostgresPresenceStore } from './realtime/presence.js';
 import { PostgresRetentionLedger } from './modules/retention/retention.ledger.js';
 import { MemoryFc26Catalog, PostgresFc26Catalog, type Fc26Catalog } from './modules/fc26/fc26.catalog.js';
 
@@ -88,7 +89,9 @@ if(liveRepository){
 const auctionRepository:RoomRepository=liveRepository??(env.STORAGE==='file'?new FileRoomRepository(env.DATA_DIR):new MemoryRoomRepository());
 const auctionSource=(id:string)=>loadManagerAuction(managerDb,auctionRepository,id,app.log);
 const retentionLedger = managerDb ? new PostgresRetentionLedger(managerDb) : undefined;
+const presenceStore = managerDb ? new PostgresPresenceStore(managerDb) : undefined;
 const { app } = await buildApp({
+  presenceStore,
   retentionLedger,
   managerAuctionSource: auctionSource,
   managerPrepareAuction: managerDb ? async(id,user)=>{const room=await auctionRepository.findById(id);if(room)await archiveCompletedAuction(managerDb,room,user);} : undefined,
@@ -105,6 +108,8 @@ const { app } = await buildApp({
 });
 
 retentionLedger?.setLogger(app.log);
+presenceStore?.setWarn(message => app.log.warn(message));
+presenceStore?.setWarn(message => app.log.warn(message));
 if(managerRepository instanceof PostgresManagerRepository)managerRepository.setLogger(app.log);
 if(liveRepository&&env.LIVE_ROOM_LOBBY_TTL_DAYS>0){
   // Only LOBBY rooms untouched for the TTL are deleted. The first run is delayed, never at startup.

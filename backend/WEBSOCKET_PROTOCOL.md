@@ -1,6 +1,18 @@
 # WebSocket protocol v1
 
-Native WebSocket at `/ws?token=<URL-encoded-access-token>`. An Authorization Bearer header is also accepted for non-browser clients. Origin must exactly match an allowed frontend origin. Authentication occurs before upgrade.
+Native WebSocket at `/ws`. Browsers authenticate with `Sec-WebSocket-Protocol: auction.v1, bearer.<access-token>` (the server selects only `auction.v1` and never echoes the token; `bearer.` without `auction.v1` is rejected with 400). An Authorization Bearer header is accepted for non-browser clients. The `?token=<URL-encoded-access-token>` query is **deprecated**; it still works, and the server logger strips the query string. Order of precedence: Authorization header, subprotocol, query. Origin must exactly match an allowed frontend origin. Authentication occurs before upgrade.
+
+Close codes: `4001` authentication expired or heartbeat lost (an `ERROR` with reason `UNAUTHENTICATED` and message "Your session expired. Sign in again." is sent first when the token expired); `4003` superseded. A user may hold at most 8 sockets; opening a 9th sends `ERROR` reason `CONNECTION_SUPERSEDED` to the oldest and closes it with 4003. Clients must not auto-reconnect after 4003.
+
+Reconnect rules: `REJOIN_ROOM` / `JOIN_ROOM` / `REQUEST_STATE` are read-only and idempotent. They verify membership, subscribe the socket and return `ROOM_STATE`; they never create a team, change `sequence`, `endsAt`, bids or status. The team identity always comes from the token, never from the payload. Repeated rejoins on one socket count once in presence.
+
+Timer across a server restart: `endsAt` is an absolute wall-clock deadline and keeps running while the server is down. On boot an overdue lot is resolved exactly once (sold to the highest bidder, else unsold) and an overdue `nextPlayerAt` activates one next player. Bids at or after `endsAt` get `TIMER_EXPIRED`. PAUSED rooms keep `remainingTimeMs` and no timer is scheduled; `RESUME_AUCTION` sets `endsAt = now + remainingTimeMs`. There is no grace extension and no implicit pause.
+
+Host policy: there is no host transfer and no automatic pause when the host disconnects. Only the host can pause, resume or end.
+
+Presence: `PRESENCE_UPDATED` is sent per connection. Everyone receives `{connectedUsers}`. The host additionally receives `teamPresence: [{teamId, userId, managerUsername, connected, lastSeenAt}]` (`lastSeenAt` epoch ms or null). Host `ROOM_STATE` carries the same `teamPresence`; other viewers never receive it. Last-seen is persisted in `public.live_room_presence` (best effort; memory fallback). Disconnected teams are never removed.
+
+`ROOM_STATE` additionally carries `activity` (<=60 entries, newest first), `recentBids` (<=20, active player, newest first), `lastActivityAt`, `ongoingStatus` and `resumePath`.
 
 ## Envelopes
 
