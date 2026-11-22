@@ -17,12 +17,12 @@ export interface Fc26ImportReport {
   filesRead: number; missingFiles: string[]; rowsRead: number; imported: number; skippedDuplicates: number;
   invalidRows: Fc26InvalidRow[]; perFile: Record<Fc26SourceCategory, Fc26FileReport>; underdogImported: number;
 }
-interface ParsedEntry { source: Fc26SourceCategory; fileName: string; row: Record<string, string>; positions: string[]; overall: number; id: string }
+export interface ParsedEntry { source: Fc26SourceCategory; fileName: string; row: Record<string, string>; positions: string[]; overall: number; id: string }
 export interface Fc26ReadResult { entries: ParsedEntry[]; files: Fc26FileReport[]; missingFiles: string[]; invalidRows: Fc26InvalidRow[]; rowsRead: number }
 
 const REQUIRED_HEADERS = ['player_id', 'player_positions', 'overall'];
 const MAX_FILE_BYTES = 25_000_000;
-const rowSchema = z.object({
+export const fc26RowSchema = z.object({
   player_id: z.string().regex(/^\d{1,12}$/, 'player_id must be numeric'),
   short_name: z.string().max(100).optional(),
   long_name: z.string().max(200).optional(),
@@ -67,7 +67,7 @@ export async function readFc26Files(config: Fc26Config, read: (path: string) => 
     records.forEach((row, index) => {
       report.rows++; result.rowsRead++;
       const invalid = (reason: string) => { report.invalid++; result.invalidRows.push({ file: file.name, row: index + 2, reason }); };
-      const parsed = rowSchema.safeParse(row);
+      const parsed = fc26RowSchema.safeParse(row);
       if (!parsed.success) return invalid(parsed.error.issues[0]?.message ?? 'Invalid row.');
       const positions = parsed.data.player_positions.split(/[,;]/).map(p => p.trim().toUpperCase()).filter(isKnownPosition);
       if (positions.length === 0) return invalid('No recognised position in player_positions.');
@@ -78,7 +78,7 @@ export async function readFc26Files(config: Fc26Config, read: (path: string) => 
   return result;
 }
 
-function toRecord(winner: ParsedEntry, sources: Fc26SourceCategory[], threshold: number): Fc26Record {
+export function fc26RecordFromEntry(winner: ParsedEntry, sources: Fc26SourceCategory[], threshold: number): Fc26Record {
   const { row } = winner;
   const { pot, sourceCategory } = assignPot(winner.positions[0]!, sources);
   const draftPool: DraftPool = sourceCategory === 'UNDERDOG' ? 'UNDERDOG' : 'REGULAR';
@@ -127,7 +127,7 @@ export function buildFc26Records(entries: readonly ParsedEntry[], threshold: num
     const underdog = list.find(e => e.source === 'UNDERDOG');
     const natural = assignPot(list[0]!.positions[0]!, sources).sourceCategory;
     const winner = underdog ?? list.find(e => e.source === natural) ?? [...list].sort((a, b) => rank(a.source) - rank(b.source))[0]!;
-    return toRecord(winner, sources, threshold);
+    return fc26RecordFromEntry(winner, sources, threshold);
   });
 }
 

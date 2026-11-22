@@ -6,6 +6,7 @@ import type { Player } from '../../domain/types.js';
 import type { PlayerRepository } from '../../repositories/interfaces.js';
 import type { RoomSettings } from '../../schemas/settings.js';
 import { toUnits } from '../../domain/money.js';
+import { defaultPoolBasePriceCr } from '../../domain/pricing.js';
 
 export const playerSchema = z.object({
   id: z.string().min(1).max(100),
@@ -92,7 +93,7 @@ export function csvRowToPlayer(row: Record<string, string>): Player {
     auctionGroup === 'GK' || auctionGroup === 'DEF' || auctionGroup === 'MID' ? auctionGroup : 'FWD';
 
   const ovr = parseInt(row.overall ?? '', 10) || 75;
-  const basePriceCr = parseFloat(row.base_price_cr ?? '') || (ovr >= 90 ? 9 : ovr >= 87 ? 7 : ovr >= 84 ? 5 : ovr >= 81 ? 2 : 1);
+  const basePriceCr = parseFloat(row.base_price_cr ?? '') || defaultPoolBasePriceCr(ovr);
   const basePriceUnits = toUnits(basePriceCr);
 
   const stats: Record<string, number> = {};

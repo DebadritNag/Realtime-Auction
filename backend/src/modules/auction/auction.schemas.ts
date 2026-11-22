@@ -14,6 +14,8 @@ export const commandSchema = z.discriminatedUnion('type', [
     payload: z.object({ ...common, playerId: z.string().min(1).max(100) }).strict() }).strict()),
   z.object({ type: z.literal('RECALL_PLAYERS'), requestId: z.string().min(1).max(100).optional(),
     payload: z.object({ ...common, playerIds: z.array(z.string().min(1).max(100)).min(1).max(2000) }).strict() }).strict(),
+  z.object({ type: z.literal('RELEASE_POOL_ADDITIONS'), requestId: z.string().min(1).max(100).optional(),
+    payload: z.object({ ...common, playerIds: z.array(z.string().min(1).max(100)).min(1).max(2000).optional() }).strict() }).strict(),
   z.object({ type: z.literal('KICK_MEMBER'), requestId: z.string().min(1).max(100).optional(),
     payload: z.object({ ...common, targetTeamId: z.string().uuid() }).strict() }).strict(),
   z.object({ type: z.literal('UPDATE_SETTINGS'), requestId: z.string().min(1).max(100).optional(),

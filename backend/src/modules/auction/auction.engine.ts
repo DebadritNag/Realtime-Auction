@@ -11,6 +11,7 @@ import { minimumNextBid, validateBid } from './bid.service.js';
 import { remainingBudget } from './budget.service.js';
 import { skipVoteState, updateSkipVote } from './skip-vote.service.js';
 import { commandSchema, type AuctionCommand } from './auction.schemas.js';
+import { followIds, hasSelectable, heldIds, regularWaiting } from './pool-import/pool-additions.js';
 import { assertRetentionSettingsUnlocked, completionAnnouncement, confirmTurn, draftPlayer, finalizeRetentions, pendingSpendUnits, purseAfterConfirmedUnits,
   removeDraft, requireRetentionOpenForMembership, resetRetentions, retentionPhase, skipTurn, startRetention, syncRetentionWithSettings,
   turnAnnouncement } from '../retention/retention.service.js';
@@ -80,7 +81,7 @@ export class AuctionEngine {
         if (result.unanimous) {
           this.resolve(room, events, 'UNANIMOUS_SKIP');
           // Unanimous skip advances after the usual transition delay, also in host-next rooms.
-          if (room.playerQueue.length || room.players.some(p => p.status === 'WAITING')) {
+          if (hasSelectable(room)) {
             room.nextPlayerAt = now + room.settings.transitionDelaySeconds * 1000;
           }
         }
@@ -164,8 +165,21 @@ export class AuctionEngine {
             if (!room.active && room.status === 'RUNNING' && room.nextPlayerAt === null) this.planNext(room);
             break;
           }
+          case 'RELEASE_POOL_ADDITIONS': {
+            requireThat(room.status === 'RUNNING' || room.status === 'PAUSED', 'INVALID_STATE', 'Additions can only be released during running or paused auctions.', 409);
+            const held = heldIds(room);
+            requireThat(held.length > 0, 'NO_HELD_ADDITIONS', 'No held additions to release.', 409);
+            const ids = command.payload.playerIds ?? held;
+            requireThat(new Set(ids).size === ids.length, 'DUPLICATE_PLAYER_IDS', 'Select each player only once.');
+            requireThat(ids.every(id => held.includes(id)), 'PLAYER_NOT_RELEASABLE', 'Selected players are not held additions.', 409);
+            for (const id of ids) room.players.find(p => p.id === id)!.poolMeta!.release = 'FOLLOW';
+            events.push({ type: 'POOL_ADDITIONS_RELEASED', payload: { playerIds: ids, count: ids.length } });
+            // Re-enter selection without interrupting the live lot or a pending transition.
+            if (!room.active && room.status === 'RUNNING' && room.nextPlayerAt === null) this.planNext(room);
+            break;
+          }
           case 'START_RECALL': {
-            requireThat(room.status === 'RUNNING' && !room.active && room.playerQueue.length === 0 && !room.players.some(p => p.status === 'WAITING'),
+            requireThat(room.status === 'RUNNING' && !room.active && !hasSelectable(room),
               'INVALID_STATE', 'Recall requires a running auction between completed rounds.', 409);
             const unsold = room.players.filter(p => p.status === 'UNSOLD');
             requireThat(unsold.length > 0, 'NO_UNSOLD_PLAYERS', 'No unsold players to recall.');
@@ -216,6 +230,7 @@ export class AuctionEngine {
               if (room.active) this.resolve(room, events);
               for (const player of room.players) if (player.status === 'WAITING') transitionPlayer(player, 'SKIPPED');
               room.playerQueue = [];
+              if (room.addedQueue) room.addedQueue = [];
               transitionRoom(room, 'COMPLETED');
               events.push({ type: 'AUCTION_COMPLETED' });
             }
@@ -254,8 +269,7 @@ export class AuctionEngine {
     });
   }
   private planNext(room: Room): void {
-    const hasWaiting = room.playerQueue.length > 0 || room.players.some(p => p.status === 'WAITING');
-    room.nextPlayerAt = room.settings.autoAdvance && hasWaiting
+    room.nextPlayerAt = room.settings.autoAdvance && hasSelectable(room)
       ? this.manager.clock.now() + room.settings.transitionDelaySeconds * 1000 : null;
     // An exhausted round deliberately remains RUNNING with no active player.
     // The host chooses START_RECALL or END_AUCTION.
@@ -272,36 +286,43 @@ export class AuctionEngine {
       // ── Normal round: pick randomly per player selection ─────────────────
       // 1. Build a map of potId → waiting players
       const byPot = new Map<string, typeof room.players>();
-      for (const p of room.players) {
-        if (p.status !== 'WAITING') continue;
+      for (const p of regularWaiting(room)) {
         const bucket = byPot.get(p.potId) ?? [];
         bucket.push(p);
         byPot.set(p.potId, bucket);
       }
 
       if (byPot.size === 0) {
-        // No waiting players — round is over
-        requireThat(false, 'NO_WAITING_PLAYERS', 'Round finished; recall unsold players or end auction.');
+        // Only live additions are left: released ones play in import order after every regular player.
+        const follow = followIds(room)[0];
+        requireThat(follow, 'NO_WAITING_PLAYERS', heldIds(room).length
+          ? 'Round finished; held additions await release, or recall unsold players, or end auction.'
+          : 'Round finished; recall unsold players or end auction.');
+        const followPot = room.players.find(p => p.id === follow)!.potId;
+        room.consecutivePotCount = followPot === room.lastPot ? (room.consecutivePotCount ?? 0) + 1 : 1;
+        room.lastPot = followPot;
+        room.addedQueue = room.addedQueue!.filter(id => id !== follow);
+        id = follow;
+      } else {
+        // 2. Apply anti-streak: if the same pot appeared twice in a row AND other
+        //    pots are available, temporarily exclude it from selection.
+        let eligiblePots = [...byPot.keys()];
+        const lastPot = room.lastPot;
+        const streak = room.consecutivePotCount ?? 0;
+        if (lastPot && streak >= 2 && eligiblePots.length > 1) {
+          eligiblePots = eligiblePots.filter(p => p !== lastPot);
+        }
+
+        // 3. Pick a random pot, then a random player from that pot
+        const pot = eligiblePots[Math.floor(Math.random() * eligiblePots.length)]!;
+        const candidates = byPot.get(pot)!;
+        const player = candidates[Math.floor(Math.random() * candidates.length)]!;
+        id = player.id;
+
+        // 4. Update anti-streak counters
+        room.consecutivePotCount = pot === lastPot ? streak + 1 : 1;
+        room.lastPot = pot;
       }
-
-      // 2. Apply anti-streak: if the same pot appeared twice in a row AND other
-      //    pots are available, temporarily exclude it from selection.
-      let eligiblePots = [...byPot.keys()];
-      const lastPot = room.lastPot;
-      const streak = room.consecutivePotCount ?? 0;
-      if (lastPot && streak >= 2 && eligiblePots.length > 1) {
-        eligiblePots = eligiblePots.filter(p => p !== lastPot);
-      }
-
-      // 3. Pick a random pot, then a random player from that pot
-      const pot = eligiblePots[Math.floor(Math.random() * eligiblePots.length)]!;
-      const candidates = byPot.get(pot)!;
-      const player = candidates[Math.floor(Math.random() * candidates.length)]!;
-      id = player.id;
-
-      // 4. Update anti-streak counters
-      room.consecutivePotCount = pot === lastPot ? streak + 1 : 1;
-      room.lastPot = pot;
     }
 
     requireThat(id, 'NO_WAITING_PLAYERS', 'Round finished; recall unsold players or end auction.');

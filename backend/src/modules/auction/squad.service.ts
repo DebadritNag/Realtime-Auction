@@ -25,6 +25,11 @@ export function assertRoom(room: Room): void {
   }
   invariant(new Set(room.playerQueue).size === room.playerQueue.length, 'Duplicate queue entry.');
   invariant(room.playerQueue.every(id => room.players.some(p => p.id === id && ['WAITING', 'UNSOLD'].includes(p.status))), 'Invalid queue entry.');
+  const added = room.addedQueue ?? [];
+  invariant(new Set(added).size === added.length, 'Duplicate added-queue entry.');
+  invariant(added.every(id => room.players.some(p => p.id === id && p.status === 'WAITING' && p.poolMeta) && !room.playerQueue.includes(id)), 'Invalid added-queue entry.');
+  const batches = room.poolImports ?? [];
+  invariant(new Set(batches.map(b => b.batchId)).size === batches.length, 'Duplicate pool import batch.');
   const owned = room.teams.flatMap(t => t.playerIds);
   invariant(new Set(owned).size === owned.length, 'Player owned more than once.');
   invariant(new Set(room.purchases.map(p => p.playerId)).size === room.purchases.length, 'Player sold more than once.');

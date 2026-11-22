@@ -12,7 +12,18 @@ export interface Player {
   fullName?: string; potential?: number; positions?: string[];
   draftPool?: 'REGULAR' | 'UNDERDOG'; playerTag?: 'UNDERDOG'; sourceCategory?: string; sourceCategories?: string[];
 }
-export interface AuctionPlayer extends Player { status: PlayerStatus; round: number; unsoldReason?: 'UNANIMOUS_SKIP' }
+/** Metadata of a player added to a live auction. FOLLOW plays after all regular waiting players; HELD waits for the host. */
+export interface PoolMeta {
+  poolStatus: 'PENDING'; importBatchId: string; importedAt: number; importedBy: string;
+  sourceFile: string; sourceCategory: string; release: 'FOLLOW' | 'HELD';
+}
+export interface AuctionPlayer extends Player { status: PlayerStatus; round: number; unsoldReason?: 'UNANIMOUS_SKIP'; poolMeta?: PoolMeta }
+export interface PoolImportRowResult { row: number; playerId: string; name: string; code: string; reason: string }
+export interface PoolImportBatch {
+  batchId: string; contentHash: string; at: number; by: string; sourceKind: 'CSV' | 'FC26_DATABASE' | 'DEFAULT_POOL';
+  sourceFile: string; totalRecords: number; addedPlayerIds: string[]; addedRows: { row: number; playerId: string }[]; categoryCounts: Record<string, number>; heldCount: number;
+  skipped: PoolImportRowResult[]; rejected: PoolImportRowResult[];
+}
 export interface Team {
   id: string; userId: string; managerUsername?: string; name: string; logoUrl?: string; logoEmoji?: string;
   startingBudgetUnits: number; spentUnits: number; playerIds: string[];
@@ -60,6 +71,8 @@ export interface Room {
   playerHistory?: { type: 'PLAYER_UNSOLD' | 'PLAYER_RECALLED'; playerId: string; round: number; at: number; userId?: string; reason?: 'UNANIMOUS_SKIP' }[];
   // Anti-streak tracking: track the last pot used and how many times in a row
   lastPot?: string; consecutivePotCount?: number;
+  /** Live additions in import order; played after every regular waiting player. Absent on old snapshots. */
+  addedQueue?: string[]; poolImports?: PoolImportBatch[];
   sequence: number; nextPlayerAt: number | null; receipts: Record<string, CommandReceipt>;
   /** Epoch ms of the last committed change; falls back to createdAt on old snapshots. */
   lastActivityAt?: number;
