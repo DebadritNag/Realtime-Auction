@@ -1,0 +1,25 @@
+﻿{
+    "id":  "FEAT-001",
+    "type":  "feat",
+    "description":  "Backend: restored-room pool always reflects the live catalog (Fc26Catalog.refresh used by restore preview/create, pool route and START of restored rooms) and restored rooms never have a retention phase (server forced OFF, retention commands rejected, ongoingStatus waits for unclaimed teams). Independent of FEAT-002 except for the shared test file; do it first.",
+    "status":  "completed",
+    "steps":  [
+                  "fc26.catalog.ts: add refresh(maxAgeMs=10000) to Fc26Catalog and IndexedFc26Catalog (track load time in ensure(), drop cache when older). Update any other Fc26Catalog implementers/mocks (grep).",
+                  "restore.routes.ts: await fc26.refresh() in catalogs() and in GET /api/rooms/:code/restore/pool. auction.engine.ts START_AUCTION: if room.restore, await fc26.refresh(0) before fc26.list().",
+                  "retention.service.ts: retentionPhase returns \u0027OFF\u0027 for restored rooms; requireEnabledLobby throws RETENTION_NOT_ENABLED for restored rooms. room-state.ts retentionState reports enabled false for restored rooms. room-summary.ts ongoingStatus: restored rooms with unclaimed teams are WAITING_FOR_TEAMS, never READY_TO_START.",
+                  "backend/tests/restore.test.ts: add describe(\u0027v2 pool and retention\u0027): a player added after the first list() appears in preview, pool route and the started auction; Openda and Neymar Jr are in the remaining pool and excluded when owned; START_RETENTION/FINALIZE_RETENTIONS rejected; state retention.enabled false; START works once all teams are claimed with no retention step; non-restored retention flow unchanged."
+              ],
+    "acceptance_criteria":  [
+                                "Preview, lobby pool and the started auction include catalog players added after the server first loaded the catalog, and exclude players owned by restored teams",
+                                "L. Openda and Neymar Jr are in the remaining pool of the template restore",
+                                "Restored rooms reject every retention command and expose no retention phase; START succeeds once all teams are claimed",
+                                "Non-restored rooms and existing retention tests behave as before"
+                            ],
+    "verification":  [
+                         "cd backend; npx tsc -p tsconfig.build.json --noEmit",
+                         "cd backend; npx vitest run tests/restore.test.ts",
+                         "cd backend; npx vitest run (baseline: 6 skip-vote failures and load-only timeouts are known)"
+                     ],
+    "blocked_reason":  null,
+    "findings":  "Catalog: Fc26Catalog.refresh(maxAgeMs=10000) added (IndexedFc26Catalog tracks loadedAt; only MemoryFc26Catalog/PostgresFc26Catalog implement it). Restore catalogs(), pool route call refresh(); START_AUCTION calls refresh(0) for restored rooms. Retention: retentionPhase returns OFF when room.restore; requireEnabledLobby and resetRetentions throw RETENTION_NOT_ENABLED for restored rooms; retentionState.enabled false; ongoingStatus WAITING_FOR_TEAMS while restored teams unclaimed. Tests: restore.test.ts setup(repository?, fc26?) now takes optional catalog (3rd-party test helper LiveCatalog subclass overrides load()); new describe \u0027v2 pool and retention\u0027 (3 tests). tsc OK; restore.test.ts 32/32 pass; full vitest 382 pass, 7 fail = known baseline (5 skip-vote + 1 integration skip-vote + manager-mode load timeout). Frontend still uses retention.enabled; server now reports false for restored rooms, FEAT-003 still should gate by !restore."
+}

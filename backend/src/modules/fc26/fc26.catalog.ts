@@ -14,6 +14,8 @@ export interface Fc26Catalog {
   /** Rating threshold used to price regular players; consumers recompute prices with it. */
   readonly topRatingThreshold: number;
   importAll(): Promise<Fc26ImportReport>;
+  /** Drops the cache when it is older than maxAgeMs so rows added to the database since the last load become visible. */
+  refresh(maxAgeMs?: number): Promise<void>;
   list(): Promise<Player[]>;
   get(id: string): Promise<Player | null>;
   search(query: Fc26SearchQuery): Promise<Fc26SearchResult>;
@@ -32,7 +34,11 @@ abstract class IndexedFc26Catalog implements Fc26Catalog {
   /** Persist records not stored yet and return the ids that were newly stored. */
   protected abstract persist(records: Fc26Record[]): Promise<Set<string>>;
   protected abstract load(): Promise<Player[]>;
+  private loadedAt = 0;
   protected invalidate(): void { this.cache = null; }
+  async refresh(maxAgeMs = 10_000): Promise<void> {
+    if (this.cache && Date.now() - this.loadedAt >= maxAgeMs) this.invalidate();
+  }
   /** Prices are always recomputed from rating and draft pool; stored values are never trusted. */
   private normalize(player: Player): Player {
     const draftPool: DraftPool = player.draftPool === 'UNDERDOG' ? 'UNDERDOG' : 'REGULAR';
@@ -42,6 +48,7 @@ abstract class IndexedFc26Catalog implements Fc26Catalog {
     if (this.cache) return this.cache;
     const players = (await this.load()).map(p => this.normalize(p)).sort((a, b) => b.ovr - a.ovr || a.name.localeCompare(b.name));
     this.cache = { players, byId: new Map(players.map(p => [p.id, p])), index: new Map(players.map(p => [p.id, haystack(p)])) };
+    this.loadedAt = Date.now();
     return this.cache;
   }
   async importAll(): Promise<Fc26ImportReport> {

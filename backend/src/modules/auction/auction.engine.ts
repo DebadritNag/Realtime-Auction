@@ -102,6 +102,7 @@ export class AuctionEngine {
               // Players already owned (for example retained before the auction) stay in the room and leave the pool.
               const kept = room.players.filter(p => p.status === 'SOLD');
               const taken = new Set(kept.map(p => p.id));
+              if (room.restore) await fc26.refresh(0);
               const pool = (await fc26.list()).filter(p => !taken.has(p.id) && (!playerIds || playerIds.includes(p.id)) && (!potIds || potIds.includes(p.potId)));
               requireThat(pool.length > 0, 'EMPTY_PLAYER_POOL', 'Player pool is empty.');
               if (playerIds) requireThat(playerIds.every(id => taken.has(id) || pool.some(p => p.id === id)),

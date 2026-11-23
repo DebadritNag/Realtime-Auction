@@ -2,6 +2,7 @@ import type { Room } from '../../domain/types.js';
 import { toCr } from '../../domain/money.js';
 import { publicTeam } from '../teams/team.service.js';
 import { retentionPhase } from '../retention/retention.service.js';
+import { isUnclaimed } from '../restore/restore.claims.js';
 
 export type OngoingStatus = 'NOT_STARTED' | 'WAITING_FOR_TEAMS' | 'RETENTION_IN_PROGRESS' | 'READY_TO_START'
   | 'LIVE_AUCTION' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
@@ -16,6 +17,7 @@ export function ongoingStatus(room: Room): OngoingStatus {
   if (phase === 'TEAM_SELECTING' || phase === 'ALL_TEAMS_COMPLETED') return 'RETENTION_IN_PROGRESS';
   const enough = room.teams.length >= room.settings.minimumParticipants;
   if (!enough) return room.teams.length <= 1 ? 'NOT_STARTED' : 'WAITING_FOR_TEAMS';
+  if (room.restore && room.teams.some(isUnclaimed)) return 'WAITING_FOR_TEAMS';
   return phase === 'OFF' || phase === 'FINALIZED' ? 'READY_TO_START' : 'NOT_STARTED';
 }
 

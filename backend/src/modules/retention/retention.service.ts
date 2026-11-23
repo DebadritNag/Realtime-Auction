@@ -11,7 +11,7 @@ import type { RoomSettings } from '../../schemas/settings.js';
  * Money and squads change only at finalize: drafts and confirmed picks live in room.retention.
  */
 export const retentionPhase = (room: Room): 'OFF' | RetentionPhase =>
-  !room.settings.retention.enabled ? 'OFF' : room.retention?.phase ?? 'NOT_STARTED';
+  room.restore || !room.settings.retention.enabled ? 'OFF' : room.retention?.phase ?? 'NOT_STARTED';
 export const confirmedPicks = (room: Room, teamId: string): RetentionPick[] => (room.retention?.picks ?? []).filter(p => p.teamId === teamId);
 export const teamDrafts = (room: Room, teamId: string): RetentionDraft[] => (room.retention?.drafts ?? []).filter(d => d.teamId === teamId);
 export const confirmedSpendUnits = (room: Room, teamId: string): number => confirmedPicks(room, teamId).reduce((sum, p) => sum + p.priceUnits, 0);
@@ -27,7 +27,7 @@ const draftsOf = (r: RoomRetention): RetentionDraft[] => (r.drafts ??= []);
 
 function requireEnabledLobby(room: Room): RoomRetention {
   requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Retention is only available in the lobby.', 409);
-  requireThat(room.settings.retention.enabled, 'RETENTION_NOT_ENABLED', 'Player retention is not enabled for this auction.', 409);
+  requireThat(room.settings.retention.enabled && !room.restore, 'RETENTION_NOT_ENABLED', 'Player retention is not enabled for this auction.', 409);
   return ensure(room);
 }
 /** Resolves the team whose turn it is and checks that `actor` may act for it. The host may skip for the active team. */
@@ -159,7 +159,7 @@ function dematerialize(room: Room, picks: RetentionPick[]): void {
 /** Host reset in the lobby: reverses a finalized state and returns to NOT_STARTED. */
 export function resetRetentions(room: Room): RetentionPick[] {
   requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Retention can only be reset in the lobby.', 409);
-  requireThat(room.settings.retention.enabled, 'RETENTION_NOT_ENABLED', 'Player retention is not enabled for this auction.', 409);
+  requireThat(room.settings.retention.enabled && !room.restore, 'RETENTION_NOT_ENABLED', 'Player retention is not enabled for this auction.', 409);
   const retention = ensure(room);
   const removed = [...retention.picks];
   if (retention.phase === 'FINALIZED') dematerialize(room, removed);

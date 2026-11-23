@@ -29,7 +29,7 @@ function retentionState(room: Room, viewer: Team) {
     return turn ? (turn.kind === 'SKIPPED' ? 'SKIPPED' : 'COMPLETED') : teamId === activeTeamId ? 'ACTIVE' : 'PENDING';
   };
   return {
-    enabled: room.settings.retention.enabled,
+    enabled: room.settings.retention.enabled && !room.restore,
     config: { priceCr: RETENTION_PRICE_CR, maxPerTeam: RETENTION_MAX_PER_TEAM, minPerTeam: RETENTION_MIN_PER_TEAM },
     phase,
     order: order.map((teamId, index) => ({ teamId, name: teamName(teamId) ?? '', order: index + 1, turnStatus: status(teamId) })),

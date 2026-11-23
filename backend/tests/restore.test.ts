@@ -43,10 +43,10 @@ beforeAll(async () => {
 }, 120_000);
 const apps: { close(): Promise<unknown> }[] = [];
 afterEach(async () => { while (apps.length) await apps.pop()!.close(); });
-async function setup(repository?: MemoryRoomRepository | FileRoomRepository) {
+async function setup(repository?: MemoryRoomRepository | FileRoomRepository, fc26: MemoryFc26Catalog = catalog) {
   const clock = { value: 1_000_000, now() { return this.value; } };
   const built = await buildApp({ authService: new StaticTokenAuthService(new Map(USERS.map(u => [u, { userId: u, username: u + '-name' }]))),
-    fc26: catalog, repository, clock, logger: false, timersEnabled: false });
+    fc26, repository, clock, logger: false, timersEnabled: false });
   apps.push(built.app);
   const as = (user: string) => ({ authorization: `Bearer ${user}` });
   const create = (snapshot: RestoreSnapshot = template, extra: Record<string, unknown> = {}, user = 'host') => built.app.inject({ method: 'POST', url: '/api/restore/rooms',
@@ -464,6 +464,68 @@ describe('auction after restore', () => {
     const restoredRows = rows.filter(r => room.players.find(p => 'db-' + p.id === r.player_id)!.restoredFromSnapshot);
     expect(restoredRows).toHaveLength(20);
     expect(restoredRows.every(r => r.final_price_units! > 0 && r.status === 'SOLD')).toBe(true);
+  });
+});
+/** Catalog whose underlying rows can change after the first load, like rows inserted into the database by another process. */
+class LiveCatalog extends MemoryFc26Catalog {
+  readonly extra: Player[] = [];
+  protected override async load(): Promise<Player[]> { return [...await super.load(), ...this.extra]; }
+}
+describe('v2 pool and retention', () => {
+  const liveCatalog = new LiveCatalog(resolveFc26Config({}));
+  beforeAll(async () => { await liveCatalog.importAll(); }, 120_000);
+  const newcomer: Player = { id: 'new-db-player', name: 'Brand New Signing', position: 'ATT', ovr: 84, stats: {}, basePriceUnits: 6, potId: 'ATT', positions: ['ST'], subPosition: 'ST' };
+
+  it('shows a player added after the first catalog load in preview, pool route and the started auction', async () => {
+    const f = await setup(undefined, liveCatalog);
+    const created = await f.createRoom(undefined, { settings: { autoAdvance: false } });
+    const previewTotal = async () => (await f.app.inject({ method: 'POST', url: '/api/restore/preview', headers: f.as('host'), payload: { snapshot: template } })).json().preview.remainingPool.total as number;
+    const poolUrl = `/api/rooms/${created.roomCode}/restore/pool?limit=50&search=Brand%20New`;
+    const before = await previewTotal();
+    expect((await f.app.inject({ url: poolUrl, headers: f.as('host') })).json().players).toHaveLength(0);
+    liveCatalog.extra.push(newcomer);
+    const realNow = Date.now;
+    Date.now = () => realNow() + 60_000;
+    try {
+      expect(await previewTotal()).toBe(before + 1);
+      const pool = (await f.app.inject({ url: poolUrl, headers: f.as('host') })).json();
+      expect(pool.players.map((p: { id: string }) => p.id)).toContain(newcomer.id);
+    } finally { Date.now = realNow; }
+    await f.claimAll(created.roomCode, created.teams);
+    await f.command(created.roomCode, 'START_AUCTION');
+    const room = await f.state(created.roomCode);
+    expect(room.players.find(p => p.id === newcomer.id)).toMatchObject({ name: 'Brand New Signing' });
+    expect(room.players).toHaveLength(before + 99 + 1);
+    liveCatalog.extra.length = 0;
+  });
+
+  it('keeps L. Openda and Neymar Jr in the remaining pool unless a restored team owns them', async () => {
+    const f = await setup();
+    const created = await f.createRoom();
+    const room = await f.state(created.roomCode);
+    const owned = new Set(room.teams.flatMap(t => t.playerIds));
+    const pool = (await f.app.inject({ url: `/api/rooms/${created.roomCode}/restore/pool?limit=50`, headers: f.as('host') })).json();
+    expect(pool.total).toBe((await catalog.stats()).total - owned.size);
+    for (const id of ['243580', '190871']) {
+      expect(await catalog.get(id), id).not.toBeNull();
+      const poolHit = (await f.app.inject({ url: `/api/rooms/${created.roomCode}/restore/pool?limit=50&search=${id === '243580' ? 'Openda' : 'Neymar'}`, headers: f.as('host') })).json();
+      expect(poolHit.players.some((p: { id: string }) => p.id === id), id).toBe(!owned.has(id));
+    }
+  });
+
+  it('never has a retention phase: commands are rejected, state reports it disabled and START needs only claimed teams', async () => {
+    const f = await setup();
+    const created = await f.createRoom();
+    for (const type of ['START_RETENTION', 'FINALIZE_RETENTIONS', 'RESET_RETENTIONS']) await rejects(f.command(created.roomCode, type), 'RETENTION_NOT_ENABLED');
+    await rejects(f.command(created.roomCode, 'START_AUCTION'), 'RESTORE_TEAMS_UNCLAIMED');
+    const { ongoingStatus } = await import('../src/modules/rooms/room-summary.js');
+    expect(ongoingStatus(await f.state(created.roomCode))).toBe('WAITING_FOR_TEAMS');
+    await f.claimAll(created.roomCode, created.teams);
+    const room = await f.state(created.roomCode);
+    expect(ongoingStatus(room)).toBe('READY_TO_START');
+    expect(roomState(room, 'host', 0).retention).toMatchObject({ enabled: false, phase: 'OFF' });
+    await f.command(created.roomCode, 'START_AUCTION');
+    expect((await f.state(created.roomCode)).status).toBe('RUNNING');
   });
 });
 describe('archive helper', () => {

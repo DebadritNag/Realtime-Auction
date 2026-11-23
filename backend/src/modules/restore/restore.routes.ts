@@ -46,6 +46,7 @@ export function registerRestoreRoutes(app: FastifyInstance, manager: RoomManager
   const catalogs = async (): Promise<RestoreCatalogs> => {
     const fc26 = manager.fc26;
     requireThat(fc26, 'FC26_UNAVAILABLE', 'FC26 database is not configured on this server.', 503);
+    await fc26.refresh();
     const fc26Players = await fc26.list();
     requireThat(fc26Players.length > 0, 'FC26_CATALOG_EMPTY', 'The FC26 database has no players. Import the FC26 CSV files first.', 409);
     return { fc26Players, defaultPool: await loadDefaultPoolPlayers() };
@@ -129,6 +130,7 @@ export function registerRestoreRoutes(app: FastifyInstance, manager: RoomManager
     requireThat(fc26, 'FC26_UNAVAILABLE', 'FC26 database is not configured on this server.', 503);
     const owned = new Set([...room.teams.flatMap(t => t.playerIds), ...room.players.filter(p => p.status === 'SOLD').map(p => p.id)]);
     const { playerIds, potIds } = room.settings.playerPoolConfig;
+    await fc26.refresh();
     const eligible = (await fc26.list()).filter(p => !owned.has(p.id) && (!playerIds || playerIds.includes(p.id)) && (!potIds || potIds.includes(p.potId)));
     const byPot: Record<string, number> = {};
     for (const p of eligible) byPot[p.potId] = (byPot[p.potId] ?? 0) + 1;
