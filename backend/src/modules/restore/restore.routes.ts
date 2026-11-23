@@ -12,8 +12,9 @@ import { publicPlayer, publicTeam } from '../teams/team.service.js';
 import { csvRowToPlayer, parseCsv } from '../players/player.service.js';
 import { matchesPositionGroup, type PositionGroup } from '../fc26/fc26.positions.js';
 import { buildRestoredRoom } from './restore.build.js';
-import { isUnclaimed, releaseTeamClaim } from './restore.claims.js';
-import { restoreCreateBodySchema, restorePreviewBodySchema, restoreReleaseBodySchema, restoreSnapshotSchema, type RestoreSnapshot } from './restore.schema.js';
+import { bindTeam, describeTeams, isUnclaimed, releaseAndUnbind, unbindTeam } from './restore.claims.js';
+import { MemoryProfileDirectory, PROFILE_SEARCH_LIMIT, PROFILE_SEARCH_MIN, type ProfileDirectory } from './restore.profiles.js';
+import { restoreBindBodySchema, restoreCreateBodySchema, restorePreviewBodySchema, restoreReleaseBodySchema, restoreSnapshotSchema, type RestoreSnapshot } from './restore.schema.js';
 import { snapshotHash, validateSnapshot, type RestoreCatalogs } from './restore.validate.js';
 /** The 99-player snapshot exceeds the global 16 KB limit, so only the snapshot-carrying routes accept larger bodies. */
 export const RESTORE_BODY_LIMIT = 256 * 1024;
@@ -41,7 +42,7 @@ export function loadDefaultPoolPlayers(): Promise<Player[]> {
   return defaultPool;
 }
 const haystack = (p: Player): string => [p.name, p.fullName, p.club, p.nationality, p.id, p.league, ...(p.positions ?? [])].filter(Boolean).join(' ').toLowerCase();
-export function registerRestoreRoutes(app: FastifyInstance, manager: RoomManager): void {
+export function registerRestoreRoutes(app: FastifyInstance, manager: RoomManager, directory: ProfileDirectory = new MemoryProfileDirectory()): void {
   const params = z.object({ code: roomCodeSchema });
   const catalogs = async (): Promise<RestoreCatalogs> => {
     const fc26 = manager.fc26;
@@ -50,6 +51,14 @@ export function registerRestoreRoutes(app: FastifyInstance, manager: RoomManager
     const fc26Players = await fc26.list();
     requireThat(fc26Players.length > 0, 'FC26_CATALOG_EMPTY', 'The FC26 database has no players. Import the FC26 CSV files first.', 409);
     return { fc26Players, defaultPool: await loadDefaultPoolPlayers() };
+  };
+  // Resolves host-chosen users against the directory; every id must exist.
+  const resolveUsers = async (userIds: string[]): Promise<Map<string, string>> => {
+    const unique = [...new Set(userIds)];
+    const hits = await directory.getMany(unique);
+    const labels = new Map(hits.map(h => [h.userId, h.displayName || h.username]));
+    requireThat(unique.every(id => labels.has(id)), 'PROFILE_NOT_FOUND', 'One of the chosen users does not exist.', 404);
+    return labels;
   };
   app.get('/api/restore/templates', async () => {
     const templates = await loadRestoreTemplates();
@@ -69,6 +78,12 @@ export function registerRestoreRoutes(app: FastifyInstance, manager: RoomManager
     const result = await fc26.search({ query: query.search, group: query.group as PositionGroup, offset: query.offset, limit: query.limit });
     return { total: result.total, offset: query.offset, limit: query.limit, players: result.players.map(publicPlayer) };
   });
+  // Host search for registered users to bind to restored teams. Matches username, display name and default team name (a hint only).
+  app.get('/api/restore/users', { config: { rateLimit: { max: 30, timeWindow: '1 minute' } } }, async request => {
+    const query = z.object({ search: z.string().trim().min(PROFILE_SEARCH_MIN).max(60) }).strict().parse(request.query);
+    const users = await directory.search(query.search, PROFILE_SEARCH_LIMIT);
+    return { users: users.map(u => ({ userId: u.userId, username: u.username, displayName: u.displayName })) };
+  });
   app.post('/api/restore/preview', { bodyLimit: RESTORE_BODY_LIMIT, config: { rateLimit: { max: 30, timeWindow: '1 minute' } } }, async request => {
     const { snapshot } = restorePreviewBodySchema.parse(request.body);
     const { preview } = validateSnapshot(snapshot, await catalogs());
@@ -85,14 +100,18 @@ export function registerRestoreRoutes(app: FastifyInstance, manager: RoomManager
     const hash = snapshotHash(snapshot);
     const source = (await loadRestoreTemplates()).some(t => t.hash === hash) ? 'TEMPLATE' : 'CUSTOM';
     const fc26 = manager.fc26!;
+    const requested = body.bindings ?? [];
+    requireThat(new Set(requested.map(b => b.userId)).size === requested.length, 'USER_ALREADY_BOUND', 'A user can only be bound to one team.', 409);
+    const labels = await resolveUsers(requested.map(b => b.userId));
+    const bindings = requested.map(b => ({ ...b, label: labels.get(b.userId)! }));
     const room = await manager.createFromBuilder(ctx => buildRestoredRoom({ ctx, host: { userId: request.auth.userId, username: request.auth.username },
       auctionName: body.auctionName, hostTeamName: body.hostTeamName, snapshot, validation, source, topRatingThreshold: fc26.topRatingThreshold,
-      settings: body.settings }));
+      settings: body.settings, bindings }));
     const hostTeam = room.teams.find(t => t.userId === room.hostUserId)!;
     return reply.code(201).send({ roomId: room.id, roomCode: room.code, settings: room.settings, host: { userId: room.hostUserId, teamId: hostTeam.id },
       team: publicTeam(hostTeam, room.settings, room.retention, room.restore),
       restore: { source: room.restore!.source, snapshotName: room.restore!.snapshotName, warnings: room.restore!.warnings,
-        teams: room.teams.map(t => ({ id: t.id, name: t.name, claimed: !isUnclaimed(t) })) },
+        teams: describeTeams(room, request.auth.userId) },
       remainingPool: validation.preview.remainingPool });
   });
   // Host-only: frees a wrongly claimed restored team (never the host's own team).
@@ -108,11 +127,32 @@ export function registerRestoreRoutes(app: FastifyInstance, manager: RoomManager
       requireThat(team.userId !== room.hostUserId, 'HOST_CANNOT_LEAVE', 'You cannot release your own team.', 409);
       requireThat(!isUnclaimed(team), 'TEAM_NOT_CLAIMED', 'That team has no manager.', 409);
       const userId = team.userId;
-      releaseTeamClaim(team);
+      releaseAndUnbind(team);
       events.push({ type: 'MEMBER_LEFT', payload: { teamId, userId } }, { type: 'ROOM_UPDATED', payload: { reason: 'TEAM_RELEASED' } });
     });
     const room = await manager.loadRoom(code);
-    return { teams: room.teams.map(t => ({ id: t.id, name: t.name, claimed: !isUnclaimed(t) })), sequence: room.sequence };
+    return { teams: describeTeams(room, request.auth.userId), sequence: room.sequence };
+  });
+  // Host-only, lobby-only: reserves a restored team for a registered user (userId null removes the reservation).
+  app.post('/api/rooms/:code/restore/bind', async request => {
+    const { code } = params.parse(request.params);
+    const { teamId, userId } = restoreBindBodySchema.parse(request.body);
+    const labels = userId ? await resolveUsers([userId]) : null;
+    await manager.mutate(code, (room, events) => {
+      requireHost(room, request.auth.userId);
+      requireThat(room.restore, 'NOT_A_RESTORED_ROOM', 'This auction was not restored from a snapshot.', 400);
+      requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Reservations can only be changed in the lobby.', 409);
+      const team = room.teams.find(t => t.id === teamId);
+      requireThat(team, 'TEAM_NOT_FOUND', 'Team does not exist.', 404);
+      if (userId) bindTeam(room, team, userId, labels!.get(userId)!);
+      else {
+        requireThat(team.userId !== room.hostUserId, 'HOST_TEAM_NOT_BINDABLE', 'The host team has no reservation.', 422);
+        unbindTeam(team);
+      }
+      events.push({ type: 'ROOM_UPDATED', payload: { reason: 'TEAM_BINDING' } });
+    });
+    const room = await manager.loadRoom(code);
+    return { teams: describeTeams(room, request.auth.userId), sequence: room.sequence };
   });
   // Member-only: the players that will be auctioned (FC26 catalog minus every owned player, honoring the pot filters).
   app.get('/api/rooms/:code/restore/pool', async request => {

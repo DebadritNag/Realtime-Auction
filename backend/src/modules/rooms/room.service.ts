@@ -14,22 +14,39 @@ export function requireMember(room: Room, userId: string): Team {
 export function requireHost(room: Room, userId: string): void {
   requireThat(room.hostUserId === userId, 'HOST_REQUIRED', 'Only the host can do this.', 403);
 }
+/** Optional rename on a restored claim: lobby only, case-insensitive unique. Only the team's display fields change. */
+function renameRestoredTeam(room: Room, team: Team, input: { teamName?: string; teamLogoUrl?: string; teamLogoEmoji?: string }): void {
+  const name = input.teamName;
+  if (name && name !== team.name) {
+    requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Teams can only be renamed in the lobby.', 409);
+    requireThat(!room.teams.some(t => t.id !== team.id && t.name.toLowerCase() === name.toLowerCase()), 'TEAM_NAME_TAKEN', 'Team name is already taken.', 409);
+    team.name = name;
+  }
+  if (input.teamLogoUrl && input.teamLogoUrl !== team.logoUrl) { requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Teams can only be changed in the lobby.', 409); team.logoUrl = input.teamLogoUrl; }
+  if (input.teamLogoEmoji && input.teamLogoEmoji !== team.logoEmoji) { requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Teams can only be changed in the lobby.', 409); team.logoEmoji = input.teamLogoEmoji; }
+}
 export class RoomService {
   constructor(private manager: RoomManager) {}
   async join(code: string, userId: string, input: { teamName?: string; teamLogoUrl?: string; teamLogoEmoji?: string; restoredTeamId?: string }, managerUsername?: string): Promise<Team> {
     return this.manager.mutate(code, (room, events) => {
       if (room.restore) {
-        // Restored rooms never create teams: a manager claims one of the restored teams. Submitted name and logo are ignored.
-        requireThat(input.restoredTeamId, 'RESTORED_TEAM_REQUIRED', 'Choose which restored team you manage.', 400);
-        const target = room.teams.find(t => t.id === input.restoredTeamId);
-        requireThat(target, 'TEAM_NOT_FOUND', 'Team does not exist.', 404);
+        // Restored rooms never create teams: a manager claims a restored team (the one the host reserved for them, or a picked unreserved one)
+        // and may rename it. Squad, purse and purchases are never touched.
         const own = room.teams.find(t => t.userId === userId);
+        const reserved = room.teams.find(t => t.reservedUserId === userId);
+        const target = input.restoredTeamId ? room.teams.find(t => t.id === input.restoredTeamId) : (own ?? reserved);
+        requireThat(input.restoredTeamId || target, 'RESTORED_TEAM_REQUIRED', 'Choose which restored team you manage.', 400);
+        requireThat(target, 'TEAM_NOT_FOUND', 'Team does not exist.', 404);
         if (own) {
           requireThat(own.id === target.id, 'ALREADY_CLAIMED_ANOTHER_TEAM', 'You already manage another team in this auction.', 409);
+          renameRestoredTeam(room, own, input);
           return own;
         }
         requireThat(room.status === 'LOBBY', 'INVALID_STATE', 'Join is only available in the lobby.', 409);
+        requireThat(!reserved || reserved.id === target.id, 'ALREADY_RESERVED_ANOTHER_TEAM', 'The host reserved a different team for you.', 409);
+        requireThat(!target.reservedUserId || target.reservedUserId === userId, 'TEAM_RESERVED', 'That team is reserved for another user.', 403);
         requireThat(isUnclaimed(target), 'TEAM_ALREADY_CLAIMED', 'That team already has a manager.', 409);
+        renameRestoredTeam(room, target, input);
         target.userId = userId;
         if (managerUsername) target.managerUsername = managerUsername; else delete target.managerUsername;
         events.push({ type: 'MEMBER_JOINED', payload: { teamId: target.id } }, { type: 'ROOM_UPDATED', payload: { reason: 'TEAM_CLAIMED' } });

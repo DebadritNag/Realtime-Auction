@@ -4,7 +4,7 @@ import type { AuthContext } from '../../domain/types.js';
 import { DomainError, requireThat } from '../../domain/errors.js';
 import { toCr } from '../../domain/money.js';
 import { createRoomSchema, joinSchema, restoredJoinSchema, roomCodeSchema, settingsShape } from '../../schemas/settings.js';
-import { isUnclaimed } from '../restore/restore.claims.js';
+import { describeTeams } from '../restore/restore.claims.js';
 import type { RoomManager } from './room.manager.js';
 import { RoomService, requireMember } from './room.service.js';
 import { roomState } from './room-state.js';
@@ -58,12 +58,12 @@ export function registerRoomRoutes(app: FastifyInstance, manager: RoomManager, r
     return { roomId: room.id, roomCode: room.code, auctionName: room.auctionName, status: room.status,
       settings: room.settings, teamCount: room.teams.length, host: { userId: room.hostUserId },
       // Restored rooms list their teams so a joining manager can claim one; no budgets, rosters or user ids.
-      ...(room.restore ? { restore: { snapshotName: room.restore.snapshotName, teams: room.teams.map(t => ({ id: t.id, name: t.name, claimed: !isUnclaimed(t) })) } } : {}) };
+      ...(room.restore ? { restore: { snapshotName: room.restore.snapshotName, teams: describeTeams(room, request.auth.userId) } } : {}) };
   });
   app.post('/api/rooms/:code/join', { config: { rateLimit: { max: 30, timeWindow: '1 minute' } } }, async request => {
     const code = params.parse(request.params).code;
     // A body with restoredTeamId claims a restored team; every other body keeps the original strict contract.
-    const body = request.body && typeof request.body === 'object' && 'restoredTeamId' in request.body ? restoredJoinSchema.parse(request.body) : joinSchema.parse(request.body);
+    const body = request.body && typeof request.body === 'object' && ('restoredTeamId' in request.body || !('teamName' in request.body)) ? restoredJoinSchema.parse(request.body) : joinSchema.parse(request.body);
     const team = await service.join(code, request.auth.userId, body, request.auth.username);
     const room = await manager.loadRoom(code);
     return { roomId: room.id, roomCode: code, team: publicTeam(team, room.settings, room.retention, room.restore), sequence: room.sequence };

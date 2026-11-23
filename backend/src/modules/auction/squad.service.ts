@@ -86,7 +86,10 @@ export function assertRoom(room: Room): void {
   if (room.restore) {
     invariant(room.restore.teams.every(r => room.teams.some(t => t.id === r.teamId)) && room.restore.teams.length === room.teams.length, 'Restore record mismatch.');
     invariant(room.purchases.filter(p => p.restoredFromSnapshot).every(p => p.priceUnits === 0), 'Restored purchase has a price.');
-  }
+    const reserved = room.teams.filter(t => t.reservedUserId).map(t => t.reservedUserId!);
+    invariant(new Set(reserved).size === reserved.length, 'User reserved for more than one team.');
+    invariant(room.teams.every(t => !t.reservedUserId || !room.teams.some(o => o.id !== t.id && o.userId === t.reservedUserId)), 'Reserved user manages another team.');
+  } else invariant(room.teams.every(t => !t.reservedUserId), 'Reservation outside a restored room.');
   const retentionPurchases = room.purchases.filter(p => p.acquisitionType === 'RETENTION' && !p.restoredFromSnapshot);
   invariant(retentionPurchases.every(p => room.retention?.picks.some(k => k.playerId === p.playerId && k.teamId === p.teamId)), 'Retention purchase without pick.');
   for (const player of room.players) {

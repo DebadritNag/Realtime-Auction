@@ -18,6 +18,7 @@ import { buildMatchIndex, manualPlayerId, matchPlayer, normalizeName } from '../
 import { validateSnapshot } from '../src/modules/restore/restore.validate.js';
 import { restoreSnapshotSchema, type RestoreSnapshot } from '../src/modules/restore/restore.schema.js';
 import { loadDefaultPoolPlayers } from '../src/modules/restore/restore.routes.js';
+import { MemoryProfileDirectory, type ProfileDirectory } from '../src/modules/restore/restore.profiles.js';
 import { RETENTION_PRICE_UNITS } from '../src/domain/retention.js';
 import { toUnits } from '../src/domain/money.js';
 import type { Player, Room } from '../src/domain/types.js';
@@ -43,10 +44,10 @@ beforeAll(async () => {
 }, 120_000);
 const apps: { close(): Promise<unknown> }[] = [];
 afterEach(async () => { while (apps.length) await apps.pop()!.close(); });
-async function setup(repository?: MemoryRoomRepository | FileRoomRepository, fc26: MemoryFc26Catalog = catalog) {
+async function setup(repository?: MemoryRoomRepository | FileRoomRepository, fc26: MemoryFc26Catalog = catalog, profileDirectory?: ProfileDirectory) {
   const clock = { value: 1_000_000, now() { return this.value; } };
   const built = await buildApp({ authService: new StaticTokenAuthService(new Map(USERS.map(u => [u, { userId: u, username: u + '-name' }]))),
-    fc26, repository, clock, logger: false, timersEnabled: false });
+    fc26, repository, profileDirectory, clock, logger: false, timersEnabled: false });
   apps.push(built.app);
   const as = (user: string) => ({ authorization: `Bearer ${user}` });
   const create = (snapshot: RestoreSnapshot = template, extra: Record<string, unknown> = {}, user = 'host') => built.app.inject({ method: 'POST', url: '/api/restore/rooms',
@@ -526,6 +527,129 @@ describe('v2 pool and retention', () => {
     expect(roomState(room, 'host', 0).retention).toMatchObject({ enabled: false, phase: 'OFF' });
     await f.command(created.roomCode, 'START_AUCTION');
     expect((await f.state(created.roomCode)).status).toBe('RUNNING');
+  });
+});
+describe('v2 ownership', () => {
+  const profiles = () => new MemoryProfileDirectory(['u1', 'u2', 'u3', 'host'].map(id => ({ userId: id, username: id + '-name', displayName: id === 'u1' ? 'Debadrit Nag' : id + ' Person' })));
+  const bound = async (repository?: MemoryRoomRepository) => {
+    const f = await setup(repository, catalog, profiles());
+    const created = await f.createRoom(undefined, { hostTeamName: 'BGT', bindings: [{ teamName: 'Ritzz FC', userId: 'u1' }, { teamName: 'DDD', userId: 'u2' }] });
+    return { f, created, ritz: created.teamId('Ritzz FC') as string, ddd: created.teamId('DDD') as string };
+  };
+  const joinAs = (f: Awaited<ReturnType<typeof setup>>, roomCode: string, user: string, payload: Record<string, unknown>) =>
+    f.app.inject({ method: 'POST', url: `/api/rooms/${roomCode}/join`, headers: f.as(user), payload });
+  it('lets the bound user enter under a new name and keeps squad, purse, state, team page, results and restart', async () => {
+    const repository = new MemoryRoomRepository();
+    const { f, created, ritz } = await bound(repository);
+    const before = (await f.state(created.roomCode)).teams.find(t => t.id === ritz)!;
+    const res = await joinAs(f, created.roomCode, 'u1', { teamName: 'Ritz Slayers' });
+    expect(res.statusCode, res.body).toBe(200);
+    expect(res.json().team).toMatchObject({ id: ritz, name: 'Ritz Slayers', playersOwned: SQUADS[0], restoredRetainedCount: RETAINED[0], restoredAuctionCount: SQUADS[0]! - RETAINED[0]!, remainingBudgetCr: PURSES[0] });
+    const room = await f.state(created.roomCode);
+    const team = room.teams.find(t => t.id === ritz)!;
+    expect(team).toMatchObject({ userId: 'u1', name: 'Ritz Slayers', reservedUserId: 'u1', reservedLabel: 'Debadrit Nag' });
+    expect(team.playerIds).toEqual(before.playerIds);
+    expect(team.startingBudgetUnits).toBe(before.startingBudgetUnits);
+    expect(room.purchases.filter(p => p.teamId === ritz)).toHaveLength(SQUADS[0]!);
+    assertRoom(room);
+    const state = roomState(room, 'u1', 0);
+    expect(state.teams.find(t => t.id === ritz)!.name).toBe('Ritz Slayers');
+    expect(state.restore!.teams.find(t => t.teamId === ritz)).toMatchObject({ name: 'Ritz Slayers', originalName: 'Ritzz FC', reserved: true, reservedLabel: 'Debadrit Nag', squadSize: SQUADS[0] });
+    expect(JSON.stringify(state)).not.toContain('reservedUserId');
+    const page = await f.app.inject({ url: `/api/rooms/${created.roomCode}/teams/${ritz}`, headers: f.as('u1') });
+    expect(page.json()).toMatchObject({ name: 'Ritz Slayers', playersOwned: SQUADS[0] });
+    expect((await f.app.inject({ url: `/api/rooms/${created.roomCode}/results`, headers: f.as('u1') })).body).toContain('Ritz Slayers');
+    const restarted = new RoomManager(repository, new CatalogPlayerRepository(demoPlayers.slice(0, 2)), f.clock, undefined, undefined, catalog);
+    await restarted.recover();
+    const after = await restarted.loadRoom(created.roomCode);
+    expect(after.teams.find(t => t.id === ritz)).toMatchObject({ name: 'Ritz Slayers', userId: 'u1', reservedUserId: 'u1' });
+    assertRoom(after);
+    // Joining again with the same name is idempotent; a name another team holds is rejected (case-insensitive).
+    expect((await joinAs(f, created.roomCode, 'u1', { teamName: 'Ritz Slayers' })).statusCode).toBe(200);
+    expect((await joinAs(f, created.roomCode, 'u1', { teamName: 'fidodido fc' })).json().error.code).toBe('TEAM_NAME_TAKEN');
+  });
+  it('keeps a reserved team away from every other user, by id or by name', async () => {
+    const { f, created, ritz } = await bound();
+    expect((await f.join(created.roomCode, 'u3', ritz)).json().error.code).toBe('TEAM_RESERVED');
+    expect((await joinAs(f, created.roomCode, 'u3', { restoredTeamId: ritz, teamName: 'Ritz Slayers' })).json().error.code).toBe('TEAM_RESERVED');
+    for (const teamName of ['Ritzz FC', 'Ritz Slayers']) expect((await joinAs(f, created.roomCode, 'u3', { teamName })).json().error.code).toBe('RESTORED_TEAM_REQUIRED');
+    expect((await f.join(created.roomCode, 'outsider', ritz)).json().error.code).toBe('TEAM_RESERVED');
+    const room = await f.state(created.roomCode);
+    expect(room.teams.find(t => t.id === ritz)).toMatchObject({ name: 'Ritzz FC', userId: 'unclaimed:' + ritz });
+    // A user with a reservation cannot claim another team; the reserved one is assigned automatically.
+    expect((await f.join(created.roomCode, 'u1', created.teamId('APOLLO FC'))).json().error.code).toBe('ALREADY_RESERVED_ANOTHER_TEAM');
+    expect((await joinAs(f, created.roomCode, 'u1', {})).json().team.id).toBe(ritz);
+    // The public room view never shows user ids, only reserved flags.
+    const view = (await f.app.inject({ url: `/api/rooms/${created.roomCode}`, headers: f.as('u2') })).json();
+    expect(JSON.stringify(view.restore)).not.toMatch(/u1|u2|reservedUserId/);
+    expect(view.restore.teams.find((t: { id: string }) => t.id === ritz)).toMatchObject({ reserved: true, reservedForYou: false });
+    expect(view.restore.teams.find((t: { name: string }) => t.name === 'DDD')).toMatchObject({ reserved: true, reservedForYou: true });
+    expect(view.restore.teams.find((t: { name: string }) => t.name === 'APOLLO FC')).toMatchObject({ reserved: false, reservedForYou: false });
+  });
+  it('allows one team per user and falls back to picking for unbound teams', async () => {
+    const f = await setup(undefined, catalog, profiles());
+    const dup = await f.create(undefined, { bindings: [{ teamName: 'Ritzz FC', userId: 'u1' }, { teamName: 'DDD', userId: 'u1' }] });
+    expect(dup.json().error.code).toBe('USER_ALREADY_BOUND');
+    expect((await f.create(undefined, { bindings: [{ teamName: 'Ritzz FC', userId: 'ghost' }] })).json().error.code).toBe('PROFILE_NOT_FOUND');
+    expect((await f.create(undefined, { bindings: [{ teamName: 'Nope FC', userId: 'u1' }] })).json().error.code).toBe('BINDING_TEAM_NOT_FOUND');
+    const created = await f.createRoom(undefined, { bindings: [{ teamName: 'DDD', userId: 'u1' }] });
+    const hostTeam = created.teams.find((t: { claimed: boolean }) => t.claimed)!;
+    const bind = (user: string, teamId: string, userId: string | null) => f.app.inject({ method: 'POST', url: `/api/rooms/${created.roomCode}/restore/bind`, headers: f.as(user), payload: { teamId, userId } });
+    expect((await bind('host', created.teamId('BGT'), 'u1')).json().error.code).toBe('USER_ALREADY_BOUND');
+    expect((await bind('host', hostTeam.id, 'u2')).json().error.code).toBe('HOST_TEAM_NOT_BINDABLE');
+    expect((await bind('host', created.teamId('BGT'), 'host')).json().error.code).toBe('USER_ALREADY_BOUND');
+    expect((await bind('host', created.teamId('BGT'), 'ghost')).json().error.code).toBe('PROFILE_NOT_FOUND');
+    expect((await bind('u1', created.teamId('BGT'), 'u2')).statusCode).toBe(403);
+    // Unbound teams stay claimable by pick.
+    expect((await f.join(created.roomCode, 'u3', created.teamId('BGT'))).statusCode).toBe(200);
+    expect((await bind('host', created.teamId('BGT'), 'u2')).json().error.code).toBe('TEAM_ALREADY_CLAIMED');
+    expect((await bind('host', created.teamId('SIDERALE'), 'u2')).statusCode).toBe(200);
+    expect((await bind('host', created.teamId('SIDERALE'), null)).statusCode).toBe(200);
+    expect((await f.join(created.roomCode, 'u2', created.teamId('SIDERALE'))).statusCode).toBe(200);
+    assertRoom(await f.state(created.roomCode));
+    const search = await f.app.inject({ url: '/api/restore/users?search=Debadrit', headers: f.as('host') });
+    expect(search.json().users).toEqual([{ userId: 'u1', username: 'u1-name', displayName: 'Debadrit Nag' }]);
+    expect((await f.app.inject({ url: '/api/restore/users?search=de', headers: f.as('host') })).statusCode).toBe(400);
+  });
+  it('keeps the reservation when the user leaves and drops it when the host releases or kicks', async () => {
+    const { f, created, ritz, ddd } = await bound();
+    await joinAs(f, created.roomCode, 'u1', { teamName: 'Ritz Slayers' });
+    const leave = await f.app.inject({ method: 'POST', url: `/api/rooms/${created.roomCode}/leave`, headers: f.as('u1'), payload: {} });
+    expect(leave.statusCode).toBe(204);
+    let team = (await f.state(created.roomCode)).teams.find(t => t.id === ritz)!;
+    expect(team).toMatchObject({ userId: 'unclaimed:' + ritz, reservedUserId: 'u1', name: 'Ritz Slayers' });
+    expect((await f.join(created.roomCode, 'u3', ritz)).json().error.code).toBe('TEAM_RESERVED');
+    expect((await joinAs(f, created.roomCode, 'u1', {})).statusCode).toBe(200);
+    const release = await f.app.inject({ method: 'POST', url: `/api/rooms/${created.roomCode}/restore/release`, headers: f.as('host'), payload: { teamId: ritz } });
+    expect(release.statusCode, release.body).toBe(200);
+    team = (await f.state(created.roomCode)).teams.find(t => t.id === ritz)!;
+    expect(team.reservedUserId).toBeUndefined();
+    expect((await f.join(created.roomCode, 'u3', ritz)).statusCode).toBe(200);
+    await joinAs(f, created.roomCode, 'u2', {});
+    await f.command(created.roomCode, 'KICK_MEMBER', 'host', { targetTeamId: ddd });
+    expect((await f.state(created.roomCode)).teams.find(t => t.id === ddd)!.reservedUserId).toBeUndefined();
+  });
+  it('starts with renamed teams and no retention, and leaves non-restored joins unchanged', async () => {
+    const { f, created, ritz, ddd } = await bound();
+    await joinAs(f, created.roomCode, 'u1', { teamName: 'Ritz Slayers' });
+    await joinAs(f, created.roomCode, 'u2', {});
+    const rest = created.teams.filter((t: { claimed: boolean; id: string }) => !t.claimed && t.id !== ritz && t.id !== ddd);
+    let next = 3;
+    for (const t of rest) expect((await f.join(created.roomCode, `u${next++}`, t.id)).statusCode).toBe(200);
+    await f.command(created.roomCode, 'START_AUCTION');
+    const room = await f.state(created.roomCode);
+    expect(room.status).toBe('RUNNING');
+    expect(room.teams.find(t => t.userId === 'u1')).toMatchObject({ id: ritz, name: 'Ritz Slayers' });
+    expect(roomState(room, 'u1', 0).retention).toMatchObject({ enabled: false });
+    // Renaming after the start is refused.
+    expect((await joinAs(f, created.roomCode, 'u1', { teamName: 'Late Name' })).json().error.code).toBe('INVALID_STATE');
+    // Ordinary rooms still need teamName and create their own team.
+    const plain = await f.app.inject({ method: 'POST', url: '/api/rooms', headers: f.as('host'), payload: { auctionName: 'Plain', teamName: 'Plain Host' } });
+    expect(plain.statusCode, plain.body).toBe(201);
+    const plainJoin = await joinAs(f, plain.json().roomCode, 'u1', { teamName: 'Plain Joiner' });
+    expect(plainJoin.statusCode, plainJoin.body).toBe(200);
+    expect(plainJoin.json().team.name).toBe('Plain Joiner');
+    expect((await joinAs(f, plain.json().roomCode, 'u2', {})).statusCode).toBe(400);
   });
 });
 describe('archive helper', () => {

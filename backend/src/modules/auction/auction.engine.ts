@@ -12,7 +12,7 @@ import { remainingBudget } from './budget.service.js';
 import { skipVoteState, updateSkipVote } from './skip-vote.service.js';
 import { commandSchema, type AuctionCommand } from './auction.schemas.js';
 import { followIds, hasSelectable, heldIds, regularWaiting } from './pool-import/pool-additions.js';
-import { assertRestoreSettingsUnlocked, isUnclaimed, releaseTeamClaim } from '../restore/restore.claims.js';
+import { assertRestoreSettingsUnlocked, isUnclaimed, releaseAndUnbind } from '../restore/restore.claims.js';
 import { assertRetentionSettingsUnlocked, completionAnnouncement, confirmTurn, draftPlayer, finalizeRetentions, pendingSpendUnits, purseAfterConfirmedUnits,
   removeDraft, requireRetentionOpenForMembership, resetRetentions, retentionPhase, skipTurn, startRetention, syncRetentionWithSettings,
   turnAnnouncement } from '../retention/retention.service.js';
@@ -244,8 +244,8 @@ export class AuctionEngine {
             requireThat(command.payload.targetTeamId !== team.id, 'HOST_CANNOT_LEAVE', 'Host cannot kick themselves.');
             requireThat(room.teams.some(t => t.id === command.payload.targetTeamId), 'TEAM_NOT_FOUND', 'Team not found.', 404);
             requireRetentionOpenForMembership(room);
-            // A restored team keeps its squad and purse; kicking its manager only frees the claim.
-            if (room.restore) releaseTeamClaim(room.teams.find(t => t.id === command.payload.targetTeamId)!);
+            // A restored team keeps its squad and purse; kicking its manager frees the claim and drops any reservation.
+            if (room.restore) releaseAndUnbind(room.teams.find(t => t.id === command.payload.targetTeamId)!);
             else room.teams = room.teams.filter(t => t.id !== command.payload.targetTeamId);
             events.push({ type: 'MEMBER_LEFT', payload: { teamId: command.payload.targetTeamId } });
             break;

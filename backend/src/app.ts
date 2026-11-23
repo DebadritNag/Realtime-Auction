@@ -23,6 +23,7 @@ import { RealtimeHub } from './realtime/hub.js';
 import type { PresenceStore } from './realtime/presence.js';
 import { registerRoomRoutes } from './modules/rooms/room.routes.js';
 import { registerRestoreRoutes } from './modules/restore/restore.routes.js';
+import { PostgresProfileDirectory, type ProfileDirectory } from './modules/restore/restore.profiles.js';
 import type { Fc26Catalog } from './modules/fc26/fc26.catalog.js';
 import { registerFc26Routes } from './modules/fc26/fc26.routes.js';
 import { registerPoolImportRoutes } from './modules/auction/pool-import/pool-import.routes.js';
@@ -33,7 +34,7 @@ export interface AppOptions {
   managerAuctionSource?: (id:string)=>Promise<import('./domain/types.js').Room|null>; managerPrepareAuction?: (id:string,user:string)=>Promise<void>;
   managerRepository?: ManagerTournamentRepository; managerIdentities?: ManagerIdentityRepository;
   database?: Sql; authService: AuthService; repository?: RoomRepository; playerRepository?: PlayerRepository;
-  recommendationService?: AuctionRecommendationService; origins?: string[]; fc26?: Fc26Catalog; retentionLedger?: RetentionLedger;
+  recommendationService?: AuctionRecommendationService; origins?: string[]; fc26?: Fc26Catalog; profileDirectory?: ProfileDirectory; retentionLedger?: RetentionLedger;
   clock?: Clock; timersEnabled?: boolean; logger?: boolean; logLevel?: string; logStream?: { write(message: string): void }; trustProxyHops?: number; presenceStore?: PresenceStore;
 }
 export async function buildApp(options: AppOptions) {
@@ -115,7 +116,7 @@ export async function buildApp(options: AppOptions) {
   registerPlayerRoutes(app, manager.players, manager.fc26);
   registerFc26Routes(app, manager.fc26, manager);
   registerPoolImportRoutes(app, manager);
-  registerRestoreRoutes(app, manager);
+  registerRestoreRoutes(app, manager, options.profileDirectory ?? (options.database ? new PostgresProfileDirectory(options.database) : undefined));
   registerRoomRoutes(app, manager, options.recommendationService ?? new DeterministicRecommendationService(), hub);
   app.get('/ws', { websocket: true }, (socket, request) => hub.attach(socket, request.auth));
   app.addHook('onClose', async () => { hub.close(); timers.close(); unsubscribe(); });

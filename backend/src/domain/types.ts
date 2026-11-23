@@ -29,6 +29,8 @@ export interface PoolImportBatch {
 export interface Team {
   id: string; userId: string; managerUsername?: string; name: string; logoUrl?: string; logoEmoji?: string;
   startingBudgetUnits: number; spentUnits: number; playerIds: string[];
+  // Restored rooms only: the host reserved this team for a registered user; only that user may claim it. reservedLabel is that user's display name.
+  reservedUserId?: string; reservedLabel?: string;
 }
 export interface Bid { id: string; roomId: string; playerId: string; teamId: string; amountUnits: number; at: number; round: number }
 export interface Purchase {

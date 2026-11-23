@@ -8,13 +8,15 @@ import { parseSettings, type RoomSettings } from '../../schemas/settings.js';
 import { MAX_SQUAD_SIZE } from './restore.types.js';
 import type { RestoreSnapshot } from './restore.schema.js';
 import { snapshotHash, type ValidationResult } from './restore.validate.js';
-import { unclaimedUserId } from './restore.claims.js';
+import { bindTeam, unclaimedUserId } from './restore.claims.js';
 export { isUnclaimed, unclaimedUserId } from './restore.claims.js';
 export interface BuildRestoredRoomInput {
   ctx: { id: string; code: string; now: number };
   host: { userId: string; username?: string };
   auctionName: string; hostTeamName?: string; snapshot: RestoreSnapshot; validation: ValidationResult;
   source: 'TEMPLATE' | 'CUSTOM'; topRatingThreshold: number; settings?: Partial<RoomSettings>;
+  /** Host reservations, already checked against the profile directory; label is the user's display name. */
+  bindings?: { teamName: string; userId: string; label: string }[];
 }
 /**
  * Builds a LOBBY room from a validated snapshot. Purses are the authoritative opening balances (never derived from prices);
@@ -59,7 +61,17 @@ export function buildRestoredRoom(input: BuildRestoredRoomInput): Room {
       retainedCount: retained, auctionCount: team.playerIds.length - retained });
   });
   const warnings = validation.preview.issues.filter(i => i.severity === 'WARNING').map(i => i.message);
-  return { id: ctx.id, code: ctx.code, hostUserId: host.userId, auctionName: input.auctionName, status: 'LOBBY', createdAt: ctx.now, lastActivityAt: ctx.now,
+  const room: Room = { id: ctx.id, code: ctx.code, hostUserId: host.userId, auctionName: input.auctionName, status: 'LOBBY', createdAt: ctx.now, lastActivityAt: ctx.now,
     settings, teams, players, playerQueue: [], purchases, bids: [], active: null, sequence: 1, nextPlayerAt: null, receipts: {},
     restore: { version: 1, source: input.source, snapshotName: snapshot.name, snapshotHash: snapshotHash(snapshot), restoredAt: ctx.now, warnings, teams: restoreTeams } };
+  const bound = new Set<string>();
+  for (const binding of input.bindings ?? []) {
+    const key = binding.teamName.trim().toLowerCase();
+    const team = teams.find(t => t.name.trim().toLowerCase() === key);
+    requireThat(team, 'BINDING_TEAM_NOT_FOUND', `No restored team is named "${binding.teamName}".`, 422);
+    requireThat(!bound.has(team.id), 'DUPLICATE_BINDING', `"${binding.teamName}" is bound more than once.`, 422);
+    bound.add(team.id);
+    bindTeam(room, team, binding.userId, binding.label);
+  }
+  return room;
 }

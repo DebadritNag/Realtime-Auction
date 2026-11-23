@@ -38,10 +38,15 @@ export const restoreSettingsOverrideSchema = settingsShape.pick({
   playerTimerSeconds: true, antiSnipingEnabled: true, antiSnipingThresholdSeconds: true, antiSnipingResetSeconds: true,
   allowCustomBids: true, autoAdvance: true, transitionDelaySeconds: true, minimumParticipants: true,
 }).partial().strict();
+const userIdSchema = z.string().trim().min(1).max(100);
+export const restoreBindingSchema = z.object({ teamName: nameSchema, userId: userIdSchema }).strict();
 export const restoreCreateBodySchema = z.object({
   auctionName: nameSchema,
   hostTeamName: nameSchema.optional(),
   snapshot: restoreSnapshotSchema,
   settings: restoreSettingsOverrideSchema.optional(),
+  /** Reserves restored teams for registered users; only the bound user can claim a bound team. */
+  bindings: z.array(restoreBindingSchema).max(8).optional(),
 }).strict();
+export const restoreBindBodySchema = z.object({ teamId: z.string().uuid(), userId: userIdSchema.nullable() }).strict();
 export const restoreReleaseBodySchema = z.object({ teamId: z.string().uuid() }).strict();

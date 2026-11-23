@@ -119,7 +119,8 @@ function restoreState(room: Room) {
       const r = restore.teams.find(x => x.teamId === t.id);
       return { teamId: t.id, name: t.name, claimed: !isUnclaimed(t), purseCr: toCr(remainingBudget(t)), openingPurseCr: toCr(r?.purseUnits ?? t.startingBudgetUnits),
         squadSize: t.playerIds.length, remainingSlots: Math.max(0, room.settings.maxSquadSize - t.playerIds.length),
-        retainedCount: r?.retainedCount ?? 0, auctionCount: r?.auctionCount ?? 0 };
+        retainedCount: r?.retainedCount ?? 0, auctionCount: r?.auctionCount ?? 0,
+        originalName: r?.name ?? t.name, reserved: !!t.reservedUserId, ...(t.reservedLabel ? { reservedLabel: t.reservedLabel } : {}) };
     }),
   };
 }
