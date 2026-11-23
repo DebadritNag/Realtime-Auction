@@ -13,6 +13,7 @@ import type { AuctionEngine } from '../modules/auction/auction.engine.js';
 import { roomState, type TeamPresenceEntry } from '../modules/rooms/room-state.js';
 import { MemoryPresenceStore, PresenceTracker, type PresenceStore, type PresenceView } from './presence.js';
 import { requireMember } from '../modules/rooms/room.service.js';
+import { isUnclaimed } from '../modules/restore/restore.claims.js';
 import { clientMessageSchema, type ClientMessage } from './protocol.js';
 import { commandSchema } from '../modules/auction/auction.schemas.js';
 import { UserThrottle } from '../utils/throttle.js';
@@ -103,7 +104,7 @@ export class RealtimeHub {
   }
   private teamPresence(room: Room): TeamPresenceEntry[] {
     const view = this.tracker.snapshot(room.code), names = this.usernames(room.code);
-    return room.teams.map(t => ({ teamId: t.id, userId: t.userId, managerUsername: names[t.userId] || t.managerUsername || '',
+    return room.teams.map(t => ({ teamId: t.id, ...(isUnclaimed(t) ? {} : { userId: t.userId }), managerUsername: names[t.userId] || t.managerUsername || '',
       connected: view[t.userId]?.connected ?? false, lastSeenAt: view[t.userId]?.lastSeenAt ?? null }));
   }
   private expire(connection: Connection): void {

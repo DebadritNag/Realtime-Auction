@@ -12,6 +12,7 @@ import { MemoryRoomRepository } from '../src/repositories/memory.js';
 import { FileRoomRepository } from '../src/repositories/file.js';
 import { CatalogPlayerRepository, demoPlayers } from '../src/modules/players/player.service.js';
 import { roomState } from '../src/modules/rooms/room-state.js';
+import { RealtimeHub } from '../src/realtime/hub.js';
 import { archiveFinalPriceUnits, buildArchiveRows } from '../src/modules/manager-mode/completed-auction-archive.js';
 import { buildMatchIndex, manualPlayerId, matchPlayer, normalizeName } from '../src/modules/restore/restore.matcher.js';
 import { validateSnapshot } from '../src/modules/restore/restore.validate.js';
@@ -316,6 +317,16 @@ describe('claims', () => {
     expect(state.soldPlayers.filter(p => p.isRetained).every(p => p.recordedPriceCr === 15)).toBe(true);
     expect(state.activity).toEqual([]);
     expect(JSON.stringify(state)).not.toContain('unclaimed:');
+  });
+  it('never leaks the unclaimed sentinel through host team presence', async () => {
+    const f = await setup();
+    const created = await f.createRoom();
+    const room = await f.state(created.roomCode);
+    const hub = Object.assign(Object.create(RealtimeHub.prototype), { tracker: { snapshot: () => ({}) }, usernames: () => ({}) });
+    const presence = (hub as unknown as { teamPresence(r: Room): unknown[] }).teamPresence(room);
+    expect(presence).toHaveLength(8);
+    expect(JSON.stringify(presence)).not.toContain('unclaimed:');
+    expect(JSON.stringify(roomState(room, 'host', 0, [], {}, presence as never))).not.toContain('unclaimed:');
   });
   it('lets the host release a claim, leave frees the claim, and non-hosts cannot release', async () => {
     const f = await setup();
