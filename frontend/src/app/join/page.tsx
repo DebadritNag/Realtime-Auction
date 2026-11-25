@@ -26,6 +26,9 @@ function JoinRoomForm() {
   const [restoreInfo, setRestoreInfo] = useState<RestoreRoomInfo | null>(null);
   const [restoredTeamId, setRestoredTeamId] = useState("");
   const [refreshTick, setRefreshTick] = useState(0);
+  // A user the host reserved a team for is placed there automatically and may rename it.
+  const [reservedName, setReservedName] = useState("");
+  const myTeam = restoreInfo?.teams.find((t) => t.reservedForYou) ?? null;
   const lookupCode = roomCode.trim().toUpperCase();
   useEffect(() => {
     if (!/^[A-HJ-NP-Z2-9]{6}$/.test(lookupCode)) {
@@ -37,7 +40,9 @@ function JoinRoomForm() {
       .lookup(lookupCode, controller.signal)
       .then((room) => {
         setRestoreInfo(room.restore ?? null);
-        setRestoredTeamId((current) => (room.restore?.teams.some((t) => t.id === current && !t.claimed) ? current : ""));
+        setRestoredTeamId((current) => (room.restore?.teams.some((t) => t.id === current && !t.claimed && !t.reserved) ? current : ""));
+        const mine = room.restore?.teams.find((t) => t.reservedForYou);
+        setReservedName((current) => (mine && !current ? mine.name : current));
       })
       .catch(() => {
         if (!controller.signal.aborted) setRestoreInfo(null); // join reports the real problem
@@ -63,7 +68,12 @@ function JoinRoomForm() {
       setValidationError("Please enter a room code.");
       return;
     }
-    if (restoreInfo) {
+    if (myTeam) {
+      if (!reservedName.trim()) {
+        setValidationError("Please enter your team name.");
+        return;
+      }
+    } else if (restoreInfo) {
       if (!restoredTeamId) {
         setValidationError("Choose the team you will manage.");
         return;
@@ -74,9 +84,11 @@ function JoinRoomForm() {
     }
 
     const success = await joinRoom(
-      restoreInfo
-        ? { roomCode: cleanCode, teamName: "", restoredTeamId }
-        : { roomCode: cleanCode, teamName: teamName.trim(), teamLogo }
+      myTeam
+        ? { roomCode: cleanCode, teamName: reservedName.trim() === myTeam.name ? "" : reservedName.trim(), restored: true }
+        : restoreInfo
+          ? { roomCode: cleanCode, teamName: "", restoredTeamId }
+          : { roomCode: cleanCode, teamName: teamName.trim(), teamLogo }
     );
 
     if (success) {
@@ -123,7 +135,21 @@ function JoinRoomForm() {
           required
         />
 
-        {restoreInfo ? (
+        {myTeam ? (
+          <div className="space-y-3" data-testid="restore-my-team">
+            <p className="text-sm font-bold text-[#f8fafc]" data-testid="restore-my-team-label">Your team: {myTeam.name}</p>
+            <p className="text-[11px] text-[#64748b]">
+              The host reserved this team for you ({restoreInfo?.snapshotName}). Its squad and purse stay as they are. You can enter it under a new team name.
+            </p>
+            <Input
+              label="Team Name"
+              value={reservedName}
+              onChange={(e) => setReservedName(e.target.value)}
+              leftIcon={<Shield className="w-4 h-4 text-[#00ff87]" />}
+              required
+            />
+          </div>
+        ) : restoreInfo ? (
           <fieldset className="space-y-2" data-testid="restore-team-picker">
             <legend className="block text-xs font-semibold uppercase tracking-wider text-[#94a3b8] mb-1.5">
               Choose your team ({restoreInfo.snapshotName})
@@ -135,7 +161,7 @@ function JoinRoomForm() {
               <label
                 key={team.id}
                 className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-sm transition-colors duration-200 ${
-                  team.claimed
+                  team.claimed || team.reserved
                     ? "border-[#242c3d] bg-[#0b0f16] text-[#64748b] cursor-not-allowed"
                     : restoredTeamId === team.id
                       ? "border-[#00ff87] bg-[#00ff87]/10 text-[#f8fafc] cursor-pointer"
@@ -148,13 +174,13 @@ function JoinRoomForm() {
                     name="restored-team"
                     value={team.id}
                     checked={restoredTeamId === team.id}
-                    disabled={team.claimed}
+                    disabled={team.claimed || team.reserved}
                     onChange={() => setRestoredTeamId(team.id)}
                     className="accent-[#00ff87] cursor-pointer disabled:cursor-not-allowed"
                   />
                   <span className="truncate font-bold">{team.name}</span>
                 </span>
-                <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider">{team.claimed ? "Claimed" : "Available"}</span>
+                <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider">{team.claimed ? "Claimed" : team.reserved ? "Reserved" : "Available"}</span>
               </label>
             ))}
           </fieldset>

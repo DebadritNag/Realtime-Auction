@@ -3,8 +3,11 @@ import type { RoomStateDTO,RoomSummaryDTO,RoomDetailsDTO } from '@/types/backend
 import { api,ApiError } from './api';
 import { settingsToDTO,mapRoom } from './contract';
 import { authService } from './auth.service';
-export interface JoinRoomPayload {roomCode:string;teamName:string;teamLogo?:string;/** Restored rooms: the existing team to claim. Name and crest are ignored. */restoredTeamId?:string}
+export interface JoinRoomPayload {roomCode:string;teamName:string;teamLogo?:string;/** Restored rooms: the existing team to claim (omit when the host reserved a team for the caller). */restoredTeamId?:string;/** Restored rooms: join without a picked team; the server assigns the reserved team and teamName renames it. */restored?:boolean}
 const RESTORE_JOIN_ERRORS:Record<string,string>={
+ TEAM_RESERVED:'That team is reserved for another manager. Pick a different team.',
+ ALREADY_RESERVED_ANOTHER_TEAM:'The host reserved a different team for you. Reload the page to join it.',
+ TEAM_NAME_TAKEN:'Another team already uses that name. Choose a different team name.',
  TEAM_ALREADY_CLAIMED:'That team has already been claimed by another manager. Pick a different team.',
  ALREADY_CLAIMED_ANOTHER_TEAM:'You already manage another team in this auction. Leave it before claiming a different one.',
 };
@@ -26,8 +29,9 @@ export const roomService={
   const code=validRoomCode(input.roomCode);
   // A refresh/rejoin never creates a second membership.
   try{return await this.getState(code);}catch(error){if(!(error instanceof Error)||!('status'in error)||error.status!==403)throw error;}
-  if(input.restoredTeamId){
-   try{await api.post('/rooms/'+code+'/join',{restoredTeamId:input.restoredTeamId});}
+  if(input.restoredTeamId||input.restored){
+   const name=input.teamName.trim();
+   try{await api.post('/rooms/'+code+'/join',{...(input.restoredTeamId?{restoredTeamId:input.restoredTeamId}:{}),...(name?{teamName:name}:{})});}
    catch(error){
     if(error instanceof ApiError&&RESTORE_JOIN_ERRORS[error.code])throw new ApiError(RESTORE_JOIN_ERRORS[error.code],error.code,error.status);
     throw error;

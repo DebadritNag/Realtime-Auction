@@ -1,0 +1,26 @@
+{
+  "project_type": "Monorepo: backend/ Fastify + WebSocket + Postgres (live rooms persisted as JSON in public.live_room_snapshots), frontend/ Next.js 16 (read frontend/AGENTS.md and node_modules/next/dist/docs before Next.js code)",
+  "language": "TypeScript (backend ESM, .js import suffixes); frontend TSX",
+  "build_system": "backend: tsc (tsconfig.build.json); frontend: next build. Windows/PowerShell, no long-lived dev servers.",
+  "test_framework": "backend vitest (backend/tests/restore.test.ts uses buildApp + StaticTokenAuthService + MemoryFc26Catalog); frontend headless Playwright .mjs tests in frontend/tests using ui-harness.mjs (restore-ui.mjs)",
+  "build_command": "cd backend; npx tsc -p tsconfig.build.json --noEmit  |  cd frontend; npm run typecheck; npx next build",
+  "test_command": "cd backend; npx vitest run tests/restore.test.ts (then full npx vitest run)  |  frontend: node tests/restore-ui.mjs through the existing runner",
+  "verification_instructions": "Backend tsc, restore tests, full vitest (known baseline: 6 skip-vote failures plus load-only timeouts). Frontend typecheck + next build + restore-ui (auction-ui, overview-ui, retention-ui, retention-overlay-ui, formations-ui failed on clean HEAD before). UTF-8 strict-decode scan of changed files (lone Latin-1 bytes broke Vercel before).",
+  "snapshot_or_generated_files": null,
+  "environment_constraints": "Never touch the hosted DB; do not apply migrations; no migration needed. Commit locally, never push. Work in place in C:\\Users\\ASUS\\projects\\Realtime -Auction (no worktree). Run `git status` first and do not clobber unrelated changes.",
+  "contribution_requirements": "Follow existing conventions; no unrequested refactors; secure by default (parameterized SQL, no user ids leaked to non-hosts).",
+  "key_patterns": "Team.userId is identity; restored unclaimed teams use 'unclaimed:'+teamId sentinel (restore.claims.ts); room JSON is the persisted doc so additive optional Team fields need no migration; DomainError/requireThat for errors; engine mutates via manager.mutate; restore settings locked by RESTORE_LOCKED_SETTINGS.",
+  "relevant_files": [
+    ".agents/tasks/restore-auction-v2/plan.md",
+    "backend/src/modules/restore/restore.{build,claims,routes,schema,validate,types}.ts",
+    "backend/src/modules/rooms/{room.service,room.routes,room-state,room-summary}.ts",
+    "backend/src/modules/auction/{auction.engine,squad.service}.ts",
+    "backend/src/modules/retention/retention.service.ts",
+    "backend/src/modules/fc26/fc26.catalog.ts",
+    "backend/src/modules/profile/profile.routes.ts (pattern for profiles SQL)",
+    "backend/src/schemas/settings.ts", "backend/src/domain/types.ts", "backend/src/app.ts", "backend/tests/restore.test.ts",
+    "frontend/src/components/restore/*.tsx", "frontend/src/app/join/page.tsx", "frontend/src/app/create/page.tsx", "frontend/src/app/room/[roomCode]/page.tsx",
+    "frontend/src/services/{restore,room}.service.ts", "frontend/src/types/restore.ts", "frontend/tests/restore-ui.mjs", "frontend/tests/ui-harness.mjs"
+  ],
+  "directory_structure": "backend/src/{domain,modules/{restore,rooms,auction,retention,fc26,profile},realtime,schemas}; backend/tests; frontend/src/{app,components,services,stores,types}; frontend/tests; supabase/migrations (not touched)."
+}

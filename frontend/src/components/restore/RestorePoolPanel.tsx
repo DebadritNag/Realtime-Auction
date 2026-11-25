@@ -46,7 +46,7 @@ export function RestorePoolPanel({ roomCode }: { roomCode: string }) {
       <div>
         <h2 id="restore-pool-heading" className="text-xs font-bold uppercase tracking-wider text-[#94a3b8]">REMAINING POOL</h2>
         <p className="text-xs text-[#cbd5e1]" data-testid="restore-pool-summary">
-          {data ? <>{data.poolTotal} players will be auctioned. {data.ownedCount} are already in restored squads.</> : "Loading the remaining pool."}
+          {data ? <>{data.poolTotal} players will be auctioned. {data.ownedCount} are already in restored squads. Players newly added to the database are included.</> : "Loading the remaining pool."}
         </p>
       </div>
       {data ? (

@@ -116,7 +116,11 @@ export interface RestoreRoomSettingsInput {
   antiSnipingThresholdSeconds?: number;
   antiSnipingResetSeconds?: number;
 }
-export interface RestoreRoomTeamPublic { id: string; name: string; claimed: boolean }
+/** reserved: a host-bound user owns it. reservedForYou: the caller is that user. Never carries user ids. */
+export interface RestoreRoomTeamPublic { id: string; name: string; claimed: boolean; reserved?: boolean; reservedForYou?: boolean }
+/** A registered user the host can bind to a restored team. */
+export interface RestoreUserHit { userId: string; username: string; displayName: string }
+export interface RestoreBinding { teamName: string; userId: string }
 export interface RestoreCreateResponse {
   roomId: string;
   roomCode: string;
@@ -140,6 +144,11 @@ export interface RestoreStateDTO {
     teamId: string;
     name: string;
     claimed: boolean;
+    /** Snapshot name; the manager may have renamed the team since. */
+    originalName?: string;
+    reserved?: boolean;
+    /** Display name of the user the host bound to this team. */
+    reservedLabel?: string;
     purseCr: number;
     openingPurseCr: number;
     squadSize: number;

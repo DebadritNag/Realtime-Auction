@@ -1,0 +1,27 @@
+{
+    "id":  "FEAT-003",
+    "type":  "feat",
+    "description":  "Frontend: host binds users to restored teams in the restore workflow and lobby; join page auto-places a bound user in their team with an editable (new) team name; picker hides reserved teams; retention UI/redirect never appears for restored rooms. Consumes the API from FEAT-001/002 (see ../../plan.md D3-D7). Read frontend/AGENTS.md and the relevant node_modules/next/dist/docs guide before writing Next.js code.",
+    "status":  "completed",
+    "steps":  [
+                  "types/restore.ts, services/restore.service.ts (searchUsers, bind, bindings in create payload), services/room.service.ts (join with optional restoredTeamId plus teamName), types/backend.ts: new fields reserved, reservedForYou, originalName, reservedLabel.",
+                  "components/restore/RestoreWorkflow.tsx: per-team Manager control with user search (username/display name), clear button, duplicate prevention, host team shown as You; send bindings on create; note to bind before sharing the code.",
+                  "app/join/page.tsx: reservedForYou -\u003e \u0027Your team: \u003coriginal name\u003e\u0027 with editable team name prefilled, no picker; otherwise picker lists only unreserved unclaimed teams, reserved ones disabled. RestoreLobbyPanel.tsx: show \u0027was \u003coriginalName\u003e\u0027 and reserved label; host bind/unbind control.",
+                  "app/room/[roomCode]/page.tsx: retentionEnabled \u0026\u0026 !restore; no redirect to /retention when snapshot.restore; guard the retention route page for restored rooms. RestorePoolPanel.tsx: copy says newly added database players are included (no NEW badge).",
+                  "frontend/tests/restore-ui.mjs: cover workflow binding search + payload, join as reserved user with a new name, picker hides reserved teams, no retention UI in a restored lobby.",
+                  "UTF-8 strict-decode scan of every changed file in backend and frontend."
+              ],
+    "acceptance_criteria":  [
+                                "Host can pick a registered user for each non-host team before creating the room and sees the choice in the lobby",
+                                "A reserved user sees their team and can join under a different name without choosing from a picker",
+                                "Retention screens and gating never appear for restored rooms",
+                                "Typecheck, next build and restore-ui pass; no non-UTF-8 bytes in changed files"
+                            ],
+    "verification":  [
+                         "cd frontend; npm run typecheck",
+                         "cd frontend; npx next build",
+                         "cd frontend; run tests/restore-ui.mjs with the existing runner (see package.json and tests/ui-harness.mjs); auction-ui, overview-ui, retention-ui, retention-overlay-ui and formations-ui already failed on clean HEAD"
+                     ],
+    "blocked_reason":  null,
+    "findings":  "Frontend done. types/restore.ts: RestoreRoomTeamPublic.reserved/reservedForYou, RestoreUserHit, RestoreBinding; RestoreStateDTO.teams[] originalName/reserved/reservedLabel. restore.service: searchUsers(search) -\u003e GET /restore/users, bind(code,teamId,userId|null) -\u003e POST /rooms/:code/restore/bind, create accepts bindings. room.service JoinRoomPayload.restored?:boolean: reserved users join with {teamName} only (no restoredTeamId; teamName omitted when unchanged); error copy for TEAM_RESERVED, ALREADY_RESERVED_ANOTHER_TEAM, TEAM_NAME_TAKEN. RestoreWorkflow: exported ManagerPicker (search \u003e=3 chars, clear, users bound elsewhere disabled), \u0027Manager for each team\u0027 section in step 4, host team shows \u0027You\u0027, bindings sent on create (host team excluded; changing host team drops its binding). Join page: reservedForYou -\u003e \u0027Your team: \u003cname\u003e\u0027 + editable Team Name, no picker; picker disables reserved teams (label \u0027Reserved\u0027). RestoreLobbyPanel: \u0027was \u003coriginalName\u003e\u0027 when renamed, \u0027Reserved for \u003clabel\u003e\u0027, host bind/remove control on unclaimed non-host teams (onBind prop; room page wires restoreService.bind + REQUEST_STATE). Room page: retentionEnabled false and no /retention redirect when restore; retention page redirects to lobby for restored rooms. Pool panel copy: newly added database players are included (no NEW badge). Verified: npm run typecheck PASS; npx next build PASS; node tests/restore-ui.mjs PASS (new v2 blocks: workflow binding + payload, reserved join with \u0027Ritz Slayers\u0027, picker reserved disabled, lobby original name/reserved label/bind, no retention card). UTF-8 strict scan of 27 changed backend+frontend files (since a70557e): 0 bad. Not rerun: other UI suites (auction-ui, overview-ui, retention-ui, retention-overlay-ui, formations-ui were failing on clean HEAD)."
+}

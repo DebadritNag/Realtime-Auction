@@ -1,0 +1,29 @@
+﻿{
+    "id":  "FEAT-002",
+    "type":  "feat",
+    "description":  "Backend: team identity follows the user. Host binds registered users to restored teams (create body bindings + lobby bind endpoint, profile search endpoint). Bound user joins and gets the reserved team with unchanged squad/purse, optionally under a new name. Others cannot take reserved teams; one user holds at most one team. Depends on FEAT-001 only for test file ordering. Decision record and rules D3, D5, D6, D7 are in ../../plan.md; follow them exactly.",
+    "status":  "completed",
+    "steps":  [
+                  "domain/types.ts Team: add reservedUserId?, reservedLabel?. squad.service.ts assertRoom: reserved ids unique and not equal to another team\u0027s claimed userId, restored rooms only.",
+                  "New modules/restore/restore.profiles.ts: ProfileDirectory interface, PostgresProfileDirectory(sql) (parameterized ilike on username, display_name, default_team_name; escape % and _; limit 10; min 3 chars), MemoryProfileDirectory. app.ts: AppOptions.profileDirectory, default Postgres impl when options.database exists; pass to registerRestoreRoutes.",
+                  "restore.schema.ts: restoreCreateBodySchema.bindings (max 8, strict {teamName,userId}); restoreBindBodySchema {teamId, userId|null}. settings.ts restoredJoinSchema: restoredTeamId optional.",
+                  "restore.claims.ts: bindTeam/unbindTeam/assertBindable; releaseTeamClaim keeps reservation; releaseAndUnbind used by host release route and KICK_MEMBER in auction.engine.ts (~l.246).",
+                  "restore.build.ts + restore.routes.ts: apply and validate bindings at create (unknown team, host team, duplicate user -\u003e USER_ALREADY_BOUND, unknown user -\u003e PROFILE_NOT_FOUND); GET /api/restore/users?search= (rate limited); POST /api/rooms/:code/restore/bind (host, lobby, emits ROOM_UPDATED); room.routes.ts GET /api/rooms/:code adds reserved and reservedForYou per team (no user ids).",
+                  "room.service.ts join restored branch: auto-assign caller\u0027s reserved team; TEAM_RESERVED (403) for others; ALREADY_RESERVED_ANOTHER_TEAM (409); optional teamName/logo renames the team (nameSchema, case-insensitive unique, lobby only, also for an already-claimed own team); squad, purse, purchases untouched.",
+                  "room-state.ts restoreState: per team originalName (from room.restore.teams), reserved, reservedLabel; no ids.",
+                  "backend/tests/restore.test.ts: describe(\u0027v2 ownership\u0027) per plan step 2g (rename Ritzz FC -\u003e Ritz Slayers by bound user u1 keeps squad/purse and shows in state, /teams/:id, results, restart; other user cannot take it by id or by typing either name; one user one team; fallback claim; leave keeps reservation, host release clears it; non-host bind rejected; non-restored join unchanged)."
+              ],
+    "acceptance_criteria":  [
+                                "A bound user joining with a different team name receives the restored team with unchanged squad, retained/auction counts and purse, displayed under the new name everywhere and after a server restart",
+                                "A different user cannot claim a reserved team by id or by typing its old or new name",
+                                "No user can be bound to or hold two teams; unbound teams remain claimable by pick",
+                                "Non-restored join/create flows and all prior restore tests still pass"
+                            ],
+    "verification":  [
+                         "cd backend; npx tsc -p tsconfig.build.json --noEmit",
+                         "cd backend; npx vitest run tests/restore.test.ts",
+                         "cd backend; npx vitest run (baseline: 6 skip-vote failures and load-only timeouts are known)"
+                     ],
+    "blocked_reason":  null,
+    "findings":  "Backend ownership done. Team.reservedUserId/reservedLabel (room JSON, no migration). New restore.profiles.ts (ProfileDirectory, PostgresProfileDirectory, MemoryProfileDirectory); AppOptions.profileDirectory. Create body bindings [{teamName,userId}] (\u003c=8); errors: USER_ALREADY_BOUND 409, PROFILE_NOT_FOUND 404, BINDING_TEAM_NOT_FOUND 422, DUPLICATE_BINDING 422, HOST_TEAM_NOT_BINDABLE 422, TEAM_ALREADY_CLAIMED 409 (bind onto a team claimed by someone else). Endpoints: GET /api/restore/users?search= (min 3 chars, max 10, returns {users:[{userId,username,displayName}]}); POST /api/rooms/:code/restore/bind {teamId,userId|null} host+lobby, returns {teams,sequence}. Team lists (GET /api/rooms/:code restore.teams, create response restore.teams, release and bind responses) are now {id,name,claimed,reserved,reservedForYou}; no user ids. Join: POST /api/rooms/:code/join accepts {} / {teamName,teamLogoEmoji,teamLogoUrl} / {restoredTeamId,...}; bound user auto-assigned; teamName renames (lobby only, case-insensitive unique TEAM_NAME_TAKEN, works again for an already-claimed own team); errors TEAM_RESERVED 403, ALREADY_RESERVED_ANOTHER_TEAM 409, RESTORED_TEAM_REQUIRED 400 when no id and no reservation. Join route uses restoredJoinSchema when body has restoredTeamId or lacks teamName. State restore.teams[] adds originalName, reserved, reservedLabel (display name). Leave keeps reservation; host release and KICK_MEMBER clear it. Tests: restore.test.ts v2 ownership (5 tests), setup(repo, fc26, profileDirectory) helper; in the template the host team is Ritzz FC, so ownership tests pass hostTeamName \u0027BGT\u0027. tsc OK; restore.test.ts 37/37; full vitest 387 pass, 7 fail = known baseline. FEAT-003 note: frontend must send bindings on create, hide reserved teams from the picker, and call join without restoredTeamId for reservedForYou."
+}

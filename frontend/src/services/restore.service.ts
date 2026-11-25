@@ -2,7 +2,7 @@ import { api } from './api';
 import { validRoomCode } from './room.service';
 import type {
   RestoreCandidate, RestoreCreateResponse, RestorePlayerSearchResponse, RestorePoolQuery, RestorePoolResponse, RestorePreview,
-  RestoreRoomSettingsInput, RestoreRoomTeamPublic, RestoreSnapshot, RestoreTemplate, RoomLookupDTO,
+  RestoreBinding, RestoreRoomSettingsInput, RestoreRoomTeamPublic, RestoreSnapshot, RestoreTemplate, RestoreUserHit, RoomLookupDTO,
 } from '@/types/restore';
 
 function listParams(query: RestorePoolQuery, defaultLimit: number) {
@@ -23,7 +23,7 @@ export const restoreService = {
   async preview(snapshot: RestoreSnapshot) {
     return (await api.post<{ preview: RestorePreview }>('/restore/preview', { snapshot })).preview;
   },
-  create(input: { auctionName: string; hostTeamName?: string; snapshot: RestoreSnapshot; settings?: RestoreRoomSettingsInput }) {
+  create(input: { auctionName: string; hostTeamName?: string; snapshot: RestoreSnapshot; settings?: RestoreRoomSettingsInput; bindings?: RestoreBinding[] }) {
     return api.post<RestoreCreateResponse>('/restore/rooms', input);
   },
   /** Host resolution search before the room exists. */
@@ -44,6 +44,14 @@ export const restoreService = {
   },
   release(roomCode: string, teamId: string) {
     return api.post<{ teams: RestoreRoomTeamPublic[]; sequence: number }>('/rooms/' + validRoomCode(roomCode) + '/restore/release', { teamId });
+  },
+  /** Registered users the host can bind to a team (the server requires at least 3 characters). */
+  async searchUsers(search: string, signal?: AbortSignal) {
+    return (await api.get<{ users: RestoreUserHit[] }>('/restore/users?search=' + encodeURIComponent(search.trim()), { signal })).users;
+  },
+  /** Host only, lobby only. userId null removes the binding. */
+  bind(roomCode: string, teamId: string, userId: string | null) {
+    return api.post<{ teams: RestoreRoomTeamPublic[]; sequence: number }>('/rooms/' + validRoomCode(roomCode) + '/restore/bind', { teamId, userId });
   },
   /** GET /rooms/:code. `restore` is present only for restored rooms. */
   lookup(roomCode: string, signal?: AbortSignal) {

@@ -64,7 +64,7 @@ export default function RoomLobbyPage({
   // ── Retention is a dedicated page while teams are selecting ───────────────
   const livePhase = snapshot?.retention?.phase;
   useEffect(() => {
-    if (snapshot?.status === "LOBBY" && (livePhase === "TEAM_SELECTING" || livePhase === "ALL_TEAMS_COMPLETED"))
+    if (snapshot?.status === "LOBBY" && !snapshot.restore && (livePhase === "TEAM_SELECTING" || livePhase === "ALL_TEAMS_COMPLETED"))
       router.replace(`/room/${roomCode}/retention`);
   }, [snapshot?.status, livePhase, roomCode, router]);
 
@@ -116,7 +116,7 @@ export default function RoomLobbyPage({
   // they have team.connected correctly populated.  Fall back to the REST snapshot
   // from room.store until the socket delivers the first ROOM_STATE.
   const displayTeams = liveTeams.length > 0 ? liveTeams : room.teams;
-  const retentionEnabled = (snapshot?.settings.retention?.enabled ?? room.settings.retentionEnabled) === true;
+  const retentionEnabled = !(snapshot?.restore ?? room.restore) && (snapshot?.settings.retention?.enabled ?? room.settings.retentionEnabled) === true;
   const retentionPhase = snapshot?.retention?.phase;
   // Restored rooms (created from a snapshot) show claim state and purses, and cannot start with unclaimed teams.
   const restore = snapshot?.restore ?? room.restore ?? null;
@@ -125,6 +125,10 @@ export default function RoomLobbyPage({
     void webSocketService.send({ type: "REQUEST_STATE", payload: { roomCode } }).catch(() => {});
   };
 
+  const handleBind = async (teamId: string, userId: string | null) => {
+    await restoreService.bind(roomCode, teamId, userId);
+    void webSocketService.send({ type: "REQUEST_STATE", payload: { roomCode } }).catch(() => {});
+  };
   return (
     <>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
@@ -179,6 +183,7 @@ export default function RoomLobbyPage({
                 currentTeamId={room.teams.find((t) => t.isCurrentUser)?.id}
                 maxSquadSize={room.settings.maxSquadSize}
                 onRelease={handleRelease}
+                onBind={handleBind}
               />
             ) : (<>
             <div className="flex items-center gap-2 pb-2 border-b border-[#242c3d]">

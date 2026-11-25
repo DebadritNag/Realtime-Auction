@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { CircleAlert, ShieldCheck, Users, UserX } from "lucide-react";
 import { formatCr } from "@/lib/utils";
 import { normalizeError } from "@/services/api";
+import { ManagerPicker } from "./RestoreWorkflow";
 import type { RestoreStateDTO } from "@/types/restore";
 
 export interface RestoreLobbyPanelProps {
@@ -13,10 +14,12 @@ export interface RestoreLobbyPanelProps {
   currentTeamId?: string | null;
   maxSquadSize?: number;
   onRelease: (teamId: string) => Promise<void>;
+  /** Host only. userId null removes the reservation. Omit to hide the control. */
+  onBind?: (teamId: string, userId: string | null) => Promise<void>;
 }
 
 /** Lobby view of a restored auction: every team with its exact purse and squad, who has claimed it, and the host's release action. */
-export function RestoreLobbyPanel({ restore, isHost, currentTeamId, maxSquadSize = 20, onRelease }: RestoreLobbyPanelProps) {
+export function RestoreLobbyPanel({ restore, isHost, currentTeamId, maxSquadSize = 20, onRelease, onBind }: RestoreLobbyPanelProps) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +35,18 @@ export function RestoreLobbyPanel({ restore, isHost, currentTeamId, maxSquadSize
     }
   };
 
+  const bind = async (teamId: string, userId: string | null) => {
+    if (!onBind) return;
+    setBusyId(teamId);
+    setError(null);
+    try {
+      await onBind(teamId, userId);
+    } catch (e) {
+      setError(normalizeError(e).message);
+    } finally {
+      setBusyId(null);
+    }
+  };
   return (
     <section aria-labelledby="restore-lobby-heading" className="space-y-3" data-testid="restore-lobby-panel">
       <div className="flex items-center gap-2 pb-2 border-b border-[#242c3d]">
@@ -57,6 +72,13 @@ export function RestoreLobbyPanel({ restore, isHost, currentTeamId, maxSquadSize
                   {team.name}
                   {team.teamId === currentTeamId ? <span className="ml-2 rounded bg-[#00ff87] px-1.5 py-0.5 text-[9px] font-black uppercase text-[#08090d]">YOU</span> : null}
                 </h3>
+                {team.originalName && team.originalName !== team.name
+                  ? <p className="text-[11px] text-[#64748b]" data-testid="restore-original-name">was {team.originalName}</p> : null}
+                {team.reserved ? (
+                  <p className="text-[11px] text-sky-300" data-testid="restore-reserved-label">
+                    Reserved for {team.reservedLabel || "a registered user"}
+                  </p>
+                ) : null}
                 <span data-testid="restore-claim-state"
                   className={"mt-1 inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider " +
                     (team.claimed ? "border-[#00ff87]/40 bg-[#00ff87]/10 text-[#00ff87]" : "border-amber-400/40 bg-amber-400/10 text-amber-300")}>
@@ -72,6 +94,19 @@ export function RestoreLobbyPanel({ restore, isHost, currentTeamId, maxSquadSize
                 </button>
               ) : null}
             </div>
+            {isHost && onBind && !team.claimed && team.teamId !== currentTeamId ? (
+              <div className="mt-3" data-testid="restore-bind-control">
+                {team.reserved ? (
+                  <button type="button" onClick={() => void bind(team.teamId, null)} disabled={busyId === team.teamId}
+                    aria-label={"Remove manager for " + team.name}
+                    className="rounded-lg border border-[#37435e] bg-[#151a24] px-2.5 py-1.5 text-xs font-bold text-[#cbd5e1] cursor-pointer transition-colors duration-200 hover:border-red-500/60 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff87] disabled:opacity-50 disabled:cursor-not-allowed">
+                    Remove manager
+                  </button>
+                ) : (
+                  <ManagerPicker teamName={team.name} takenIds={[]} onChange={(u) => { if (u) void bind(team.teamId, u.userId); }} />
+                )}
+              </div>
+            ) : null}
             <dl className="mt-3 grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
               <div><dt className="text-[10px] uppercase text-[#64748b]">Purse</dt><dd className="font-mono font-bold text-[#00ff87]" data-testid="restore-lobby-purse">{formatCr(team.purseCr)}</dd></div>
               <div><dt className="text-[10px] uppercase text-[#64748b]">Squad</dt><dd className="font-mono font-bold text-white" data-testid="restore-lobby-squad">{team.squadSize}/{maxSquadSize}</dd></div>

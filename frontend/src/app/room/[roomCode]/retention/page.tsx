@@ -26,7 +26,7 @@ export default function RetentionPage({ params }: { params: Promise<{ roomCode: 
   }, [roomCode]);
 
   const phase = snapshot?.retention?.phase;
-  const enabled = snapshot?.settings.retention?.enabled === true;
+  const enabled = snapshot?.settings.retention?.enabled === true && !snapshot.restore;
   useEffect(() => {
     if (!snapshot) return;
     if (snapshot.status === "RUNNING" || snapshot.status === "PAUSED") router.replace("/auction/" + roomCode);

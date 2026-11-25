@@ -41,6 +41,8 @@ ${fixtures}
 restoreService.templates=async()=>{window.calls.push('templates');return [{id:'t',name:template.name,teamCount:8,playerCount:99,hostTeam:'Ritzz FC',snapshot:template}];};
 restoreService.preview=async snap=>{window.calls.push('preview');return buildPreview(snap);};
 restoreService.searchPlayers=async q=>{window.calls.push('search '+q.search);return {total:1,offset:0,limit:8,players:[{id:'fc26-77',name:'M. Striker',fullName:'Mystery Striker',position:'FWD',subPosition:'ST',ovr:80,club:'Test FC',positions:['ST'],stats:{},basePriceCr:5,potId:'ATT',status:'WAITING',round:0}]};};
+const USERS=[{userId:'u-deb',username:'debadrit',displayName:'Debadrit Nag'},{userId:'u-sam',username:'sam99',displayName:'Sam Roy'}];
+restoreService.searchUsers=async q=>{window.calls.push('users '+q);return USERS.filter(u=>(u.username+u.displayName).toLowerCase().includes(q.toLowerCase()));};
 restoreService.create=async input=>{window.calls.push('create');window.created=input;return {roomId:'r',roomCode:'ABC234',restore:{source:'TEMPLATE',snapshotName:'x',warnings:[],teams:[]},remainingPool:{total:1,byPot:{}}};};
 useRoomStore.setState({createRoom:async()=>{window.calls.push('normal createRoom');return 'ZZZ999';}});
 createRoot(document.getElementById('root')).render(<CreateRoomPage/>);
@@ -54,7 +56,9 @@ import {restoreService} from './src/services/restore.service';
 import {useRoomStore} from './src/stores/room.store';
 window.calls=[];
 const teams=[{id:'t1',name:'Ritzz FC',claimed:false},{id:'t2',name:'FidoDido FC',claimed:true},{id:'t3',name:'DDD',claimed:false}];
-restoreService.lookup=async code=>{window.calls.push('lookup '+code);return code==='NORMAL'?{roomCode:code,auctionName:'n',status:'LOBBY'}:{roomCode:code,auctionName:'r',status:'LOBBY',restore:{snapshotName:'Super League Football Auction 2026',teams}};};
+const PICK=[{id:'t1',name:'Ritzz FC',claimed:false,reserved:true},{id:'t2',name:'FidoDido FC',claimed:true,reserved:false},{id:'t3',name:'DDD',claimed:false,reserved:false}];
+const MINE=[{id:'t1',name:'Ritzz FC',claimed:false,reserved:true,reservedForYou:true},{id:'t2',name:'FidoDido FC',claimed:true,reserved:false},{id:'t3',name:'DDD',claimed:false,reserved:true}];
+restoreService.lookup=async code=>{window.calls.push('lookup '+code);if(code==='PQR234')return {roomCode:code,auctionName:'r',status:'LOBBY',restore:{snapshotName:'S',teams:PICK}};if(code==='RES234')return {roomCode:code,auctionName:'r',status:'LOBBY',restore:{snapshotName:'S',teams:MINE}};return code==='NORMAL'?{roomCode:code,auctionName:'n',status:'LOBBY'}:{roomCode:code,auctionName:'r',status:'LOBBY',restore:{snapshotName:'Super League Football Auction 2026',teams}};};
 useRoomStore.setState({joinRoom:async input=>{window.calls.push('join '+JSON.stringify(input));return true;}});
 createRoot(document.getElementById('root')).render(<JoinPage/>);
 `);
@@ -70,8 +74,10 @@ import {restoreService} from './src/services/restore.service';
 const NAMES=${JSON.stringify(NAMES)},PURSES=${JSON.stringify(PURSES)},SQUADS=${JSON.stringify(SQUADS)},RETAINED=${JSON.stringify(RETAINED)};
 window.calls=[];
 const restore={enabled:true,source:'TEMPLATE',snapshotName:'Super League Football Auction 2026',restoredAt:0,warnings:[],unclaimedCount:2,
- teams:NAMES.map((name,t)=>({teamId:'t'+t,name,claimed:t<6,purseCr:PURSES[t],openingPurseCr:PURSES[t],squadSize:SQUADS[t],remainingSlots:20-SQUADS[t],retainedCount:RETAINED[t],auctionCount:SQUADS[t]-RETAINED[t]}))};
+ teams:NAMES.map((name,t)=>({teamId:'t'+t,name:t===1?'Fido Slayers':name,originalName:name,reserved:t===6,reservedLabel:t===6?'Sam Roy':undefined,claimed:t<6,purseCr:PURSES[t],openingPurseCr:PURSES[t],squadSize:SQUADS[t],remainingSlots:20-SQUADS[t],retainedCount:RETAINED[t],auctionCount:SQUADS[t]-RETAINED[t]}))};
 restoreService.release=async(code,id)=>{window.calls.push('release '+code+' '+id);return {teams:[],sequence:1};};
+restoreService.searchUsers=async q=>{window.calls.push('users '+q);return [{userId:'u-deb',username:'debadrit',displayName:'Debadrit Nag'}];};
+const bindTeam=async(id,uid)=>{window.calls.push('bind '+id+' '+uid);};
 restoreService.pool=async(code,q)=>{window.calls.push('pool '+(q.search||'')+' '+(q.offset||0));
  const all=Array.from({length:45},(_,i)=>({id:'p'+i,name:'Pool Player '+i,position:'MID',subPosition:'CM',ovr:70,stats:{},basePriceCr:1,potId:'MID',status:'WAITING',round:0,...(i===0?{playerTag:'UNDERDOG'}:{})}));
  const rows=q.search?all.filter(p=>p.name.includes(q.search)):all;
@@ -87,7 +93,7 @@ const teams=mapTeams(dto);
 window.mapped=teams.map(t=>({name:t.name,claimed:t.claimed,connected:t.connected,manager:t.managerUsername,remaining:t.remainingSlots,prices:t.squad.map(p=>String(p.soldPrice)),restored:t.squad.map(p=>p.restoredFromSnapshot===true),retained:t.squad.map(p=>p.isRetained)}));
 const isHost=location.hash!=='#guest';
 createRoot(document.getElementById('root')).render(<div style={{padding:12,display:'grid',gap:16}}>
- <RestoreLobbyPanel restore={restore} isHost={isHost} currentTeamId="t0" onRelease={async id=>{await restoreService.release('ABC234',id);}}/>
+ <RestoreLobbyPanel restore={restore} isHost={isHost} currentTeamId="t0" onRelease={async id=>{await restoreService.release('ABC234',id);}} onBind={bindTeam}/>
  <RestorePoolPanel roomCode="ABC234"/>
  <SquadOverview teams={teams} currentTeamId="a" maxSquadSize={20} mode="all"/>
 </div>);
@@ -248,4 +254,78 @@ for (const width of [375, 768, 1280]) {
     await expect(page.getByRole('button', { name: /^Release / })).toHaveCount(0); // only the host can release
   } finally { await browser.close(); }
 }
-console.log('PASS: restore toggle ON/OFF, template with 8 teams (exact purses, squads, slots), expandable squads with RETAINED/AUCTION badges, CRITICAL blocks confirm until resolved, restore create payload, join picker (claimed disabled, team required, restoredTeamId sent), lobby claim state and host-only release, remaining pool paging/search, restored players show no price, no horizontal scroll at 375/768/1280.');
+// ---- v2: host binds users in the workflow ----
+{
+  const { browser, page, errors } = await openPage(createBundle, { viewport: { width: 1280, height: 900 } });
+  try {
+    await page.getByTestId('restore-toggle').check({ force: true });
+    await page.getByTestId('restore-load-template').click();
+    await expect(page.getByTestId('restore-manager-row')).toHaveCount(8);
+    await expect(page.getByTestId('restore-workflow')).toContainText('before sharing the room code');
+    await expect(page.getByTestId('manager-you')).toHaveCount(1); // host team Ritzz FC
+    const row = (n) => page.locator('[data-testid="restore-manager-row"][data-team="' + n + '"]');
+    const fido = row('FidoDido FC');
+    await fido.getByLabel('Search registered users for FidoDido FC').fill('deb');
+    await fido.getByRole('button', { name: 'Search users for FidoDido FC' }).click();
+    await fido.getByRole('button', { name: /Debadrit Nag/ }).click();
+    await expect(fido.getByTestId('manager-selected')).toContainText('Debadrit Nag');
+    // the same user cannot be bound to a second team
+    const ddd = row('DDD');
+    await ddd.getByLabel('Search registered users for DDD').fill('deb');
+    await ddd.getByRole('button', { name: 'Search users for DDD' }).click();
+    await expect(ddd.getByRole('button', { name: /Debadrit Nag/ })).toBeDisabled();
+    // resolve the unmatched player so create is allowed
+    await page.getByTestId('restore-expand').nth(0).click();
+    await page.getByRole('button', { name: 'Search', exact: true }).click();
+    await page.getByRole('button', { name: /M\. Striker/ }).click();
+    await page.getByTestId('restore-confirm').click();
+    await expect.poll(() => page.evaluate(() => window.calls.includes('create'))).toBe(true);
+    const sent = await page.evaluate(() => window.created);
+    expect(sent.bindings).toEqual([{ teamName: 'FidoDido FC', userId: 'u-deb' }]);
+    expect(errors).toEqual([]);
+  } finally { await browser.close(); }
+}
+// ---- v2: join page, reserved user and picker ----
+{
+  const { browser, page, errors } = await openPage(joinBundle, { viewport: { width: 375, height: 900 } });
+  try {
+    await page.getByLabel('Auction Room Code').fill('res234');
+    await expect(page.getByTestId('restore-my-team-label')).toHaveText('Your team: Ritzz FC');
+    await expect(page.getByTestId('restore-team-picker')).toHaveCount(0);
+    await expect(page.getByRole('radio')).toHaveCount(0);
+    const name = page.getByLabel('Team Name');
+    await expect(name).toHaveValue('Ritzz FC');
+    await name.fill('Ritz Slayers');
+    await page.getByRole('button', { name: /JOIN ROOM LOBBY/ }).click();
+    await expect.poll(() => page.evaluate(() => window.calls.filter((c) => c.startsWith('join')))).toEqual(['join {"roomCode":"RES234","teamName":"Ritz Slayers","restored":true}']);
+    expect(await noHorizontalScroll(page)).toBe(true);
+    expect(errors).toEqual([]);
+  } finally { await browser.close(); }
+}
+{
+  const { browser, page } = await openPage(joinBundle, { viewport: { width: 1280, height: 900 } });
+  try {
+    await page.getByLabel('Auction Room Code').fill('pqr234');
+    await expect(page.getByRole('radio')).toHaveCount(3);
+    await expect(page.getByRole('radio', { name: /Ritzz FC/ })).toBeDisabled();
+    await expect(page.getByTestId('restore-team-picker')).toContainText('Reserved');
+    await expect(page.getByRole('radio', { name: /DDD/ })).toBeEnabled();
+  } finally { await browser.close(); }
+}
+// ---- v2: lobby shows original name, reserved label, host bind control, and no retention UI ----
+{
+  const { browser, page, errors } = await openPage(viewsBundle, { viewport: { width: 1280, height: 900 } });
+  try {
+    await expect(page.getByTestId('restore-original-name')).toHaveText('was FidoDido FC');
+    await expect(page.getByTestId('restore-reserved-label')).toContainText('Sam Roy');
+    await expect(page.getByTestId('restore-bind-control')).toHaveCount(2); // t6 (reserved) and t7 (unbound); claimed teams have none
+    await expect(page.getByRole('button', { name: 'Remove manager for Dakshineswar FC' })).toBeVisible();
+    await page.getByLabel('Search registered users for BGT').fill('deb');
+    await page.getByRole('button', { name: 'Search users for BGT' }).click();
+    await page.getByRole('button', { name: /Debadrit Nag/ }).click();
+    await expect.poll(() => page.evaluate(() => window.calls.includes('bind t7 u-deb'))).toBe(true);
+    await expect(page.getByTestId('retention-status-card')).toHaveCount(0);
+    expect(errors).toEqual([]);
+  } finally { await browser.close(); }
+}
+console.log('PASS: restore toggle ON/OFF, template with 8 teams (exact purses, squads, slots), expandable squads with RETAINED/AUCTION badges, CRITICAL blocks confirm until resolved, restore create payload, host user binding with search and duplicate block, reserved join with a new name, reserved teams disabled in picker, lobby original name and bind control, join picker (claimed disabled, team required, restoredTeamId sent), lobby claim state and host-only release, remaining pool paging/search, restored players show no price, no horizontal scroll at 375/768/1280.');

@@ -1,0 +1,7 @@
+{
+  "task_id": "task-restore-auction-v2",
+  "task_description": "Refine Restore Previous Auction State: remaining pool includes newly added catalog players, no retention for restored rooms, team identity follows the bound user (host binds users to restored teams; rename allowed on join), different users cannot take reserved teams. See ../plan.md.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

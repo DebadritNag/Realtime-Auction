@@ -6,7 +6,7 @@ import { restoreService } from "@/services/restore.service";
 import { normalizeError } from "@/services/api";
 import { formatCr } from "@/lib/utils";
 import type {
-  RestoreCandidate, RestoreIssue, RestorePreview, RestorePreviewPlayer, RestoreRoomSettingsInput, RestoreSnapshot,
+  RestoreCandidate, RestoreIssue, RestorePreview, RestorePreviewPlayer, RestoreRoomSettingsInput, RestoreSnapshot, RestoreUserHit,
 } from "@/types/restore";
 
 export interface RestoreWorkflowProps {
@@ -90,6 +90,72 @@ function Resolver({ player, onPick, onManual }: { player: RestorePreviewPlayer; 
   );
 }
 
+/** Host picks the registered user who will manage one restored team. Results already bound to another team are disabled. */
+export function ManagerPicker({ teamName, selected, takenIds, onChange, search = restoreService.searchUsers }: {
+  teamName: string;
+  selected?: RestoreUserHit;
+  takenIds: string[];
+  onChange: (user: RestoreUserHit | null) => void;
+  search?: (q: string, signal?: AbortSignal) => Promise<RestoreUserHit[]>;
+}) {
+  const inputId = useId();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<RestoreUserHit[] | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const run = async () => {
+    const q = query.trim();
+    if (q.length < 3) { setError("Type at least 3 characters."); return; }
+    setBusy(true);
+    setError(null);
+    try {
+      setResults(await search(q));
+    } catch (e) {
+      setError(normalizeError(e).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  if (selected) {
+    return (
+      <div className="flex items-center gap-2 text-xs" data-testid="manager-selected">
+        <span className="truncate font-bold text-white">{selected.displayName || selected.username}<span className="ml-1.5 font-normal text-[#8FA5B8]">@{selected.username}</span></span>
+        <button type="button" className={ghostButton} onClick={() => { onChange(null); setResults(null); setQuery(""); }} aria-label={"Clear manager for " + teamName}>Clear</button>
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-1.5" data-testid="manager-picker">
+      <div className="flex gap-2">
+        <label htmlFor={inputId} className="sr-only">Search registered users for {teamName}</label>
+        <input id={inputId} className={field} value={query} placeholder="Username or display name" onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void run(); } }} />
+        <button type="button" className={ghostButton} onClick={() => void run()} disabled={busy} aria-label={"Search users for " + teamName}>
+          {busy ? <LoaderCircle className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <Search className="w-3.5 h-3.5" aria-hidden="true" />}
+          Search
+        </button>
+      </div>
+      {error ? <p role="alert" className="text-xs text-red-300">{error}</p> : null}
+      {results && results.length === 0 ? <p className="text-xs text-[#8FA5B8]">No registered users found.</p> : null}
+      {results && results.length ? (
+        <ul className="grid gap-1" aria-label={"Users for " + teamName}>
+          {results.map((u) => {
+            const taken = takenIds.includes(u.userId);
+            return (
+              <li key={u.userId}>
+                <button type="button" disabled={taken} onClick={() => { onChange(u); setResults(null); }}
+                  className="w-full text-left flex items-center justify-between gap-2 rounded-md border border-[#7495B2]/25 bg-[#0A1724] px-2.5 py-1.5 text-xs text-white cursor-pointer transition-colors duration-200 hover:border-[#00F5A0]/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00F5A0] disabled:opacity-50 disabled:cursor-not-allowed">
+                  <span className="truncate font-bold">{u.displayName || u.username}<span className="ml-1.5 font-normal text-[#8FA5B8]">@{u.username}</span></span>
+                  {taken ? <span className="shrink-0 text-[10px] text-[#8FA5B8]">Already bound</span> : null}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
 function matchLabel(p: RestorePreviewPlayer) {
   switch (p.match.kind) {
     case "MATCHED_FC26": return "FC26";
@@ -112,6 +178,8 @@ export function RestoreWorkflow({ auctionName, settings, onCreated }: RestoreWor
   const [busy, setBusy] = useState<null | "template" | "preview" | "create">(null);
   const [error, setError] = useState<string | null>(null);
   const [createIssues, setCreateIssues] = useState<string[]>([]);
+  /** Host-chosen manager per restored team name. Sent as bindings on create. */
+  const [managers, setManagers] = useState<Record<string, RestoreUserHit>>({});
 
   const runPreview = useCallback(async (snap: RestoreSnapshot, preferredHost?: string) => {
     setBusy("preview");
@@ -120,6 +188,7 @@ export function RestoreWorkflow({ auctionName, settings, onCreated }: RestoreWor
       const result = await restoreService.preview(snap);
       setPreview(result);
       setSnapshot(snap);
+      setManagers((cur) => Object.fromEntries(Object.entries(cur).filter(([name]) => result.teams.some((t) => t.name === name))));
       setHostTeam((current) => {
         const names = result.teams.map((t) => t.name);
         const wanted = preferredHost ?? current ?? snap.hostTeam;
@@ -182,9 +251,11 @@ export function RestoreWorkflow({ auctionName, settings, onCreated }: RestoreWor
     setBusy("create");
     setError(null);
     setCreateIssues([]);
+    const bindings = Object.entries(managers).filter(([name]) => name !== hostTeam).map(([teamName, u]) => ({ teamName, userId: u.userId }));
     try {
       const created = await restoreService.create({
         auctionName: auctionName.trim(), hostTeamName: hostTeam || undefined, snapshot, ...(settings ? { settings } : {}),
+        ...(bindings.length ? { bindings } : {}),
       });
       onCreated(created.roomCode);
     } catch (e) {
@@ -342,10 +413,26 @@ export function RestoreWorkflow({ auctionName, settings, onCreated }: RestoreWor
             </dl>
             <div>
               <label htmlFor={hostId} className="block text-[10px] font-bold text-[#8FA5B8] uppercase tracking-wider mb-1">Your team</label>
-              <select id={hostId} value={hostTeam} onChange={(e) => setHostTeam(e.target.value)} className={field + " cursor-pointer"} data-testid="restore-host-team">
+              <select id={hostId} value={hostTeam} onChange={(e) => { const name = e.target.value; setHostTeam(name); setManagers((cur) => { const next = { ...cur }; delete next[name]; return next; }); }} className={field + " cursor-pointer"} data-testid="restore-host-team">
                 {preview.teams.map((t) => <option key={t.name} value={t.name}>{t.name}</option>)}
               </select>
               <p className="text-[10px] text-[#697E91] mt-1">Other managers claim the remaining teams when they join with the room code.</p>
+            </div>
+            <div className="space-y-2" data-testid="restore-managers">
+              <h3 className="text-[10px] font-bold text-[#8FA5B8] uppercase tracking-wider">Manager for each team</h3>
+              <p className="text-[11px] text-[#7E92A5]">Set this before sharing the room code. A chosen user is placed in their team automatically when they join and can enter a new team name. Teams left empty are picked by whoever joins.</p>
+              <ul className="space-y-2">
+                {preview.teams.map((t) => (
+                  <li key={t.name} className="rounded-lg border border-[#7495B2]/20 bg-[#0A1724] p-2.5 space-y-1.5" data-testid="restore-manager-row" data-team={t.name}>
+                    <p className="text-xs font-bold text-white">{t.name}</p>
+                    {t.name === hostTeam
+                      ? <p className="text-xs text-[#00F5A0]" data-testid="manager-you">You</p>
+                      : <ManagerPicker teamName={t.name} selected={managers[t.name]}
+                          takenIds={Object.entries(managers).filter(([name]) => name !== t.name).map(([, u]) => u.userId)}
+                          onChange={(u) => setManagers((cur) => { const next = { ...cur }; if (u) next[t.name] = u; else delete next[t.name]; return next; })} />}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
 
