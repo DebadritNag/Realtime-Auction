@@ -1,43 +1,39 @@
-# Live auction room layout fix (one local commit, cf76fb6)
+# Live auction room layout fix (two local commits, cf76fb6 and 7a7a166)
 
-The commit makes the live room fill the viewport, collapses the host connection table into a one-line toggle with a popover, and compacts the chrome at short heights. At 1024x500 the grid now fills the screen with no dead space and no page scroll. The current player's name and the quick-raise row are visible, and the pot tabs no longer show a scrollbar. It does not meet requirement 4 (photo and position) at the shortest height.
+The commits make the live room fill the viewport, collapse the host connection table into a one-line `8/8 connected` toggle with a popover, and compact the chrome at short heights. The second commit addresses the earlier review: the 1024x500 view now keeps the player photo, position and badge. The screenshots confirm the grid fills the screen with no dead space, and the pot tabs show no scrollbar. Nothing was pushed.
 
-Watch for: the player card drops the photo and position line at 1024x500 (confirmed). The left column shows about three rows there (confirmed). The CSS has duplicate rules and one selector that may hide a host button (possible).
+Watch for: the mobile layout puts the bid console below the first screen at 375x812 (confirmed, minor). Truncated labels remain at 1024x500: "Skip ..." and "Squad 0-0..." (confirmed, cosmetic). No test covers focus rings or reduced motion (confirmed).
 
-**Verdict**: NEEDS_CHANGES
+**Verdict**: APPROVED
 
 ## High-level view
 
-The host connection panel is now a `8/8 connected` button with `aria-expanded`, collapsed by default. Its details open in an absolutely positioned popover that closes on Escape or an outside click. At 1024x500 it is about 30px tall, a large improvement over the old ~130px table.
+The host connection panel is a button with `aria-expanded` and `aria-controls`, collapsed by default. Its table opens in an absolutely positioned popover that closes on Escape or an outside click. At 1024x500 it is a single control in the host bar, next to the action buttons, and no longer dominates the screen.
 
-From 1024px up the workspace is `100dvh` with a `min-h-0` grid, so the three columns fill the height and scroll internally. Two height breakpoints (920px and 620px) compact the header, purse strip, host bar and bid console. The 620px tier solves the clipping by hiding content. It hides the portrait, the position/"also" line, the facts row, the base-price line and the bid limits. Requirement 4 says the player header (photo, name, OVR, position, badges) must always be visible.
+From 1024px up the workspace is `100dvh` with a `min-h-0` grid. The three columns fill the remaining height and scroll internally. Two height tiers (920px and 620px) compact the header, purse strip, host bar and bid console. In the 1024x500 screenshot, the paused host view shows the photo placeholder, "Declan Rice", OVR 87, the CM position line, the UNDERDOG badge, the stats row, the bid console and the quick-raise row (+1, +3, +5) without scrolling the page or the center column. The left column shows four player rows. The right column fills its height and scrolls internally. The previous version hid the portrait, position and facts at this size. That is fixed.
 
-The pool tabs now wrap, or sit in one row with the scrollbar hidden on short screens, and the count badge no longer shrinks. The paused banner is compact. Mobile stacks player and bid first, and the host panel is collapsed.
+At 375x812 the layout stacks header, host controls, collapsed connections button, player card, then the bid console. The player card is visible on the first screen. The current-bid panel starts at the bottom edge, so quick-raise needs a page scroll on mobile. The task asks for the current player and bid first in order, and the order is correct. The host button stack takes about 190px of the first screen.
 
-The new `auction-layout-ui.mjs` covers the 4 viewports across host paused restored, host live, guest and retention-off rooms. It asserts the name in the viewport, the quick-raise button visible, no page or column scroll, the panel under 60px with `8/8 connected`, and no horizontal overflow. This matches the requested headless test. The commit message records typecheck, build and all UI suites as passing, and I did not re-run them. `git log origin/master..HEAD` shows only this commit and nothing was pushed. The untracked `.agents/tasks/restore-auction-v3/review.*` files are unrelated.
+`auction-layout-ui.mjs` covers 4 viewports across host paused restored, host live, guest and retention-off rooms. Per the commit message, it now also asserts photo, position, badge, at least 4 pool rows, no fixed elements, and all host buttons. The commit message records typecheck, build and eight UI suites as passing. I did not re-run them. `git log origin/master..HEAD` lists only 7a7a166 and cf76fb6. `origin/master` equals the base 07725d2, so no push happened. The floating icon and pill in the user's screenshot are reported as Next dev indicators, and the test asserts no fixed app elements.
 
 <details>
-<summary>Issues (5)</summary>
+<summary>Issues (4)</summary>
 
-1. **Player header content hidden at <=620px height** (confirmed) — at 1024x500 the screenshot shows no portrait and no position/"also CDM" line, and the facts row is hidden by `.live-player-facts,.live-player-portrait{display:none}`. Keep a compact portrait or position chip, or shrink them instead of hiding them. Assert that the position text is visible in the test.
-2. **Left pool column shows about 3 rows at 1024x500** (confirmed) — the filter box and `auction-player-row{min-height:44px}` leave little room, and the requirement asks to show more rows. Tighten the filter and row height at short heights. The "POT & PLAYE..." title is also truncated, so shorten it or drop the icon.
-3. **Floating elements not addressed** (likely) — requirement 7 (top-right icon button, bottom-center pill) has no CSS change and no test. The only fixed in-room element found is `PoolUpdateNotice` at bottom-right. Confirm which elements overlap content and add an overlap check.
-4. **A host button may be hidden at short heights** (possible) — `.auction-host-controls button[class*="secondary"]:nth-last-child(2){display:none}` can remove a control and break the keep-all-functionality rule. Verify which button it hides, or move it to an overflow menu.
-5. **Duplicated and leftover CSS** (confirmed) — the 620px block repeats the `auction-host-controls` and `live-player-identity` rules several times, and a stray block was added to the older mobile media query. Dedupe. Also fix the odd `host` expression in the test and the missing trailing newline in `HostConnectionPanel.tsx`.
+1. **Quick-raise below the fold on mobile** (confirmed) — at 375x812 the bid console starts at the bottom edge. Consider a more compact host button stack on mobile, or accept it as the spec's "player + bid first" order.
+2. **Truncated labels at 1024x500** (confirmed) — the "Skip ..." button and long pool names ("Squad 0-0...") are ellipsized. Use a shorter label ("Skip") at the short tier.
+3. **Stray CSS formatting** (confirmed) — `}@media (prefers-reduced-motion:reduce)` sits on one line after the last block in `auction.css`. Put it on its own line.
+4. **Focus and reduced-motion untested** (confirmed) — the reduced-motion rule is kept, but no test checks visible focus or that rule. Add a small assertion if cheap.
 
 </details>
 
 <details>
 <summary>Details</summary>
 
-### Short-height compaction hides content (1024x500)
-The test only asserts the name, the quick-raise button and the page and column fit. It does not assert photo, position or badges, so hiding them passes. The 1280x720 and 1440x900 screenshots are fine. Only the sub-620px tier needs rework.
+### Short-height tier
+The 620px tier now shrinks elements (portrait 40x46, smaller type) and hides only secondary content: the facts row, base-price line, bid limits and rules, and the left-hand pot label. The player identity stays visible, which meets requirement 4. The duplicated CSS rules from the first pass are removed.
 
 ### Connection popover
-Collapsed by default, with `aria-expanded` and `aria-controls`, keyboard operable (tested with Enter), and the label hides on short screens while the aria-label keeps the full text. The z-30 popover covers part of the controls while open, and Escape closes it. The `connection-ui` test was updated for this.
-
-### Not covered
-No test checks focus rings or reduced motion (the CSS adds a `prefers-reduced-motion` rule). The `PoolUpdateNotice` overlap is untested.
+It opens over the center column with z-30 and closes on Escape or an outside click. `connection-ui.mjs` was updated for the collapsed state. Mobile uses the list layout inside the popover.
 
 </details>
 
