@@ -126,9 +126,6 @@
  .auction-subheader > div:last-child { margin-left:auto; }
  .auction-hostbar { padding:0 12px; }
  .auction-host-controls > div:first-child { display:none; }
- .auction-host-controls { gap:6px; }
- .auction-host-controls button { font-size:11px; padding:4px 8px; }
- .auction-host-controls button svg,.host-connections-label { display:none; }
  .auction-host-controls > div:last-child { width:100%; justify-content:space-between; gap:6px; }
  .auction-host-controls button { min-height:40px; padding:6px 9px; }
  .auction-grid { gap:10px; padding:10px; }
@@ -352,7 +349,7 @@
  .auction-bid-rules { display:none; }
  .auction-activity ol { max-height:120px; }
 }
-/* Short desktops (for example 1024x500): single-line chrome, no secondary text, one-row pot tabs with a hidden scrollbar. */
+/* Short desktops (for example 1024x500): compact chrome and cards. The player's photo, name, rating, position and badges stay visible. */
 @media (min-width:1024px) and (max-height:620px) {
  .auction-pot,.auction-phase + .auction-pot { display:none; }
  .auction-header { padding:4px 16px 0; }
@@ -362,55 +359,55 @@
  .auction-header .auction-mobile-tools { padding-bottom:3px; }
  .auction-header .auction-mobile-tools button { min-height:28px; padding:2px 8px; font-size:11px; }
  .auction-purse-strip ul { padding:4px 16px; gap:6px; }
- .auction-purse-badge { display:none; }
- .auction-purse-card { padding:2px 10px; border-radius:8px; }
+ .auction-purse-badge,.auction-purse-meta,.auction-purse-name em { display:none; }
+ .auction-purse-card { padding:3px 10px; border-radius:8px; }
  .auction-purse-name { font-size:11px; }
  .auction-purse-amount { font-size:13px; }
  .auction-hostbar { padding:3px 16px; }
- .auction-host-controls button,.host-connections-toggle { min-height:28px; }
+ .auction-host-controls { gap:6px; }
+ .auction-host-controls > div:first-child { display:none; }
+ .auction-host-controls button { min-height:28px; font-size:11px; padding:4px 8px; }
+ .auction-host-controls button svg,.host-connections-label { display:none; }
+ .host-connections-toggle { min-height:28px; }
  .auction-paused-notice { padding:2px 16px; font-size:11px; }
  .auction-grid { padding:4px 16px 6px; gap:8px; }
  .auction-center { gap:6px; }
  .player-stage-bar { padding:4px 10px; }
  .player-stage-chip { padding:1px 8px; font-size:10px; }
- .live-player-card { padding:6px 12px; }
- .live-player-facts,.live-player-portrait { display:none; }
- .live-player-identity { margin:0 0 4px; gap:10px; }
- .live-player-rating strong { font-size:30px; }
- .live-player-bio h2 { font-size:18px; }
- .live-player-bio p { margin-top:1px; }
- .live-player-stats { padding-top:4px; }
+ .live-player-card { padding:5px 12px 6px; }
+ .live-player-heading { font-size:10px; line-height:1.2; }
+ .live-player-facts,.live-player-price { display:none; }
+ .live-player-identity { margin:3px 0 4px; gap:10px; }
+ .live-player-portrait { width:40px; height:46px; border-radius:8px; }
+ .live-player-rating strong { font-size:28px; }
+ .live-player-bio h2 { font-size:17px; }
+ .live-player-bio p { margin-top:1px; font-size:11px; }
+ .live-player-stats { padding-top:3px; }
  .live-player-stats dt { font-size:9px; }
  .live-player-stats dd { font-size:13px; }
- .auction-current-bid,.auction-timer { padding:4px 12px; }
+ .auction-current-bid,.auction-timer { padding:3px 12px; }
  .auction-current-bid > div:first-child,.auction-timer > div:first-child { margin-bottom:0; }
  .auction-current-bid > div:nth-child(2),.auction-timer > div:nth-child(2) { margin:0; }
- .auction-current-bid > div:nth-child(2) > span,.auction-timer > div:nth-child(2) > span:first-child { font-size:22px; }
- .auction-bid-actions { padding:6px 12px 8px; }
- .auction-primary-actions button,.auction-skip-btn { min-height:34px; padding:4px 10px; }
- .auction-quick-bids { margin-top:6px; }
- .auction-quick-bids button { min-height:32px; padding:2px 10px; }
+ .auction-current-bid > div:nth-child(2) > span,.auction-timer > div:nth-child(2) > span:first-child { font-size:20px; }
+ .auction-current-bid > div:last-child,.auction-quick-heading,.auction-bid-limits,.auction-bid-rules { display:none; }
+ .auction-bid-actions { padding:5px 12px 6px; }
+ .auction-primary-actions button,.auction-skip-btn { min-height:32px; padding:4px 10px; }
+ .auction-quick-bids { margin-top:5px; }
+ .auction-quick-bids button { min-height:30px; padding:2px 10px; }
  .auction-quick-bids strong { font-size:14px; }
- .auction-player-row { min-height:44px; } .auction-purse-meta,.auction-purse-name em { display:none; }
- .auction-purse-card { padding:3px 10px; }
- .live-player-heading,.live-player-price,.auction-bid-limits,.auction-quick-heading,.auction-current-bid > div:last-child { display:none; }
- .live-player-identity { margin:6px 0; }
- .live-player-stats dd { font-size:14px; }
- .auction-pool-tabs { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; padding:6px 0; }
+ .auction-pool-panel { padding:8px; }
+ .auction-pool-panel > div:first-child { padding-bottom:6px; }
+ .auction-pool-panel > div:first-child svg { display:none; }
+ .auction-pool-panel h3 { font-size:11px; letter-spacing:0; }
+ .auction-pool-panel > div:first-child > span { padding:2px 6px; font-size:10px; }
+ .auction-pool-panel input { min-height:30px; }
+ .auction-pool-panel button { min-height:28px; }
+ .auction-pool-tabs { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; padding:5px 0; }
  .auction-pool-tabs::-webkit-scrollbar { display:none; }
  .auction-pool-tabs button { flex:0 0 auto; }
- .auction-pool-panel { padding:8px; }
- .auction-host-controls > div:first-child { display:none; }
- .auction-host-controls { gap:6px; }
- .auction-host-controls button { font-size:11px; padding:4px 8px; }
- .auction-host-controls button svg,.host-connections-label { display:none; }
- .auction-host-controls { gap:6px; }
- .auction-host-controls button { font-size:11px; padding:4px 8px; }
- .auction-host-controls button svg,.host-connections-label { display:none; }
- .auction-host-controls button[class*="secondary"]:nth-last-child(2) { display:none; }
+ .auction-player-row { min-height:36px; padding-top:3px; padding-bottom:3px; }
  .auction-activity { padding:8px; }
  .auction-activity ol { max-height:64px; }
-}
-@media (prefers-reduced-motion:reduce) {
+}@media (prefers-reduced-motion:reduce) {
  .auction-workspace *, .auction-workspace *::before,.auction-workspace *::after { animation:none!important; transition:none!important; }
 }

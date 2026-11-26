@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Offline browser test of the live auction room LAYOUT at 1024x500, 1280x720, 1440x900 and 375x812.
  * Host/non-host, live/paused, restored and retention-off rooms with 8 teams and a large pool.
  * Env: SHOT_PREFIX (default "after") names screenshots in .agents/tasks/auction-ui-fix/, LAYOUT_ASSERT=0 only takes screenshots.
@@ -71,7 +71,7 @@ for (const sc of scenarios) {
       await page.waitForTimeout(400);
       await page.screenshot({ path: shotDir + prefix + '-' + sc.name + '-' + width + 'x' + height + '.png' });
       if (assertions) {
-        const host = !!sc.opts.paused !== undefined && sc.name.startsWith('host');
+        const host = sc.name.startsWith('host');
         const inView = async (loc, label) => {
           const box = await loc.boundingBox();
           expect(box, label + ' has a box').not.toBeNull();
@@ -88,6 +88,23 @@ for (const sc of scenarios) {
           const quick = page.getByTestId('bidding-panel').locator('.auction-quick-bids button').first();
           await expect(quick).toBeVisible();
           await inView(quick, 'quick raise');
+          // The player's identity is complete: photo slot, rating, position line and the UNDERDOG badge.
+          for (const [sel, label] of [['.live-player-portrait', 'portrait'], ['.live-player-rating strong', 'rating'], ['.live-player-heading .live-player-position', 'position line']]) {
+            const el = page.locator(sel).first();
+            await expect(el, label + ' visible').toBeVisible();
+            await inView(el, label);
+          }
+          await expect(page.locator('.live-player-card').getByText('UNDERDOG')).toBeVisible();
+          // The pool column shows several rows and its header text is not truncated.
+          const pool = await page.evaluate(() => { const panel = document.querySelector('.auction-pool-panel'); const pr = panel.getBoundingClientRect();
+            const rows = [...panel.querySelectorAll('.auction-player-row')].filter((r) => { const b = r.getBoundingClientRect(); return b.top >= pr.top && b.bottom <= pr.bottom + 1; }).length;
+            const badge = [...panel.querySelectorAll('span')].find((s) => /SOLD/.test(s.textContent) && s.children.length === 0);
+            return { rows, badgeClipped: badge ? badge.scrollWidth > badge.clientWidth + 1 : true }; });
+          expect(pool.rows, 'pool rows fully visible (' + sc.name + ' ' + width + 'x' + height + ')').toBeGreaterThanOrEqual(height <= 720 ? 4 : 5);
+          expect(pool.badgeClipped, 'pool count badge not truncated').toBe(false);
+          // Nothing in the room floats over the content (position: fixed), and every host control is still reachable.
+          expect(await page.evaluate(() => [...document.querySelectorAll('.auction-workspace *')].filter((e) => getComputedStyle(e).position === 'fixed').length), 'no floating elements in the room').toBe(0);
+          if (host) for (const n of [/Resume Auction|Pause/, /Mark Unsold|Next Player/, /Recall Player/, /ADD PLAYERS/, /View Auction History/, /End Auction/]) await expect(page.locator('.auction-hostbar').getByRole('button', { name: n }), String(n)).toBeVisible();
           // The bid console is not clipped by its scroll parent.
           const clip = await page.evaluate(() => { const c = document.querySelector('.auction-center'); const q = c.querySelector('.auction-quick-bids'); const n = c.querySelector('.live-player-bio h2');
             return { scrollTop: c.scrollTop, quick: c.getBoundingClientRect().bottom - q.getBoundingClientRect().bottom, name: n.getBoundingClientRect().top - c.getBoundingClientRect().top }; });
