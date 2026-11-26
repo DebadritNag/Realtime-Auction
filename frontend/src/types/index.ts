@@ -45,6 +45,8 @@ export interface Player {
   soldPrice?: number;
   /** Restored from a snapshot: no price is known, so views show "Restored" instead of a price. */
   restoredFromSnapshot?: boolean;
+  /** Recorded acquisition price of a restored player (history only; never used for budgets). */
+  recordedPrice?: number;
   soldToTeamId?: string;
   soldToTeamName?: string;
 }

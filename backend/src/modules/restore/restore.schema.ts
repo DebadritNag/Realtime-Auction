@@ -7,6 +7,8 @@ export const restorePlayerSchema = z.object({
   position: z.string().trim().min(1).max(10),
   acquisition: z.enum(['RETENTION', 'AUCTION']),
   underdog: z.boolean().optional(),
+  /** Recorded acquisition price in Cr (history only; purses stay authoritative). Retained players are always 15 Cr. */
+  priceCr: z.number().finite().min(0).max(1000).multipleOf(0.5).optional(),
   /** Host resolution: an existing catalog id. */
   playerId: z.string().trim().min(1).max(100).optional(),
   /** Host resolution: create a restored-only player record. */

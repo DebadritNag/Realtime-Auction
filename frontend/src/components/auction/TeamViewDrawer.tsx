@@ -11,7 +11,7 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
-import { cn, formatCr, getPositionColor } from "@/lib/utils";
+import { cn, formatCr, getPositionColor, restoredPriceLabel } from "@/lib/utils";
 import { Drawer } from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
@@ -117,7 +117,7 @@ function PlayerCard({ player }: { player: Player }) {
 
       {/* Purchase price */}
       <div className="flex-shrink-0 text-right">
-        <span className="block text-xs font-black font-mono text-amber-400">{player.restoredFromSnapshot ? "Restored" : formatCr(price)}</span>
+        <span className="block text-xs font-black font-mono text-amber-400">{player.restoredFromSnapshot ? restoredPriceLabel(player) : formatCr(price)}</span>
         {player.soldPrice && player.soldPrice > player.basePrice && (
           <span className="text-[9px] text-rose-400/70 font-mono">
             base {formatCr(player.basePrice)}

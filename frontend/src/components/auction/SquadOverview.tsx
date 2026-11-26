@@ -4,7 +4,7 @@ import React from "react";
 import { ShieldCheck, Gavel } from "lucide-react";
 import { Team } from "@/types";
 import { UnderdogTag } from "@/components/shared/UnderdogTag";
-import { cn, formatCr } from "@/lib/utils";
+import { cn, formatCr, restoredPriceLabel } from "@/lib/utils";
 
 export interface SquadOverviewProps {
   teams: Team[];
@@ -27,7 +27,7 @@ function PlayerRow({ team, player, retained }: { team: Team; player: Team["squad
       {retained ? <ShieldCheck size={13} aria-hidden="true" /> : <Gavel size={13} aria-hidden="true" />}
       <span className="squad-row-name">{player.name}<UnderdogTag player={player} /></span>
       <span className="squad-row-pos">{player.subPosition || player.position}</span>
-      <span className="squad-row-price" data-testid={player.restoredFromSnapshot ? "squad-restored-price" : undefined}>{player.restoredFromSnapshot ? "Restored" : formatCr(player.soldPrice ?? player.basePrice)}</span>
+      <span className="squad-row-price" data-testid={player.restoredFromSnapshot ? "squad-restored-price" : undefined}>{player.restoredFromSnapshot ? restoredPriceLabel(player) : formatCr(player.soldPrice ?? player.basePrice)}</span>
       <span className="sr-only">{retained ? "Retained" : "Acquired at auction"}</span>
     </li>
   );

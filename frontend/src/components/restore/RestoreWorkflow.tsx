@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useCallback, useId, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ChevronDown, CircleAlert, CircleCheck, FileText, Gavel, LoaderCircle, Search, ShieldCheck, TriangleAlert, UserPlus } from "lucide-react";
 import { restoreService } from "@/services/restore.service";
 import { normalizeError } from "@/services/api";
 import { formatCr } from "@/lib/utils";
 import type {
-  RestoreCandidate, RestoreIssue, RestorePreview, RestorePreviewPlayer, RestoreRoomSettingsInput, RestoreSnapshot, RestoreUserHit,
+  RestoreCandidate, RestoreIssue, RestorePreview, RestorePreviewPlayer, RestoreRoomSettingsInput, RestoreSnapshot, RestoreTemplate, RestoreUserHit,
 } from "@/types/restore";
 
 export interface RestoreWorkflowProps {
@@ -202,20 +202,38 @@ export function RestoreWorkflow({ auctionName, settings, onCreated }: RestoreWor
     }
   }, []);
 
-  const loadTemplate = async () => {
+  const [templates, setTemplates] = useState<RestoreTemplate[]>([]);
+  const [templateId, setTemplateId] = useState("");
+  const loadSeq = useRef(0);
+  /** Replaces (never appends to) the current snapshot and preview with the chosen template; the default preset when none is given. */
+  const loadTemplate = useCallback(async (wantedId?: string) => {
+    const seq = ++loadSeq.current;
     setBusy("template");
     setError(null);
     setCreateIssues([]);
     try {
-      const [template] = await restoreService.templates();
+      const list = await restoreService.templates();
+      if (seq !== loadSeq.current) return;
+      const template = list.find((t) => t.id === wantedId) ?? list.find((t) => t.isDefault) ?? list[0];
       if (!template) throw new Error("No restore template is available on the server.");
+      setTemplates(list);
+      setTemplateId(template.id);
+      setManagers({});
+      setExpanded({});
       setText(JSON.stringify(template.snapshot, null, 2));
       await runPreview(template.snapshot, template.hostTeam ?? template.snapshot.hostTeam);
     } catch (e) {
+      if (seq !== loadSeq.current) return;
       setBusy(null);
       setError(normalizeError(e).message);
     }
-  };
+  }, [runPreview]);
+  // Switching the restore toggle on mounts this component, which loads the default preset with no manual entry.
+  useEffect(() => {
+    void loadTemplate();
+    const seqRef = loadSeq;
+    return () => { seqRef.current++; };
+  }, [loadTemplate]);
 
   const previewFromText = async () => {
     setCreateIssues([]);
@@ -275,12 +293,18 @@ export function RestoreWorkflow({ auctionName, settings, onCreated }: RestoreWor
       <div className="rounded-xl bg-[#081725] subtle-card-border p-4 sm:p-5 shadow-xl space-y-3">
         <div>
           <h2 id="restore-heading" className="text-xs sm:text-[13px] font-extrabold uppercase tracking-wide text-white">1. Previous auction state</h2>
-          <p className="text-[11px] text-[#7E92A5]">Load the shipped snapshot or paste your own, then preview it. Editing the JSON and previewing again is how you correct data.</p>
+          <p className="text-[11px] text-[#7E92A5]">The default preset is loaded automatically. Pick another preset or paste your own snapshot, then preview it. Editing the JSON and previewing again is how you correct data.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
-          <button type="button" className={ghostButton} onClick={() => void loadTemplate()} disabled={working} data-testid="restore-load-template">
+          {templates.length > 1 ? (
+            <select aria-label="Preset" value={templateId} onChange={(e) => void loadTemplate(e.target.value)} disabled={working}
+              className={field + " sm:w-auto cursor-pointer"} data-testid="restore-template-select">
+              {templates.map((t) => <option key={t.id} value={t.id}>{t.name}{t.isDefault ? " (default)" : ""}</option>)}
+            </select>
+          ) : null}
+          <button type="button" className={ghostButton} onClick={() => void loadTemplate(templateId || undefined)} disabled={working} data-testid="restore-load-template">
             {busy === "template" ? <LoaderCircle className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <FileText className="w-3.5 h-3.5" aria-hidden="true" />}
-            Load template
+            Reload preset
           </button>
           <button type="button" className={ghostButton} onClick={() => void previewFromText()} disabled={working || !text.trim()} data-testid="restore-preview">
             {busy === "preview" ? <LoaderCircle className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <Search className="w-3.5 h-3.5" aria-hidden="true" />}
@@ -365,7 +389,8 @@ export function RestoreWorkflow({ auctionName, settings, onCreated }: RestoreWor
                                   : <span data-testid="badge-auction" className="inline-flex shrink-0 items-center gap-1 rounded border border-sky-400/50 bg-sky-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-sky-200"><Gavel className="w-3 h-3" aria-hidden="true" />Auction acquired</span>}
                                 <span className="truncate font-bold text-white">{p.name}</span>
                                 {p.underdog ? <span data-testid="underdog-tag" className="shrink-0 rounded border border-fuchsia-400/50 bg-fuchsia-500/20 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-fuchsia-200">Underdog</span> : null}
-                                <span className="ml-auto shrink-0 font-mono text-[#8FA5B8]">{p.position}</span>
+                                {p.priceCr != null ? <span data-testid="restore-price" className="ml-auto shrink-0 font-mono text-[#00F5A0]">{formatCr(p.priceCr)}</span> : null}
+                                <span className={(p.priceCr != null ? "" : "ml-auto ") + "shrink-0 font-mono text-[#8FA5B8]"}>{p.position}</span>
                                 <span className={"shrink-0 text-[10px] " + (unresolved ? "text-red-300 font-bold" : "text-[#8FA5B8]")}>{matchLabel(p)}</span>
                               </div>
                               {unresolved ? <Resolver player={p} onPick={(c) => void resolve(ti, pi, c)} onManual={() => void resolve(ti, pi, { manual: {} })} /> : null}

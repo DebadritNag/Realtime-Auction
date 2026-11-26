@@ -5,7 +5,7 @@ import { Player, Team } from "@/types";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Toast } from "@/components/ui/Toast";
-import { formatCr } from "@/lib/utils";
+import { formatCr, restoredPriceLabel } from "@/lib/utils";
 import { generateTeamPdf } from "@/lib/pdf";
 import { UnderdogTag, RetainedTag } from "@/components/shared/UnderdogTag";
 import { AcquisitionBadge } from "@/components/shared/AcquisitionBadge";
@@ -100,7 +100,7 @@ export const SquadFormationView: React.FC<SquadFormationViewProps> = ({
               <div className="text-right">
                 <span className="text-[10px] text-[#64748b] block">Signed Fee</span>
                 <span className="text-xs font-mono font-bold text-amber-400">
-                  {p.restoredFromSnapshot ? "Restored" : formatCr(p.soldPrice || p.basePrice)}
+                  {p.restoredFromSnapshot ? restoredPriceLabel(p) : formatCr(p.soldPrice || p.basePrice)}
                 </span>
               </div>
             </div>

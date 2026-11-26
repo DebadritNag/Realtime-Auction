@@ -15,7 +15,7 @@ export function mapPlayer(p:PlayerDTO,s:RoomStateDTO):Player{
  isRetained:purchase?.isRetained===true||purchase?.acquisitionType==='RETENTION',
  ...(p.poolMeta?{isNew:p.status==='WAITING',poolBatchId:p.poolMeta.importBatchId,releaseState:p.poolMeta.release}:{}),
  status:({WAITING:'waiting',ACTIVE:'live',SOLD:'sold',UNSOLD:'unsold',SKIPPED:'skipped'} as const)[p.status],
- soldPrice:purchase?.priceCr??undefined,...(purchase?.restoredFromSnapshot?{restoredFromSnapshot:true}:{}),soldToTeamId:purchase?.teamId,soldToTeamName:s.teams.find(t=>t.id===purchase?.teamId)?.name};
+ soldPrice:purchase?.priceCr??undefined,...(purchase?.restoredFromSnapshot?{restoredFromSnapshot:true,...(purchase.recordedPriceCr!=null?{recordedPrice:purchase.recordedPriceCr}:{})}:{}),soldToTeamId:purchase?.teamId,soldToTeamName:s.teams.find(t=>t.id===purchase?.teamId)?.name};
 }
 // Resolve manager username: prefer backend-supplied username, fall back to neutral label
 function resolveUsername(t:TeamDTO & {managerUsername?:string},isCurrentUser:boolean,index:number):string {

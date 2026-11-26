@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { Player } from '../../domain/types.js';
+import { RETENTION_PRICE_CR } from '../../domain/retention.js';
 import { isKnownPosition } from '../fc26/fc26.positions.js';
 import { buildMatchIndex, matchPlayer, type MatchIndex } from './restore.matcher.js';
 import type { RestoreSnapshot } from './restore.schema.js';
@@ -60,6 +61,8 @@ export function validateSnapshot(snapshot: RestoreSnapshot, catalogs: RestoreCat
         if (match.kind === 'MANUAL') here('WARNING', 'MANUAL_PLAYER', `${input.name}: restored-only player (rating ${player.ovr}); it is not in the player database.`);
         if (match.source === 'DEFAULT_POOL') here('WARNING', 'DEFAULT_POOL_MATCH', `${input.name}: matched in the default player pool, not the FC26 database.`);
       }
+      if (input.acquisition === 'RETENTION' && input.priceCr !== undefined && input.priceCr !== RETENTION_PRICE_CR) here('WARNING', 'RETENTION_PRICE_IGNORED',
+        `${input.name}: retained players are recorded at ${RETENTION_PRICE_CR} Cr; the listed ${input.priceCr} Cr is ignored.`);
       if (input.verify) here('WARNING', 'VERIFY_ENTRY', `${input.name}: flagged for host verification.`);
       totals.players++;
       if (input.acquisition === 'RETENTION') totals.retained++; else totals.auction++;
@@ -67,7 +70,8 @@ export function validateSnapshot(snapshot: RestoreSnapshot, catalogs: RestoreCat
       else if (match.kind === 'MATCHED_DEFAULT_POOL' || (match.kind === 'RESOLVED' && match.source === 'DEFAULT_POOL')) totals.matchedDefaultPool++;
       else if (match.kind === 'MANUAL') totals.manual++;
       else totals.unresolved++;
-      previewPlayers.push({ name: input.name, position: input.position, acquisition: input.acquisition, underdog: input.underdog ?? player?.draftPool === 'UNDERDOG', verify: input.verify === true,
+      const recordedCr = input.acquisition === 'RETENTION' ? RETENTION_PRICE_CR : input.priceCr;
+      previewPlayers.push({ name: input.name, position: input.position, acquisition: input.acquisition, ...(recordedCr !== undefined ? { priceCr: recordedCr } : {}), underdog: input.underdog ?? player?.draftPool === 'UNDERDOG', verify: input.verify === true,
         match: { kind: match.kind, ...(player ? { playerId: player.id, matchedName: player.name, ...(player.fullName ? { fullName: player.fullName } : {}),
           ...(player.club ? { club: player.club } : {}), ovr: player.ovr, ...(player.photoUrl ? { photoUrl: player.photoUrl } : {}),
           positions: player.positions ?? [player.subPosition ?? player.position] } : {}),

@@ -6,7 +6,7 @@ import { Team } from "@/types";
 import { Drawer } from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { formatCr } from "@/lib/utils";
+import { formatCr, restoredPriceLabel } from "@/lib/utils";
 import { ExternalLink, ShieldAlert } from "lucide-react";
 import { UnderdogTag, RetainedTag } from "@/components/shared/UnderdogTag";
 import { AcquisitionBadge } from "@/components/shared/AcquisitionBadge";
@@ -119,7 +119,7 @@ export const TeamQuickView: React.FC<TeamQuickViewProps> = ({
                     </div>
                   </div>
                   <span className="font-mono font-bold text-amber-400">
-                    {player.restoredFromSnapshot ? "Restored" : formatCr(player.soldPrice || player.basePrice)}
+                    {player.restoredFromSnapshot ? restoredPriceLabel(player) : formatCr(player.soldPrice || player.basePrice)}
                   </span>
                 </div>
               ))}

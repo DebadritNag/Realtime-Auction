@@ -196,7 +196,7 @@ export async function generateTeamPdf(data: TeamPdfData): Promise<void> {
         p.subPosition || p.position,
         p.club || "-",
         p.nationality || "-",
-        (p as { restoredFromSnapshot?: boolean }).restoredFromSnapshot ? "Restored" : formatCr(p.soldPrice ?? p.basePrice),
+        (p as { restoredFromSnapshot?: boolean }).restoredFromSnapshot ? ((p as { recordedPrice?: number }).recordedPrice != null ? formatCr((p as { recordedPrice: number }).recordedPrice) : "Restored") : formatCr(p.soldPrice ?? p.basePrice),
         formatCr(p.basePrice),
         p.age ? p.age.toString() : "-",
         p.preferredFoot ? p.preferredFoot.charAt(0).toUpperCase() + p.preferredFoot.slice(1).toLowerCase() : "-",

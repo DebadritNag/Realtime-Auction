@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Player, PotCategory } from "@/types";
 import { Badge } from "@/components/ui/Badge";
-import { formatCr } from "@/lib/utils";
+import { formatCr, restoredPriceLabel } from "@/lib/utils";
 import { CheckCircle2, PlayCircle, Clock, Search, Layers } from "lucide-react";
 import { UnderdogTag, RetainedTag, NewTag } from "@/components/shared/UnderdogTag";
 import { potLabel } from "@/lib/pots";
@@ -181,7 +181,7 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
 
                   {isSold && (
                     <span className="text-[10px] font-mono font-semibold text-amber-400">
-                      {player.restoredFromSnapshot ? "Restored" : formatCr(player.soldPrice || 0)}
+                      {player.restoredFromSnapshot ? restoredPriceLabel(player) : formatCr(player.soldPrice || 0)}
                     </span>
                   )}
 

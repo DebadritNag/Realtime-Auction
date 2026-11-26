@@ -1,0 +1,16 @@
+feat: auto-load 8-team v3 restore preset with recorded player prices
+
+Toggle ON on /create loads the default preset (backend/data/restore/super-league-auction-2026-v3.json,
+8 teams, 75 players, 10 retained at 15 Cr, 65 auction with recorded prices) into the preview; OFF/ON replaces, never appends.
+Old 99-player template stays selectable, not default (templates route sorts default first, isDefault flag).
+Recorded prices (priceCr -> Purchase.recordedPriceUnits) are history only; purses stay authoritative. Shown in squads; archive uses them.
+No formation/lineup data.
+
+Verification:
+- backend npx tsc -p tsconfig.build.json --noEmit: pass
+- backend vitest tests/restore-v3.test.ts + tests/restore.test.ts: 49 passed
+- backend full vitest: 399-400 passed, 6-7 failed = known baseline (6 skip-vote; the integration skip-voting test also fails on clean master, verified via stash)
+- frontend npm run typecheck: pass
+- frontend npx next build: pass
+- frontend node tests/restore-ui.mjs (headless Playwright): pass (restore-pool paging assertion flaked once, 3 of 3 reruns pass; component untouched)
+- UTF-8 scan of changed/new files (strict decode, no BOM, no U+FFFD, no mojibake): clean

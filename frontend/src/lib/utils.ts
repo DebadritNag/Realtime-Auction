@@ -8,6 +8,10 @@ export function cn(...inputs: ClassValue[]) {
 /**
  * Formats a numeric price in Crores (Cr) to a readable string (e.g. ₹38.5 Cr)
  */
+/** Price label of a restored player: the recorded acquisition price when known, otherwise "Restored". Recorded prices are history only. */
+export function restoredPriceLabel(player: { recordedPrice?: number }): string {
+  return player.recordedPrice != null ? formatCr(player.recordedPrice) : "Restored";
+}
 export function formatCr(amountInCrores: number): string {
   if (amountInCrores === undefined || amountInCrores === null || isNaN(amountInCrores)) {
     return "₹0 Cr";

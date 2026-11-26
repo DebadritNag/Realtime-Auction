@@ -15,6 +15,8 @@ export interface RestoreSnapshotPlayer {
   /** Set by the host to create a restored-only player. */
   manual?: { ovr?: number };
   verify?: boolean;
+  /** Recorded acquisition price in Cr (history only). Retained players are always 15 Cr. */
+  priceCr?: number;
 }
 export interface RestoreSnapshotTeam {
   name: string;
@@ -37,6 +39,8 @@ export interface RestoreTemplate {
   teamCount: number;
   playerCount: number;
   hostTeam?: string;
+  /** The preset loaded automatically when the restore toggle is switched on. */
+  isDefault?: boolean;
   snapshot: RestoreSnapshot;
 }
 
@@ -78,6 +82,7 @@ export interface RestorePreviewPlayer {
   acquisition: RestoreAcquisition;
   underdog: boolean;
   verify: boolean;
+  priceCr?: number;
   match: RestoreMatch;
   issues: RestoreIssue[];
 }

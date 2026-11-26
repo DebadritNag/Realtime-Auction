@@ -195,7 +195,7 @@ describe('restore routes', () => {
     const f = await setup();
     const templates = await f.app.inject({ url: '/api/restore/templates', headers: f.as('host') });
     expect(templates.statusCode).toBe(200);
-    const [served] = templates.json().templates;
+    const served = templates.json().templates.find((t: { id: string }) => t.id === 'super-league-auction-2026');
     expect(served).toMatchObject({ id: 'super-league-auction-2026', teamCount: 8, playerCount: 99, hostTeam: 'Ritzz FC' });
     const payload = { snapshot: served.snapshot };
     const res = await f.app.inject({ method: 'POST', url: '/api/restore/preview', headers: f.as('host'), payload });

@@ -8,10 +8,17 @@ const RETAINED = [0, 1, 0, 3, 2, 1, 3, 1];
 const SLOTS = [10, 11, 3, 10, 6, 9, 8, 4];
 const NAMES = ['Ritzz FC', 'FidoDido FC', 'DDD', 'SIDERALE', 'APOLLO FC', 'RedBull FC', 'Dakshineswar FC', 'BGT'];
 
+/** The default v3 preset served by the create page (8 teams, 75 players). */
+const V3_NAMES = ['Ritzz FC', 'SIDERALE', 'BGT', 'DDD', 'RedBull FC', 'Dakshineswar FC', 'Fidodido FC', 'APOLLO FC'];
+const V3_PURSES = [79.5, 44, 62, 63, 67, 42.5, 53, 13.5];
+const V3_SQUADS = [6, 10, 6, 10, 6, 15, 8, 14];
+const V3_SLOTS = [14, 10, 14, 10, 14, 5, 12, 6];
+const V3_RETAINED = [1, 2, 2, 0, 0, 1, 2, 2];
+const cr = (n) => '₹' + n + ' Cr';
 /** Shared stub code: a template of 8 teams where one Ritzz FC player cannot be matched until the host resolves it. */
 const fixtures = `
-const NAMES=${JSON.stringify(NAMES)},PURSES=${JSON.stringify(PURSES)},SQUADS=${JSON.stringify(SQUADS)},RETAINED=${JSON.stringify(RETAINED)};
-const template={version:1,name:'Super League Football Auction 2026',hostTeam:'Ritzz FC',teams:NAMES.map((name,t)=>({name,squadSize:SQUADS[t],remainingPurseCr:PURSES[t],retainedCount:RETAINED[t],
+const NAMES=${JSON.stringify(V3_NAMES)},PURSES=${JSON.stringify(V3_PURSES)},SQUADS=${JSON.stringify(V3_SQUADS)},RETAINED=${JSON.stringify(V3_RETAINED)};
+const template={version:1,name:'Super League Football Auction 2026 (Restored v3)',hostTeam:'Ritzz FC',teams:NAMES.map((name,t)=>({name,squadSize:SQUADS[t],remainingPurseCr:PURSES[t],retainedCount:RETAINED[t],
  players:Array.from({length:SQUADS[t]},(_,i)=>({name:(t===0&&i===0?'Mystery Striker':name.split(' ')[0]+' Player '+(i+1)),position:i%4===0?'GK':'CM',acquisition:i<RETAINED[t]?'RETENTION':'AUCTION',underdog:i===SQUADS[t]-1}))}))};
 function buildPreview(snap){
  const issues=[];
@@ -20,12 +27,12 @@ function buildPreview(snap){
    const resolved=p.playerId||p.manual;
    const unmatched=!resolved&&p.name==='Mystery Striker';
    if(unmatched)issues.push({severity:'CRITICAL',code:'PLAYER_UNMATCHED',teamName:t.name,playerName:p.name,message:'Could not match '+p.name+' in '+t.name+'. Pick the right player or create a manual one.'});
-   return {name:p.name,position:p.position,acquisition:p.acquisition,underdog:!!p.underdog,verify:false,issues:[],
+   return {name:p.name,position:p.position,acquisition:p.acquisition,underdog:!!p.underdog,verify:false,issues:[],priceCr:p.acquisition==='RETENTION'?15:3,
     match:{kind:unmatched?'UNMATCHED':p.playerId?'RESOLVED':p.manual?'MANUAL':'MATCHED_FC26',suggestions:[]}};
   });
   return {name:t.name,squadSize:t.squadSize,actualPlayers:players.length,remainingSlots:20-t.squadSize,remainingPurseCr:t.remainingPurseCr,retainedCount:t.retainedCount,auctionCount:t.squadSize-t.retainedCount,players};
  });
- return {name:snap.name,teams,issues,totals:{teams:8,players:99,retained:11,auction:88,matchedFc26:98,matchedDefaultPool:0,manual:0,unresolved:issues.length},
+ return {name:snap.name,teams,issues,totals:{teams:8,players:75,retained:10,auction:65,matchedFc26:74,matchedDefaultPool:0,manual:0,unresolved:issues.length},
   remainingPool:{total:4321,byPot:{GK:300,CB:900,FB:700,MID:1500,ATT:921}},canConfirm:issues.length===0};
 }
 window.calls=[];
@@ -38,7 +45,7 @@ import CreateRoomPage from './src/app/create/page';
 import {restoreService} from './src/services/restore.service';
 import {useRoomStore} from './src/stores/room.store';
 ${fixtures}
-restoreService.templates=async()=>{window.calls.push('templates');return [{id:'t',name:template.name,teamCount:8,playerCount:99,hostTeam:'Ritzz FC',snapshot:template}];};
+restoreService.templates=async()=>{window.calls.push('templates');return [{id:'v3',name:template.name,teamCount:8,playerCount:75,hostTeam:'Ritzz FC',isDefault:true,snapshot:template},{id:'old',name:'Super League Football Auction 2026',teamCount:8,playerCount:99,hostTeam:'Ritzz FC',isDefault:false,snapshot:{...template,name:'Super League Football Auction 2026'}}];};
 restoreService.preview=async snap=>{window.calls.push('preview');return buildPreview(snap);};
 restoreService.searchPlayers=async q=>{window.calls.push('search '+q.search);return {total:1,offset:0,limit:8,players:[{id:'fc26-77',name:'M. Striker',fullName:'Mystery Striker',position:'FWD',subPosition:'ST',ovr:80,club:'Test FC',positions:['ST'],stats:{},basePriceCr:5,potId:'ATT',status:'WAITING',round:0}]};};
 const USERS=[{userId:'u-deb',username:'debadrit',displayName:'Debadrit Nag'},{userId:'u-sam',username:'sam99',displayName:'Sam Roy'}];
@@ -88,7 +95,7 @@ const dto={connectedUsers:[],currentUserTeam:{id:'a'},
         {id:'b',userId:'unclaimed:b',name:'DDD',startingBudgetCr:0,spentCr:0,remainingBudgetCr:0,playerIds:[],playersOwned:0,claimed:false,remainingSlots:20}],
  players:[pl('r1','Ret Player',{playerTag:'UNDERDOG'}),pl('a1','Auction Player')],
  soldPlayers:[{id:'s1',playerId:'r1',teamId:'a',priceCr:null,bidCount:0,at:0,durationMs:0,acquisitionType:'RETENTION',isRetained:true,restoredFromSnapshot:true,recordedPriceCr:15},
-              {id:'s2',playerId:'a1',teamId:'a',priceCr:null,bidCount:0,at:0,durationMs:0,acquisitionType:'AUCTION',isRetained:false,restoredFromSnapshot:true,recordedPriceCr:null}]};
+              {id:'s2',playerId:'a1',teamId:'a',priceCr:null,bidCount:0,at:0,durationMs:0,acquisitionType:'AUCTION',isRetained:false,restoredFromSnapshot:true,recordedPriceCr:4.5}]};
 const teams=mapTeams(dto);
 window.mapped=teams.map(t=>({name:t.name,claimed:t.claimed,connected:t.connected,manager:t.managerUsername,remaining:t.remainingSlots,prices:t.squad.map(p=>String(p.soldPrice)),restored:t.squad.map(p=>p.restoredFromSnapshot===true),retained:t.squad.map(p=>p.isRetained)}));
 const isHost=location.hash!=='#guest';
@@ -119,18 +126,29 @@ for (const width of [375, 768, 1280]) {
     await expect(page.getByTestId('restore-workflow')).toBeVisible();
     await expect(page.getByRole('button', { name: /CREATE ROOM/ })).toHaveCount(0);
     await expect(page.getByText('PLAYER DATABASE SOURCE')).toHaveCount(0);
-    await expect(page.getByTestId('restore-preview-panel')).toHaveCount(0);
 
-    // template: one click, 8 teams with exact purses, squads and slots
-    await page.getByTestId('restore-load-template').click();
+    // the default preset loads automatically (no click): 8 teams with exact purses, squads and slots
     await expect(page.getByTestId('restore-team-row')).toHaveCount(8);
     const col = async (id) => (await page.getByTestId(id).allTextContents()).map((s) => s.trim());
-    expect(await col('restore-purse')).toEqual(['₹59 Cr', '₹50.5 Cr', '₹0 Cr', '₹29 Cr', '₹13.5 Cr', '₹48 Cr', '₹38 Cr', '₹20 Cr']);
-    expect(await col('restore-squad')).toEqual(SQUADS.map((n) => n + '/20'));
-    expect(await col('restore-slots')).toEqual(SLOTS.map(String));
-    expect(await col('restore-retained')).toEqual(RETAINED.map(String));
-    const auction = SQUADS.map((n, i) => String(n - RETAINED[i]));
+    expect(await page.getByTestId('restore-team-row').evaluateAll((rows) => rows.map((r) => r.getAttribute('data-team')))).toEqual(V3_NAMES);
+    expect(await col('restore-purse')).toEqual(V3_PURSES.map(cr));
+    expect(await col('restore-squad')).toEqual(V3_SQUADS.map((n) => n + '/20'));
+    expect(await col('restore-slots')).toEqual(V3_SLOTS.map(String));
+    expect(await col('restore-retained')).toEqual(V3_RETAINED.map(String));
+    const auction = V3_SQUADS.map((n, i) => String(n - V3_RETAINED[i]));
     expect(await col('restore-auction')).toEqual(auction);
+    await expect(page.getByTestId('restore-totals')).toContainText('8 teams, 75 players (10 retained, 65 auction acquired)');
+    // the default preset is selected and the old template is selectable
+    await expect(page.getByTestId('restore-template-select')).toHaveValue('v3');
+    expect(await page.getByTestId('restore-template-select').locator('option').allTextContents()).toEqual(['Super League Football Auction 2026 (Restored v3) (default)', 'Super League Football Auction 2026']);
+    // toggling OFF and ON again replaces the preset: still 8 teams, never 16
+    await toggle.uncheck({ force: true });
+    await expect(page.getByTestId('restore-workflow')).toHaveCount(0);
+    await toggle.check({ force: true });
+    await expect(page.getByTestId('restore-team-row')).toHaveCount(8);
+    await page.getByTestId('restore-load-template').click();
+    await expect(page.getByTestId('restore-team-row')).toHaveCount(8);
+    expect(await col('restore-purse')).toEqual(V3_PURSES.map(cr));
     await expect(page.getByTestId('restore-pool-total')).toContainText('4321');
     await expect(page.getByTestId('restore-pot-GK')).toHaveText('300');
 
@@ -140,7 +158,7 @@ for (const width of [375, 768, 1280]) {
     await expanders.nth(1).click();
     await expect(expanders.nth(1)).toHaveAttribute('aria-expanded', 'true');
     await expect(page.getByTestId('restore-squad-list')).toHaveCount(1);
-    await expect(page.getByTestId('badge-retained')).toHaveCount(1);
+    await expect(page.getByTestId('badge-retained')).toHaveCount(2);await expect(page.getByTestId('restore-price')).toHaveCount(10);
     await expect(page.getByTestId('badge-auction')).toHaveCount(8);
     await expect(page.getByTestId('underdog-tag')).toHaveCount(1);
 
@@ -236,7 +254,7 @@ for (const width of [375, 768, 1280]) {
     await expect(card.getByTestId('squad-slots-left')).toHaveText('18');
     await expect(card.getByTestId('squad-retained-player')).toHaveCount(1);
     await expect(card.getByTestId('squad-auction-player')).toHaveCount(1);
-    await expect(card.getByTestId('squad-restored-price')).toHaveText(['Restored', 'Restored']);
+    await expect(card.getByTestId('squad-restored-price')).toHaveText([cr(15), cr(4.5)]);
     await expect(card).not.toContainText('₹5 Cr');
     await expect(card.getByTestId('underdog-tag')).toHaveCount(1);
     const mapped = await page.evaluate(() => window.mapped);
@@ -259,14 +277,13 @@ for (const width of [375, 768, 1280]) {
   const { browser, page, errors } = await openPage(createBundle, { viewport: { width: 1280, height: 900 } });
   try {
     await page.getByTestId('restore-toggle').check({ force: true });
-    await page.getByTestId('restore-load-template').click();
     await expect(page.getByTestId('restore-manager-row')).toHaveCount(8);
     await expect(page.getByTestId('restore-workflow')).toContainText('before sharing the room code');
     await expect(page.getByTestId('manager-you')).toHaveCount(1); // host team Ritzz FC
     const row = (n) => page.locator('[data-testid="restore-manager-row"][data-team="' + n + '"]');
-    const fido = row('FidoDido FC');
-    await fido.getByLabel('Search registered users for FidoDido FC').fill('deb');
-    await fido.getByRole('button', { name: 'Search users for FidoDido FC' }).click();
+    const fido = row('Fidodido FC');
+    await fido.getByLabel('Search registered users for Fidodido FC').fill('deb');
+    await fido.getByRole('button', { name: 'Search users for Fidodido FC' }).click();
     await fido.getByRole('button', { name: /Debadrit Nag/ }).click();
     await expect(fido.getByTestId('manager-selected')).toContainText('Debadrit Nag');
     // the same user cannot be bound to a second team
@@ -281,7 +298,7 @@ for (const width of [375, 768, 1280]) {
     await page.getByTestId('restore-confirm').click();
     await expect.poll(() => page.evaluate(() => window.calls.includes('create'))).toBe(true);
     const sent = await page.evaluate(() => window.created);
-    expect(sent.bindings).toEqual([{ teamName: 'FidoDido FC', userId: 'u-deb' }]);
+    expect(sent.bindings).toEqual([{ teamName: 'Fidodido FC', userId: 'u-deb' }]);
     expect(errors).toEqual([]);
   } finally { await browser.close(); }
 }

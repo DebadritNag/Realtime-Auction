@@ -10,7 +10,7 @@ export interface MatchResult {
 export type IssueSeverity = 'CRITICAL' | 'WARNING';
 export interface RestoreIssue { severity: IssueSeverity; code: string; teamName?: string; playerName?: string; message: string }
 export interface PreviewPlayer {
-  name: string; position: string; acquisition: 'RETENTION' | 'AUCTION'; underdog: boolean; verify: boolean;
+  name: string; position: string; acquisition: 'RETENTION' | 'AUCTION'; underdog: boolean; verify: boolean; priceCr?: number;
   match: { kind: MatchKind; playerId?: string; source?: RestoreSource; matchedName?: string; fullName?: string; club?: string; ovr?: number; photoUrl?: string;
     positions?: string[]; candidates?: CandidateSummary[]; suggestions?: CandidateSummary[] };
   issues: RestoreIssue[];

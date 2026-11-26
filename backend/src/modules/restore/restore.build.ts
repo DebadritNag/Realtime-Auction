@@ -54,7 +54,7 @@ export function buildRestoredRoom(input: BuildRestoredRoomInput): Room {
       players.push({ ...structuredClone(player), basePriceUnits, status: 'SOLD', round: 0, restoredFromSnapshot: true, restoreSource: match.source! });
       team.playerIds.push(player.id);
       purchases.push({ id: randomUUID(), playerId: player.id, teamId: id, priceUnits: 0, bidCount: 0, at: ctx.now, durationMs: 0,
-        acquisitionType: entry.acquisition, isRetained: retention, restoredFromSnapshot: true, recordedPriceUnits: retention ? RETENTION_PRICE_UNITS : null });
+        acquisitionType: entry.acquisition, isRetained: retention, restoredFromSnapshot: true, recordedPriceUnits: retention ? RETENTION_PRICE_UNITS : entry.priceCr != null ? toUnits(entry.priceCr) : null });
     }
     teams.push(team);
     restoreTeams.push({ teamId: id, name: team.name, purseUnits: team.startingBudgetUnits, squadSize: team.playerIds.length,

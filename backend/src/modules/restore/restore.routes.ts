@@ -20,6 +20,8 @@ import { snapshotHash, validateSnapshot, type RestoreCatalogs } from './restore.
 export const RESTORE_BODY_LIMIT = 256 * 1024;
 const TEMPLATE_DIR = fileURLToPath(new URL('../../../data/restore', import.meta.url));
 const DEFAULT_POOL_FILE = fileURLToPath(new URL('../../../data/default-pool/default-player-pool.csv', import.meta.url));
+/** The preset the create page loads when the restore toggle is switched on. Other shipped templates stay selectable. */
+export const DEFAULT_TEMPLATE_ID = 'super-league-auction-2026-v3';
 export interface RestoreTemplate { id: string; snapshot: RestoreSnapshot; hash: string }
 /** Reads and validates the shipped templates (strict UTF-8). Invalid files are skipped, never served. */
 export async function loadRestoreTemplates(dir = TEMPLATE_DIR): Promise<RestoreTemplate[]> {
@@ -33,7 +35,7 @@ export async function loadRestoreTemplates(dir = TEMPLATE_DIR): Promise<RestoreT
       templates.push({ id: name.replace(/\.json$/, ''), snapshot, hash: snapshotHash(snapshot) });
     } catch { /* skip an unreadable or invalid template */ }
   }
-  return templates;
+  return templates.sort((x, y) => Number(y.id === DEFAULT_TEMPLATE_ID) - Number(x.id === DEFAULT_TEMPLATE_ID));
 }
 let defaultPool: Promise<Player[]> | undefined;
 /** Default FC24 pool rows, used only as a matching fallback. A missing file simply yields no fallback. */
@@ -63,7 +65,7 @@ export function registerRestoreRoutes(app: FastifyInstance, manager: RoomManager
   app.get('/api/restore/templates', async () => {
     const templates = await loadRestoreTemplates();
     return { templates: templates.map(t => ({ id: t.id, name: t.snapshot.name, teamCount: t.snapshot.teams.length,
-      playerCount: t.snapshot.teams.reduce((sum, team) => sum + team.players.length, 0), hostTeam: t.snapshot.hostTeam ?? null, snapshot: t.snapshot })) };
+      playerCount: t.snapshot.teams.reduce((sum, team) => sum + team.players.length, 0), hostTeam: t.snapshot.hostTeam ?? null, isDefault: t.id === DEFAULT_TEMPLATE_ID, snapshot: t.snapshot })) };
   });
   // Catalog search for the host to resolve an unmatched or ambiguous entry before a room exists.
   app.get('/api/restore/players', { config: { rateLimit: { max: 60, timeWindow: '1 minute' } } }, async request => {
