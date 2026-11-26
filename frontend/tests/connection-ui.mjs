@@ -27,9 +27,13 @@ for (const width of [375, 768, 1280]) {
   try {
     const panel = page.getByTestId('host-connection-panel');
     await expect(panel).toHaveCount(1);
+    await expect(panel).toContainText('1/2 connected');
+    await panel.getByRole('button', { name: /Team connections/ }).click(); // collapsed by default
     await expect(panel.getByText('CONNECTED', { exact: true }).locator('visible=true')).toHaveCount(1);
     await expect(panel.getByText('DISCONNECTED', { exact: true }).locator('visible=true')).toHaveCount(1);
     await expect(panel.getByText(/2 min ago/).locator('visible=true')).toHaveCount(1);
+    await page.keyboard.press('Escape'); // the details popover closes and no longer covers the controls
+    await expect(panel.getByText('CONNECTED', { exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Reconnect to Auction' })).toBeVisible();
     await page.getByRole('button', { name: 'View Auction History' }).click();
     await page.getByRole('button', { name: 'Return to Dashboard' }).click();

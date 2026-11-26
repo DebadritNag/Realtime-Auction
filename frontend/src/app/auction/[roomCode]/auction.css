@@ -126,6 +126,9 @@
  .auction-subheader > div:last-child { margin-left:auto; }
  .auction-hostbar { padding:0 12px; }
  .auction-host-controls > div:first-child { display:none; }
+ .auction-host-controls { gap:6px; }
+ .auction-host-controls button { font-size:11px; padding:4px 8px; }
+ .auction-host-controls button svg,.host-connections-label { display:none; }
  .auction-host-controls > div:last-child { width:100%; justify-content:space-between; gap:6px; }
  .auction-host-controls button { min-height:40px; padding:6px 9px; }
  .auction-grid { gap:10px; padding:10px; }
@@ -279,6 +282,134 @@
  .squad-facts { grid-template-columns:repeat(2,minmax(0,1fr)); }
  .auction-overview-top li { grid-template-columns:minmax(0,1fr) auto; }
  .auction-overview-top li > span:nth-child(2) { display:none; }
+}
+/* Layout fix: the live room fills the viewport; only the columns scroll, and only when their content truly exceeds */
+.auction-workspace > * { flex-shrink:0; }
+/* Scroll columns contain their absolutely positioned children (sr-only labels), so those never extend the page. */
+.auction-workspace,.auction-grid > *,.auction-player-list { position:relative; }
+.auction-hostbar { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:6px 16px; }
+.auction-hostbar .auction-host-controls { flex:1 1 auto; min-width:0; padding:0; }
+.auction-hostbar .host-connections { flex:0 0 auto; margin-left:auto; }
+@media (min-width:1024px) {
+ .auction-hostbar { flex-wrap:nowrap; }
+ .auction-hostbar .host-return-btn { display:none; } /* the header Dashboard button does the same */
+}
+.host-connections-toggle { min-height:34px; font-size:12px; white-space:nowrap; }
+.host-connections-toggle svg { transition:transform .2s; }
+.auction-paused-notice { padding:4px 16px; font-size:12px; line-height:1.4; }
+.auction-pool-panel h3 { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.auction-pool-panel > div:first-child > span { flex:0 0 auto; white-space:nowrap; }
+.auction-pool-panel > div:first-child > div { min-width:0; }
+.auction-pool-tabs { display:flex; flex-wrap:wrap; align-items:center; gap:4px; padding:8px 0; border-bottom:1px solid rgba(36,44,61,.6); }
+.auction-pool-tabs button { min-height:28px; }
+.auction-player-list { min-height:0; }
+@media (min-width:1024px) {
+ .auction-workspace { height:100dvh; min-height:0; overflow:hidden; }
+ .auction-grid { grid-template-columns:minmax(0,24fr) minmax(0,46fr) minmax(0,30fr); flex:1 1 0; min-height:0; overflow:hidden; padding:12px 16px; max-width:none; margin:0; }
+ .auction-pool-column { display:flex; flex-direction:column; min-height:0; min-width:0; }
+ .auction-pool-column > .auction-pool-panel { flex:1 1 0; min-height:0; height:auto; }
+ .auction-center { overflow-y:auto; min-height:0; }
+ .auction-right-column { display:flex; flex-direction:column; gap:12px; min-height:0; overflow-y:auto; }
+ .auction-panel { flex:1 1 0; min-height:0; overflow-y:auto; }
+ .live-player-portrait { width:88px; height:100px; }
+}
+@media (min-width:1024px) and (max-width:1199px) {
+ .auction-header .auction-mobile-tools { display:flex; }
+}
+/* Medium-height desktops: tighter chrome and cards so the player and the whole bid console stay on screen. */
+@media (min-width:1024px) and (max-height:920px) {
+ .auction-header { padding:6px 16px 0; }
+ .auction-header-bottom { margin-top:2px; }
+ .auction-tab { min-height:34px; padding:6px 12px; }
+ .auction-purse-strip ul { padding:6px 16px; }
+ .auction-purse-card { min-width:0; padding:4px 10px; gap:8px; }
+ .auction-purse-badge { width:28px; height:28px; font-size:11px; }
+ .auction-purse-amount { font-size:15px; }
+ .auction-purse-name { max-width:120px; }
+ .auction-hostbar { padding:4px 16px; flex-wrap:nowrap; }
+ .auction-host-controls > div:first-child { display:none; }
+ .auction-host-controls > div:last-child { gap:6px; }
+ .auction-host-controls button { min-height:30px; padding:4px 10px; }
+ .host-connections-toggle { min-height:30px; }
+ .auction-grid { gap:10px; padding:8px 16px; }
+ .auction-center { gap:8px; }
+ .player-stage-bar { padding:6px 12px; }
+ .live-player-card { padding:10px 14px; }
+ .live-player-identity { margin:8px 0; gap:12px; }
+ .live-player-portrait { width:56px; height:64px; }
+ .live-player-rating strong { font-size:36px; }
+ .live-player-bio h2 { font-size:20px; }
+ .live-player-price { display:none; } /* the stage bar above already shows the base price or the highest bid */
+ .live-player-stats { padding-top:6px; }
+ .live-player-stats dd { font-size:15px; }
+ .auction-current-bid,.auction-timer { padding:8px 12px; }
+ .auction-current-bid > div:nth-child(2) > span,.auction-timer > div:nth-child(2) > span:first-child { font-size:26px; }
+ .auction-bid-actions { padding:10px 12px; }
+ .auction-primary-actions button,.auction-skip-btn { min-height:38px; padding:6px 10px; }
+ .auction-quick-heading { margin:8px 0 4px; }
+ .auction-quick-bids button { min-height:36px; padding:4px 10px; }
+ .auction-bid-limits { margin-top:8px; padding-top:6px; }
+ .auction-bid-rules { display:none; }
+ .auction-activity ol { max-height:120px; }
+}
+/* Short desktops (for example 1024x500): single-line chrome, no secondary text, one-row pot tabs with a hidden scrollbar. */
+@media (min-width:1024px) and (max-height:620px) {
+ .auction-pot,.auction-phase + .auction-pot { display:none; }
+ .auction-header { padding:4px 16px 0; }
+ .auction-header-title h1 { font-size:16px; }
+ .auction-exit { min-height:30px; }
+ .auction-tab { min-height:30px; padding:4px 10px; font-size:12px; }
+ .auction-header .auction-mobile-tools { padding-bottom:3px; }
+ .auction-header .auction-mobile-tools button { min-height:28px; padding:2px 8px; font-size:11px; }
+ .auction-purse-strip ul { padding:4px 16px; gap:6px; }
+ .auction-purse-badge { display:none; }
+ .auction-purse-card { padding:2px 10px; border-radius:8px; }
+ .auction-purse-name { font-size:11px; }
+ .auction-purse-amount { font-size:13px; }
+ .auction-hostbar { padding:3px 16px; }
+ .auction-host-controls button,.host-connections-toggle { min-height:28px; }
+ .auction-paused-notice { padding:2px 16px; font-size:11px; }
+ .auction-grid { padding:4px 16px 6px; gap:8px; }
+ .auction-center { gap:6px; }
+ .player-stage-bar { padding:4px 10px; }
+ .player-stage-chip { padding:1px 8px; font-size:10px; }
+ .live-player-card { padding:6px 12px; }
+ .live-player-facts,.live-player-portrait { display:none; }
+ .live-player-identity { margin:0 0 4px; gap:10px; }
+ .live-player-rating strong { font-size:30px; }
+ .live-player-bio h2 { font-size:18px; }
+ .live-player-bio p { margin-top:1px; }
+ .live-player-stats { padding-top:4px; }
+ .live-player-stats dt { font-size:9px; }
+ .live-player-stats dd { font-size:13px; }
+ .auction-current-bid,.auction-timer { padding:4px 12px; }
+ .auction-current-bid > div:first-child,.auction-timer > div:first-child { margin-bottom:0; }
+ .auction-current-bid > div:nth-child(2),.auction-timer > div:nth-child(2) { margin:0; }
+ .auction-current-bid > div:nth-child(2) > span,.auction-timer > div:nth-child(2) > span:first-child { font-size:22px; }
+ .auction-bid-actions { padding:6px 12px 8px; }
+ .auction-primary-actions button,.auction-skip-btn { min-height:34px; padding:4px 10px; }
+ .auction-quick-bids { margin-top:6px; }
+ .auction-quick-bids button { min-height:32px; padding:2px 10px; }
+ .auction-quick-bids strong { font-size:14px; }
+ .auction-player-row { min-height:44px; } .auction-purse-meta,.auction-purse-name em { display:none; }
+ .auction-purse-card { padding:3px 10px; }
+ .live-player-heading,.live-player-price,.auction-bid-limits,.auction-quick-heading,.auction-current-bid > div:last-child { display:none; }
+ .live-player-identity { margin:6px 0; }
+ .live-player-stats dd { font-size:14px; }
+ .auction-pool-tabs { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; padding:6px 0; }
+ .auction-pool-tabs::-webkit-scrollbar { display:none; }
+ .auction-pool-tabs button { flex:0 0 auto; }
+ .auction-pool-panel { padding:8px; }
+ .auction-host-controls > div:first-child { display:none; }
+ .auction-host-controls { gap:6px; }
+ .auction-host-controls button { font-size:11px; padding:4px 8px; }
+ .auction-host-controls button svg,.host-connections-label { display:none; }
+ .auction-host-controls { gap:6px; }
+ .auction-host-controls button { font-size:11px; padding:4px 8px; }
+ .auction-host-controls button svg,.host-connections-label { display:none; }
+ .auction-host-controls button[class*="secondary"]:nth-last-child(2) { display:none; }
+ .auction-activity { padding:8px; }
+ .auction-activity ol { max-height:64px; }
 }
 @media (prefers-reduced-motion:reduce) {
  .auction-workspace *, .auction-workspace *::before,.auction-workspace *::after { animation:none!important; transition:none!important; }

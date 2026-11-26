@@ -115,7 +115,7 @@ export const HostAuctionControls: React.FC<HostAuctionControlsProps> = ({
           </Button>
         ) : null}
         {onReturnToDashboard ? (
-          <Button variant="secondary" size="sm" onClick={onReturnToDashboard} leftIcon={<LayoutDashboard className="w-3.5 h-3.5" />}>
+          <Button variant="secondary" size="sm" className="host-return-btn" onClick={onReturnToDashboard} leftIcon={<LayoutDashboard className="w-3.5 h-3.5" />}>
             Return to Dashboard
           </Button>
         ) : null}

@@ -260,7 +260,7 @@ export default function LiveAuctionPage({
         </div>
       )}
       {auctionStatus === "PAUSED" && (
-        <div role="status" data-testid="paused-notice" className="px-4 py-2 text-sm font-semibold text-amber-200 bg-amber-400/10 border-b border-amber-400/30 text-center">
+        <div role="status" data-testid="paused-notice" className="auction-paused-notice font-semibold text-amber-200 bg-amber-400/10 border-b border-amber-400/30 text-center">
           PAUSED - waiting for the host to resume
         </div>
       )}

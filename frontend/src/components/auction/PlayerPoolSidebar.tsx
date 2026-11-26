@@ -50,7 +50,7 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
       <div className="flex items-center justify-between pb-3 border-b border-[#242c3d]">
         <div className="flex items-center gap-2">
           <Layers className="w-4 h-4 text-[#00ff87]" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-[#f8fafc]">
+          <h3 title="Pot & player pool" className="text-xs font-bold uppercase tracking-wider text-[#f8fafc]">
             POT & PLAYER POOL
           </h3>
         </div>
@@ -60,7 +60,7 @@ export const PlayerPoolSidebar: React.FC<PlayerPoolSidebarProps> = ({
       </div>
 
       {/* Pot Selector Buttons */}
-      <div className="flex items-center gap-1 overflow-x-auto py-2.5 scrollbar-none border-b border-[#242c3d]/60">
+      <div className="auction-pool-tabs">
         {potCategories.map((cat) => (
           <button
             key={cat.id}
