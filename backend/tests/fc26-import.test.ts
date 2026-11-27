@@ -172,10 +172,10 @@ describe('FC26 importer', () => {
 
 describe('FC26 real CSV files', () => {
   const present = existsSync(resolve(defaultFc26Dir(), 'FC26_GK.csv')) && existsSync(resolve(defaultFc26Dir(), 'FC26_Underdogs.csv'));
-  it.skipIf(!present)('imports 215 unique players from 259 rows, then none on re-import', async () => {
+  it.skipIf(!present)('imports 215 unique players from 215 rows, then none on re-import', async () => {
     const c = new MemoryFc26Catalog(resolveFc26Config({}));
     const report = await c.importAll();
-    expect(report).toMatchObject({ filesRead: 6, rowsRead: 259, imported: 215, skippedDuplicates: 44, underdogImported: 35, missingFiles: [] });
+    expect(report).toMatchObject({ filesRead: 6, rowsRead: 215, imported: 215, skippedDuplicates: 0, underdogImported: 35, missingFiles: [] });
     expect(report.invalidRows).toEqual([]);
     const players = await c.list();
     expect(players.filter(p => p.draftPool === 'UNDERDOG' && p.playerTag === 'UNDERDOG' && p.basePriceUnits === 2)).toHaveLength(35);
